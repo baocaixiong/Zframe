@@ -55,7 +55,7 @@ abstract class ZApplication extends ZModule
         Z::setPathOfNamespace('Z', Z_PATH);
         $this->preinit();
         $this->initSystemHandlers();
-        //$this->registerCoreComponents(); //注册系统核心组件
+        $this->registerCoreComponents(); //注册系统核心组件
         
         $this->setConfig($config);
 
@@ -68,8 +68,24 @@ abstract class ZApplication extends ZModule
      */
     public function run()
     {
-        var_dump($this->ad= 'adfs');
-        $this->notify();
+        
+        $this->onClick = array($this, 'hah');
+        $this->onClick = array($this, 'hah1');
+        if($this->hasEventHandler('onClick'))
+            $this->onClick(new ZEvent($this));
+    }
+
+    public function hah()
+    {
+        echo '你知道吗';
+    }
+    public function hah1()
+    {
+        echo '你知道吗1';
+    }
+    public function onClick($event)
+    {
+        $this->raiseEvent('onClick',$event);  
     }
 
     /**

@@ -28,4 +28,18 @@ class ZWebApplication extends ZApplication
 	{
 
 	}
+
+	/**
+	 * 注册系统核心组建
+	 * @return void
+	 */
+	protected function registerCoreComponents()
+	{
+		$components = array(
+			'router' => array(
+				'class' => 'Z\Router\ZRouter',
+			),
+		);
+		//var_dump($components);
+	}
 }

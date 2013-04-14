@@ -47,9 +47,9 @@ interface ZCoreInterface
      * add a event 
      * @return [type] [description]
      */
-    public function attach($eventName, ZEvent $event);
-    public function detach($eventName);
-    public function notify();
+    public function attachEventHandler($eventName, $event);
+    public function detachEventHandler($eventName);
+    public function raiseEvent($name, $event);
 }
 
 interface ZEventInterface

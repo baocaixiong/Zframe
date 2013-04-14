@@ -14,7 +14,8 @@
  */
 namespace Z\Core;
 
-use \Z\Z;
+use \Z\Z,
+    \Z\Helpers\ZList;
 
 class ZCore implements ZCoreInterface
 {
@@ -71,8 +72,8 @@ class ZCore implements ZCoreInterface
      */
     public function __set($name, $value)
     {
-        $seter = 'set' . $name;
-        if (isset($setter)) {
+        $setter = 'set' . $name;
+        if (method_exists($this, $setter)) {
             return $this->$setter($name, $value);
         } elseif (strncasecmp($name, 'on', 2)===0 && method_exists($this, $name)) {
             $name=strtolower($name);
@@ -139,5 +140,239 @@ class ZCore implements ZCoreInterface
         return false;
     }
     
-    
+    /**
+     * 是否存在一个事件
+     * @param String $name 事件名称
+     * @return boolean      
+     */
+    public function hasEvent($name)
+    {
+        return !strncasecmp($name, 'on', 2) && method_exists($this, $name);
+    }
+
+    /**
+     * 判断一个事件是否有事件句柄
+     * @return boolean void
+     */
+    public function hasEventHandler($name)
+    {
+        $name=strtolower($name);
+        return isset($this->_events[$name]) && $this->_events[$name]->getCount() > 0;
+    }
+
+    /**
+     * 获得一个事件的句柄列表
+     * @param String $name 事件名称
+     * @return \Z\Helpers\ZList 
+     * @throws \Z\Exceptions\ZException
+     */
+    public function getEventHandlers($name)
+    {
+        if ($this->hasEvent($name)) {
+            $name=strtolower($name);
+            if(!isset($this->_events[$name]))
+                $this->_events[$name]=new ZList;
+            return $this->_events[$name];
+        } else {
+            Z::throwZException(
+                Z::t(
+                    'Event "{class}.{event}" is not defined.',
+                    ['{class}' => get_class($this), '{evnet}' => $name]
+                )
+            );
+        }
+    }
+
+    /**
+     * 给事件添加一个事件句柄
+     * @param String   $name    事件名称
+     * @param callback $handler 事件句柄
+     * @return void
+     * @throws \Z\Exceptions\ZException
+     */
+    public function attachEventHandler($name, $handler)
+    {
+        $this->getEventHandlers($name)->add($handler);
+    }
+
+    /**
+     * 删除一个事件的事件句柄
+     * @param String $name 事件名称
+     * @return boolean 
+     */
+    public function detachEventHandler($name)
+    {
+        if ($this->hasEventHandler($name)) {
+            $this->getEventHandlers($name)->remove($handler) !== false;
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * 运行一个事件句柄
+     * @param String $name 事件名称
+     * @return void
+     */
+    public function raiseEvent($name, $event)
+    {
+        $name = strtolower($name);
+        if (isset($this->_events[$name])) {
+            foreach ($this->_events[$name] as $handler) {
+                if (is_string($handler)) {
+                    call_user_func($handler, $evnet);
+                } elseif (is_callable($handler, true)) {
+                    if (is_array($handler)) {
+                        list($object, $method) = $handler;
+                        if (is_string($object)) {
+                            call_user_func($handler, $event);
+                        } elseif (method_exists($object, $method)) {
+                            $object->$method($event);
+                        } else {
+                            Z::throwZException(
+                                Z::t(
+                                    'Event "{class}.{event}" is 
+                                    attached with an invalid handler "{handler}".',
+                                    [
+                                        '{class}' => get_class($this),
+                                        '{event}' => $name,
+                                        '{handler}' => $handler[1]
+                                    ]
+                                )
+                            );
+                        }
+                    } else {
+                        call_user_func($handler, $evnet);
+                    }
+                } else {
+                    Z::throwZException(
+                        Z::t(
+                            'Event "{class}.{event}" is 
+                            attached with an invalid handler "{handler}".',
+                            [
+                                '{class}' => get_class($this),
+                                '{event}' => $name,
+                                '{handler}' => $handler[1]
+                            ]
+                        )
+                    );
+                }
+                if (($event instanceof ZEvent) && $event->handled) {
+                    return;
+                }
+            }
+        } elseif (Z_DEBUG && !$this->hasEvent($name)) {
+            Z::throwZException(
+                Z::t(
+                    'Event "{class}.{event}" is not defined.',
+                    ['{class}' => get_class($this), '{event}' => $name]
+                )
+            );
+        }
+    }
+
+    /**
+     * 批量增加行为
+     * @param Array $behaviors 要增加的行为列表
+     * @return void
+     */
+    public function attachBehaviors($behaviors)
+    {
+        foreach ($behaviors as $name=>$behavior) {
+            $this->attachBehavior($name, $behavior);
+        }
+    }
+
+    /**
+     * 批量删除行为
+     * @return void
+     */
+    public function detachBehaviors()
+    {
+        if (!empty($this->_behavior)) {
+            foreach ($this->_behavior as $behavior) {
+                $this->detachBehavior($name);
+            }
+            $this->_behavior = [];
+        }
+    }
+    /**
+     * 从一个行为中删除当前对象
+     * @param String $name 行为名称
+     * @return \Z\Core\ZBehavior
+     */
+    public function detachBehavior($name)
+    {
+        if (isset($this->_behavior[$name])) {
+            $this->_behavior[$name]->detach($this);
+            $behavior=$this->_behavior[$name];
+            unset($this->_behavior[$name]);
+            return $behavior;
+        }
+    }
+
+    /**
+     * 向当前类添加一个行为
+     * @param String            $name     行为名称
+     * @param \Z\Core\ZBehavior $behavior 行为对象
+     * @return \Z\Core\ZBehavior
+     */
+    public function attachBehavior($name, $behavior)
+    {
+        if ($behavior instanceof ZBehaviorInterface) {
+            $behavior = Z::createComponent($behavior);
+        }
+        $behavior->setEnabled(true);
+        $behavior->attach($this);
+        return $this->_behavior[$name] = $behavior;
+    }
+
+    /**
+     * 设置行为可用
+     * @param String $name 行为名称
+     * @return void
+     */
+    public function setBehaviorEnable($name)
+    {
+        if (isset($this->_behavior[$name])) {
+            $this->_behavior[$name]->setEnabled(true);
+        }
+    }
+    /**
+     * 设置行为不可用
+     * @param String $name 行为名称
+     * @return void
+     */
+    public function setBehaviorDisable($name)
+    {
+        if (isset($this->_behavior[$name])) {
+            $this->_behavior[$name]->setEnabled(false);
+        }
+    }
+
+    /**
+     * 设置当前类的所有行为不可用
+     * @return void
+     */
+    public function setBehaviorsDisable()
+    {
+        if (!empty($this->_behavior)) {
+            foreach ($this->_behavior as $behavior) {
+                $behavior->setEnabled(false);
+            }
+        }
+    }
+
+    /**
+     * 设置当前类的所有行为可用
+     * @return void
+     */
+    public function setBehaviorsEnable()
+    {
+        if (!empty($this->_behavior)) {
+            foreach ($this->_behavior as $behavior) {
+                $behavior->setEnabled(true);
+            }
+        }
+    }
 }
