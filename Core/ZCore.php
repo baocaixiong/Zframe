@@ -9,10 +9,12 @@
  * @author    baocaixiong <baocaixiong@gmail.com>
  * @copyright 2013 baocaixiong.com
  * @license   Copyright (c) 2013 
- * @version   v0.1
+ * @version   GIT: <git_id>
  * @link      http://www.baocaixiong.com
  */
 namespace Z\Core;
+
+use \Z\Z;
 
 class ZCore implements ZCoreInterface
 {
@@ -21,26 +23,84 @@ class ZCore implements ZCoreInterface
      * @var Array
      */
     private $_events = [];
+
     /**
-     * [__get description]
+     * 行为
+     * @var Array
+     */
+    private $_behavior = [];
+    /**
+     * __get
      * 
-     * @param [type] $name [description]
+     * @param String $name 想要获得的值
      * 
-     * @return [type]       [description]
+     * @return Mixed
      * 
      */
     public function __get($name)
     {
-
+        $getter = 'get' . $name;
+        if (method_exists($this, $getter)) {
+            return $this->$getter();
+        } elseif (strncasecmp($name, 'on', 2) === 0 && method_exists($this, $name)) {
+            $name=strtolower($name);
+            if (!isset($this->_events[$name])) {
+                $this->_events[$name] = new ZList();
+            }
+            return $this->_events[$name];
+        } elseif (isset($this->_behavior[$name])) {
+            return $this->_m[$name];
+        } elseif (is_array($this->_behavior)) {
+            foreach ($this->_behavior as $behavior) {
+                if($object->behavior() && 
+                    (property_exists($behavior, $name) || $object->isReadProperty($name)))
+                    return $behavior->$name;
+            }
+        }
+        Z::throwZException(
+            Z::t(
+                'Property "{class}.{property}" is not defined.',
+                array('{class}' => get_class($this), '{property}' => $name)
+            )
+        );
     }
     /**
-     * [__set description]
-     * @param [type] $name  [description]
-     * @param [type] $value [description]
+     * __set
+     * @param String $name 要设置的属性
+     * @param Mixed $value 想要设置的值
      */
     public function __set($name, $value)
     {
+        $seter = 'set' . $name;
+        if (isset($setter)) {
+            return $this->$setter($name, $value);
+        } elseif (strncasecmp($name, 'on', 2)===0 && method_exists($this, $name)) {
+            $name=strtolower($name);
+            if(!isset($this->_events[$name]))
+                $this->_events[$name]=new ZList;
+            return $this->_events[$name]->add($value);
+        } elseif (is_array($this->_behavior)) {
+            foreach ($this->_behavior as $behavior) {
+                if($behavior->getEnabled() &&
+                (property_exists($behavior, $name) || $behavior->isReadProperty($name)))
+                    return $behavior->$name=$value;
+            }
+        }
+        if (method_exists($this, 'get' . $name)) {
+            Z::throwZException(
+                Z::t(
+                    'Property {class}.{property} is read only.',
+                    ['{class}' => get_class($this), '{property}' => $name]
+                )
+            );
+        }
 
+        Z::throwZException(
+            Z::t(
+                'Property "{class}.{property}" is not defined.',
+                array('{class}' => get_class($this), '{property}' => $name)
+            )
+        );
     }
 
     /**
@@ -50,7 +110,7 @@ class ZCore implements ZCoreInterface
      */
     public function isWriteProperty($property)
     {
-        if (method_exists($this,'set'.$property)) {
+        if (method_exists($this, 'set' . $property)) {
             return false;
         } else {
             if (property_exists($this, $property)) {
@@ -78,101 +138,6 @@ class ZCore implements ZCoreInterface
         }
         return false;
     }
-    /**
-     * attach a event
-     * @param  String $eventName event name
-     * @param  ZEvent $event     ZEvent instance or sub ZEvent instance
-     * @return void
-     */
-    public function attach($eventName, ZEvent $event)
-    {
-        $this->_events[$eventName] = $event;
-        $event->eventName = $eventName;
-    }
-    /**
-     * detach a event
-     * @param  String $eventName name, you want to detach
-     * @return void
-     */
-    public function detach($eventName)
-    {
-        if (isset($this->_events[$eventName])) {
-            unset($this->_events[$eventName]);
-        }
-    }
-    /**
-     * attach event handler 
-     * @param  String $name    eventName
-     * @param  mixed  $handler a callable method
-     * @return void
-     */
-    public function attachEventHandler($name, $handler)
-    {
-        $this->getEventByName($name)->addHandler($handler);
-    }
-    /**
-     * attach a event and handler 
-     * @param  String $eventName   event name
-     * @param  mixed  $eventObject ZEvent instance or sub ZEvent instance
-     * @param  mixed  $handler     a callable method
-     * @return void
-     */
-    public function attachEvent($eventName, $eventObject, $handler)
-    {
-        $this->attach($eventName, $eventObject);
-        $this->attachEventHandler($eventName, $handler);
-    }
-
-    /**
-     * get event by event name
-     * @param  String $name event name
-     * @return ZEvent 
-     * @throw  ZException event not found 
-     */
-    public function getEventByName($name)
-    {
-        if (isset($this->_events[$name])) {
-            return $this->_events[$name];
-        }
-        throw new ZException('event not found');
-    }
-
-    /**
-     * run event 
-     * @return void
-     * @throw ZException 
-     */
-    public function runEvent($name, $event)
-    {
-        $name = strtolower($name);
-        if (isset($this->_events[$name])) {
-            
-        } else {
-            throw new ZException('event ' . $name . ' is not defined');
-        }        
-    }
-    /**
-     * notify application run event
-     * @return void
-     */
-    public function notify()
-    {
-        foreach ($this->_events as $event) {
-            if ($event->hasHandler()) {
-                call_user_func($event->getHandler(), $event);
-            }
-        }
-    }
-    /**
-     * whether has eventHanlder
-     * @param  String  $name eventName
-     * @return boolean  
-     * true has
-     * false no
-     */
-    public function hasEvnetHanlder($name)
-    {
-        $name=strtolower($name);
-        return isset($this->_events[$name]) && $this->_events[$name]->hasHandler();
-    }
+    
+    
 }

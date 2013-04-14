@@ -47,6 +47,7 @@ abstract class ZApplication extends ZModule
         
         if ($config['basePath']) {
             $this->setBasePath($config['basePath']);
+            unset($config['basePath']);
         } else {
             $this->setBasePath('Protected');
         }
@@ -67,10 +68,7 @@ abstract class ZApplication extends ZModule
      */
     public function run()
     {
-        throw new \Z\Exceptions\ZHttpException("Error Processing Request", 1);
-        
-        //Z::throwZException('haha');
-var_dump(asdf);
+        var_dump($this->ad= 'adfs');
         $this->notify();
     }
 
@@ -121,7 +119,9 @@ var_dump(asdf);
     {
         restore_error_handler();
         restore_exception_handler();
-        ShowSystemPage::showErrorandException($exception);
+        if (Z_DEBUG) {
+            ShowSystemPage::showErrorandException($exception);
+        }
     }
 
     /**

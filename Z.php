@@ -23,7 +23,7 @@ defined('Z_BEGIN_TIME') or define('Z_BEGIN_TIME', microtime(true));
 /**
  * set app debug 
  */
-defined('Z_DEBUG') or define('Z_DEBUG', false);
+defined('Z_DEBUG') or define('Z_DEBUG', true);
 /**
  * set framework path
  */
