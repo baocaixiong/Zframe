@@ -12,7 +12,7 @@
  * @version   v0.1
  * @link      http://www.baocaixiong.com
  */
-namespace Z\Core;
+
 /**
  * ZApplication Interface
  *
@@ -20,7 +20,7 @@ namespace Z\Core;
  * @package system/core
  * @since   v0.1
  */
-interface ZApplicationInterface
+interface ZApplicationComponentInterface
 {
     /**
      * interface method init this application
@@ -47,9 +47,9 @@ interface ZCoreInterface
      * add a event 
      * @return [type] [description]
      */
-    public function attach($eventName, ZEvent $event);
-    public function detach($eventName);
-    public function notify();
+    public function attachEventHandler($eventName, $event);
+    public function detachEventHandler($eventName);
+    public function raiseEvent($name, $event);
 }
 
 interface ZEventInterface
@@ -66,4 +66,29 @@ interface ZConfigureRegisterInterface
     public function setConfig($option, $optionValue = null);
 
     public function getConfig($optionName = null, $default = null);
+}
+interface ZBehaviorInterface
+{
+    /**
+     * 增加一个行为对象组建
+     * @param \Z\Core\ZCore $component 一个可以增加的组建
+     */
+    public function attach($component);
+    /**
+     * 删除一个行为组建
+     * @param \Z\Core\ZCore $component  $component 一个可以删除的组建
+     */
+    public function detach($component);
+    /**
+     * @return boolean 行为是否可用
+     */
+    public function getEnabled();
+    /**
+     * @param boolean $value 设置行为可用
+     */
+    public function setEnabled($value);
+}
+interface ZRouterInterface
+{
+
 }

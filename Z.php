@@ -23,7 +23,7 @@ defined('Z_BEGIN_TIME') or define('Z_BEGIN_TIME', microtime(true));
 /**
  * set app debug 
  */
-defined('Z_DEBUG') or define('Z_DEBUG', false);
+defined('Z_DEBUG') or define('Z_DEBUG', true);
 /**
  * set framework path
  */
@@ -152,7 +152,7 @@ class Z
             $message = $languages[$message];
         }
         self::$_language[$message] = $message;
-        return $params!==array() ? strtr($message,$params) : $message;
+        return $params!==array() ? strtr($message, $params) : $message;
     }
 
     /**
@@ -183,6 +183,49 @@ class Z
     }
 
     /**
+     * 创建一个组建对象
+     * @return \Z\Core\ZCore 刚刚创建的组件对象
+     */
+    public static function createComponent($config)
+    {
+        if (is_string($config)) {
+            $type = $config;
+            $config = array();
+        } elseif (isset($config['class'])) {
+            $type = $config['class'];
+            unset($config['class']);
+        } else {
+            Z::throwZException(
+                Z::t('Object configuration must be an array containing a "class" element')
+            );
+        }
+        if (!class_exists($type, false)) {
+            $type = Z::import($type, true);
+        }
+
+        if (($num = func_num_args()) > 1) {
+            $args=func_get_args();
+            if (2 === $n) {
+                $object = new $type($args[1]);
+            } elseif(3 === $n) {
+                $object = new $type($args[1], $args[2]);
+            } elseif(4 === $n) {
+                $object = new $type($args[1], $args[2], $args[3]);
+            } else {
+                unset($args[0]);
+                $class = new ReflectionClass($type);
+                $object = call_user_func_array(array($class, 'newInstance'), $args);
+            }
+        } else {
+            $object = new $type();
+        }
+        foreach ($config as $key => $value) {
+            $object->$key = $value;
+        }
+        return $object;
+    }
+
+    /**
      * get Path of namespace
      * @return String 转换好的路径
      */
@@ -205,9 +248,9 @@ class Z
     }
 
     /**
-     * import class file 
+     * import class file (根据类的名字空间)
      * @param String $className 要载入的类名字空间
-     * @return boolean 载入成功 true | 否则 false 
+     * @return String className
      */
     public static function import($alias, $forceInclude = false)
     {
@@ -215,13 +258,15 @@ class Z
             return self::$_imports[$alias];
         } elseif (($pos = strpos($alias, NS_SEPARATOR)) !== false) {
             if (!!$path = self::getPathOfNamespace($alias)) {
-                include self::getPathOfNamespace($alias) . PHP_EXT;
-                return self::$_imports[$alias] = true;
+                if (is_file($path . PHP_EXT)) {
+                    include self::getPathOfNamespace($alias) . PHP_EXT;
+                    return self::$_imports[$alias] = $alias;
+                }
             } else {
                 self::throwZException(Z::t('import alias {alias} error', ['{alias}' => $alias]));
             }
         }
-        return false;
+        self::throwZException(Z::t('import alias {alias} error', ['{alias}' => $alias]));
     }
 
     /**

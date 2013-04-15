@@ -16,5 +16,8 @@
 return array(
     "The application has been created" => '应用程序已经被创建',
     'import alias {alias} error' => '按名字空间名称导入{alias}失败',
-    'Error BasePath {basePath}' => '错误的basePath设置'
+    'Error BasePath {basePath}' => '错误的basePath设置',
+    'Property "{class}.{property}" is not defined.' => '类 {class} 中，属性 {property} 不存在',
+    'Property {class}.{property} is read only.' => '类 {class} 中，属性 {property} 是只读的',
+    'Event "{class}.{event}" is not defined.' => '在类 {class} 中的事件 {event} 不存在',
 );

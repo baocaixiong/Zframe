@@ -14,14 +14,15 @@
  */
 namespace Z\Core;
 
-class ZEvent implements ZEventInterface
+class ZEvent implements \ZEventInterface
 {
     /**
      * event handler 
      * @var mixed instance of ZEvent and sub ZEvent
      */
-    private $_handler = null;
+    private $_handlers = null;
 
+    public $handled = false;
     /**
      * event name
      * @var String
@@ -31,7 +32,8 @@ class ZEvent implements ZEventInterface
     public function addHandler($handler)
     {
         if (is_callable($handler)) {
-            $this->_handler = $handler;
+            $this->_handlers[] = $handler;
+            $this->handled = true;
         } else {
             throw new ZException('this handler ' . $handler . ' is not callable');
         }
@@ -43,7 +45,7 @@ class ZEvent implements ZEventInterface
      */
     public function hasHandler()
     {
-        if (is_null($this->_handler)) {
+        if (empty($this->_handlers)) {
             return false;
         }
         return true;
@@ -52,8 +54,9 @@ class ZEvent implements ZEventInterface
      * get handler 
      * @return mixed
      */
-    public function getHandler()
+    public function getHandlers()
     {
-        return $this->_handler;
+        return $this->_handlers;
     }
+
 }

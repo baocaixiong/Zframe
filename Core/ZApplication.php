@@ -47,6 +47,7 @@ abstract class ZApplication extends ZModule
         
         if ($config['basePath']) {
             $this->setBasePath($config['basePath']);
+            unset($config['basePath']);
         } else {
             $this->setBasePath('Protected');
         }
@@ -54,10 +55,10 @@ abstract class ZApplication extends ZModule
         Z::setPathOfNamespace('Z', Z_PATH);
         $this->preinit();
         $this->initSystemHandlers();
-        //$this->registerCoreComponents(); //注册系统核心组件
+        $this->registerCoreComponents(); //注册系统核心组件
+        $this->attachBehaviors($this->behaviors);
         
         $this->setConfig($config);
-
     }
 
     /**
@@ -67,11 +68,49 @@ abstract class ZApplication extends ZModule
      */
     public function run()
     {
-        throw new \Z\Exceptions\ZHttpException("Error Processing Request", 1);
+        if($this->hasEventHandler('onBeginRequest')) {
+            $this->onBeginRequest(new ZEvent($this));
+        }
+        register_shutdown_function(array($this, 'end'), 0, false);
+        $this->processRequest();
         
-        //Z::throwZException('haha');
-var_dump(asdf);
-        $this->notify();
+        if($this->hasEventHandler('onEndRequest')) {
+            $this->onEndRequest(new ZEvent($this));
+        }
+    }
+
+    /**
+     * 程序启动时的事件
+     * @param \Z\Core\ZEvent $event 事件对象
+     * @return void
+     */
+    public function onBeginRequest($event)
+    {
+        $this->raiseEvent('onBeginRequest', $event);
+    }
+
+    /**
+     * 程序结束时的事件
+     * @param \Z\Core\ZEvent $event 事件对象
+     * @return void
+     */
+    public function onEndRequest($event)
+    {
+        $this->raiseEvent('onEndRequest', $event);
+    }
+
+    /**
+     * 终结整个程序
+     * @param  integer $status [description]
+     * @param  boolean $exit   [description]
+     * @return [type]          [description]
+     */
+    public function end($status=0, $exit=true)
+    {
+        if($this->hasEventHandler('onEndRequest'))
+            $this->onEndRequest(new CEvent($this));
+        if($exit)
+            exit($status);
     }
 
     /**
@@ -121,7 +160,9 @@ var_dump(asdf);
     {
         restore_error_handler();
         restore_exception_handler();
-        ShowSystemPage::showErrorandException($exception);
+        if (Z_DEBUG) {
+            ShowSystemPage::showErrorandException($exception);
+        }
     }
 
     /**
@@ -150,9 +191,7 @@ var_dump(asdf);
         $prefix = isset($arrPrefix[$errno]) ? $arrPrefix[$errno] : 'ERROR';
         throw new \ErrorException(
             $prefix . ' : ' . $errstr, 0, $errno, $errfile, $errline);
-        
     }
-
     
     /**
      * prepare initialize
@@ -166,5 +205,5 @@ var_dump(asdf);
     /**
      * abstract method parse request
      */
-    abstract public function parseRequest();
+    abstract public function processRequest();
 }
