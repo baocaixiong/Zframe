@@ -106,7 +106,7 @@ class ZList extends ZCore implements \IteratorAggregate,\ArrayAccess,\Countable
         elseif($index>=0 && $index<$this->_c) // in case the value is null
             return $this->_d[$index];
         else
-            throw new CException(Yii::t('yii','List index "{index}" is out of bound.',
+            throw new ZException(Yii::t('yii','List index "{index}" is out of bound.',
                 array('{index}'=>$index)));
     }
 
@@ -145,7 +145,7 @@ class ZList extends ZCore implements \IteratorAggregate,\ArrayAccess,\Countable
                     array('{index}'=>$index)));
         }
         else
-            throw new CException(Yii::t('yii','The list is read only.'));
+            throw new ZException(Yii::t('yii','The list is read only.'));
     }
 
     /**

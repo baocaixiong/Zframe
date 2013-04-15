@@ -16,7 +16,7 @@ namespace Z\Core;
 
 use \Z\Z;
 
-class ZBehavior extends Zcore implements ZBehaviorInterface
+class ZBehavior extends Zcore implements \ZBehaviorInterface
 {
 	/**
 	 * 是否可用

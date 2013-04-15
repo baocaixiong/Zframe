@@ -17,7 +17,7 @@ namespace Z\Core;
 use \Z\Z,
     \Z\Helpers\ZList;
 
-class ZCore implements ZCoreInterface
+class ZCore implements \ZCoreInterface
 {
     /**
      * list of events

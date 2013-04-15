@@ -14,7 +14,7 @@
  */
 namespace Z\Core;
 
-class ZEvent implements ZEventInterface
+class ZEvent implements \ZEventInterface
 {
     /**
      * event handler 

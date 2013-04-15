@@ -56,9 +56,9 @@ abstract class ZApplication extends ZModule
         $this->preinit();
         $this->initSystemHandlers();
         $this->registerCoreComponents(); //注册系统核心组件
+        $this->attachBehaviors($this->behaviors);
         
         $this->setConfig($config);
-
     }
 
     /**
@@ -68,24 +68,49 @@ abstract class ZApplication extends ZModule
      */
     public function run()
     {
+        if($this->hasEventHandler('onBeginRequest')) {
+            $this->onBeginRequest(new ZEvent($this));
+        }
+        register_shutdown_function(array($this, 'end'), 0, false);
+        $this->processRequest();
         
-        $this->onClick = array($this, 'hah');
-        $this->onClick = array($this, 'hah1');
-        if($this->hasEventHandler('onClick'))
-            $this->onClick(new ZEvent($this));
+        if($this->hasEventHandler('onEndRequest')) {
+            $this->onEndRequest(new ZEvent($this));
+        }
     }
 
-    public function hah()
+    /**
+     * 程序启动时的事件
+     * @param \Z\Core\ZEvent $event 事件对象
+     * @return void
+     */
+    public function onBeginRequest($event)
     {
-        echo '你知道吗';
+        $this->raiseEvent('onBeginRequest', $event);
     }
-    public function hah1()
+
+    /**
+     * 程序结束时的事件
+     * @param \Z\Core\ZEvent $event 事件对象
+     * @return void
+     */
+    public function onEndRequest($event)
     {
-        echo '你知道吗1';
+        $this->raiseEvent('onEndRequest', $event);
     }
-    public function onClick($event)
+
+    /**
+     * 终结整个程序
+     * @param  integer $status [description]
+     * @param  boolean $exit   [description]
+     * @return [type]          [description]
+     */
+    public function end($status=0, $exit=true)
     {
-        $this->raiseEvent('onClick',$event);  
+        if($this->hasEventHandler('onEndRequest'))
+            $this->onEndRequest(new CEvent($this));
+        if($exit)
+            exit($status);
     }
 
     /**
@@ -166,9 +191,7 @@ abstract class ZApplication extends ZModule
         $prefix = isset($arrPrefix[$errno]) ? $arrPrefix[$errno] : 'ERROR';
         throw new \ErrorException(
             $prefix . ' : ' . $errstr, 0, $errno, $errfile, $errline);
-        
     }
-
     
     /**
      * prepare initialize
@@ -182,5 +205,5 @@ abstract class ZApplication extends ZModule
     /**
      * abstract method parse request
      */
-    abstract public function parseRequest();
+    abstract public function processRequest();
 }

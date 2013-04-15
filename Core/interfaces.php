@@ -12,7 +12,7 @@
  * @version   v0.1
  * @link      http://www.baocaixiong.com
  */
-namespace Z\Core;
+
 /**
  * ZApplication Interface
  *
@@ -20,7 +20,7 @@ namespace Z\Core;
  * @package system/core
  * @since   v0.1
  */
-interface ZApplicationInterface
+interface ZApplicationComponentInterface
 {
     /**
      * interface method init this application
@@ -87,4 +87,8 @@ interface ZBehaviorInterface
      * @param boolean $value 设置行为可用
      */
     public function setEnabled($value);
+}
+interface ZRouterInterface
+{
+
 }

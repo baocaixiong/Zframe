@@ -193,7 +193,7 @@ class Z
             $config = array();
         } elseif (isset($config['class'])) {
             $type = $config['class'];
-            unsset($config['class']);
+            unset($config['class']);
         } else {
             Z::throwZException(
                 Z::t('Object configuration must be an array containing a "class" element')

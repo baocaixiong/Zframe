@@ -18,28 +18,38 @@ use Z\Core\ZApplication;
 
 class ZWebApplication extends ZApplication
 {
-	public function  __construct($config)
-	{
-		parent::__construct($config);
-	}
+    public function  __construct($config)
+    {
+        parent::__construct($config);
+    }
 
-	
-	public function parseRequest()
-	{
+    
+    public function processRequest()
+    {
+        var_dump($this->router);
+    }
 
-	}
-
-	/**
-	 * 注册系统核心组建
-	 * @return void
-	 */
-	protected function registerCoreComponents()
-	{
-		$components = array(
-			'router' => array(
-				'class' => 'Z\Router\ZRouter',
-			),
-		);
-		//var_dump($components);
-	}
+    /**
+     * 获得路由组件
+     * @return \Z\Router\Router  [description]
+     */
+    public function getRouter()
+    {
+        return $this->getComponent('router');
+    }
+    
+    /**
+     * 注册系统核心组建
+     * @return void
+     */
+    protected function registerCoreComponents()
+    {
+        $components = array(
+            'router' => array(
+                'class' => 'Z\Router\ZWebRouter',
+            ),
+        );
+        
+        $this->setComponents($components);
+    }
 }
