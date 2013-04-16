@@ -74,7 +74,7 @@ class ZCore implements \ZCoreInterface
     {
         $setter = 'set' . $name;
         if (method_exists($this, $setter)) {
-            return $this->$setter($name, $value);
+            return $this->$setter($value);
         } elseif (strncasecmp($name, 'on', 2)===0 && method_exists($this, $name)) {
             $name=strtolower($name);
             if(!isset($this->_events[$name]))

@@ -31,6 +31,38 @@ class ZModule extends ZCore
 
     }
     /**
+     * 魔术方法__get 
+     * 用来给组建获取配置项
+     * @return [type] [description]
+     */
+    public function __get($name)
+    {
+        if ($this->hasComponent($name)) {
+            return $this->getComponent($name);
+        } else {
+            parent::__get($name);
+        }
+    }
+
+    /**
+     * 魔术方法__isset
+     * @param  [type]  $name  [description]
+     * @param  [type]  $value [description]
+     * @return boolean        [description]
+     */
+    public function __isset($name)
+    {
+        if($this->hasComponent($name)) {
+            return $this->getComponent($name)!==null;
+        } else {
+            return parent::__isset($name);
+        }
+    }
+    public function hasComponent($id)
+    {
+        return isset($this->_components[$id]) || isset($this->_componentConfig[$id]);
+    }
+    /**
      * set configure
      * @param Array $config config array
      */
@@ -58,8 +90,8 @@ class ZModule extends ZCore
             return null;
         } elseif ($component instanceof ZApplicationComponentInterface) {
             $this->_components[$id]=$component;
-            if (!$component->getIsInitialized()) {
-                $component->init();
+            if (!$component->getIsInited()) {
+                $component->initialize();
             }
             return null;
         } elseif (isset($this->_components[$id])) {
@@ -110,10 +142,10 @@ class ZModule extends ZCore
         } elseif (isset($this->_componentConfig[$id]) && $createIfNull) {
             $config = $this->_componentConfig[$id];
             if (!isset($config['enabled']) || $config['enabled']) {
-                //Yii::trace("Loading \"$id\" application component",'system.CModule');
+                //Z::trace("Loading \"$id\" application component",'system.CModule');
                 unset($config['enabled']);
                 $component=Z::createComponent($config);
-                $component->init();
+                $component->initialize();
                 return $this->_components[$id]=$component;
             }
         }

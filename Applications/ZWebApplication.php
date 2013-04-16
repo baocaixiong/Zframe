@@ -45,9 +45,10 @@ class ZWebApplication extends ZApplication
     protected function registerCoreComponents()
     {
         $components = array(
-            'router' => array(
-                'class' => 'Z\Router\ZWebRouter',
-            ),
+            // 'router' => array(
+            //     'class' => 'Z\Router\ZWebRouter',
+            //     'catchAllRequest' => false,
+            // ),
         );
         
         $this->setComponents($components);

@@ -90,5 +90,7 @@ interface ZBehaviorInterface
 }
 interface ZRouterInterface
 {
+    public function addRule();
 
+    public function matchRule();
 }
