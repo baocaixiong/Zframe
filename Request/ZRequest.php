@@ -289,6 +289,19 @@ class ZRequest extends ZAppComponent implements \ZRequestInterfase
         return false;
     }
 
+    public function getServerName()
+    {
+        return $_SERVER['SERVER_NAME'];
+    }
+    public function getServerPort()
+    {
+        return $_SERVER['SERVER_PORT'];
+    }
+    
+    public function getUrlReferrer()
+    {
+        return isset($_SERVER['HTTP_REFERER'])?$_SERVER['HTTP_REFERER']:null;
+    }
     /**
      * 获取客户机器的真实IP
      * 
