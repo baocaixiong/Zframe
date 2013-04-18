@@ -21,31 +21,14 @@ class ZWebRouter extends ZRouter
 
     public $catchAllRequest;
     /**
-     * 初始化路由
-     * @return void
-     */
-    public function initialize()
-    {
-        $this->_isInited = true;
-        $this->processRules();
-    }
-
-    /**
      * 解析路由
      * @return [type] [description]
      */
     public function processRules()
     {
+        
+    }
 
-    }
-    /**
-     * 是否已经初始化
-     * @return boolean 已经初始化true|false
-     */
-    public function getIsInited()
-    {
-        return $this->_isInited;
-    }
     /**
      * 增加路由规则
      * 这个方法来自接口 ZRouterInterface

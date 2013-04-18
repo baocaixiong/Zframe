@@ -77,8 +77,9 @@ class ZCore implements \ZCoreInterface
             return $this->$setter($value);
         } elseif (strncasecmp($name, 'on', 2)===0 && method_exists($this, $name)) {
             $name=strtolower($name);
-            if(!isset($this->_events[$name]))
+            if(!isset($this->_events[$name])) {
                 $this->_events[$name]=new ZList;
+            }
             return $this->_events[$name]->add($value);
         } elseif (is_array($this->_behavior)) {
             foreach ($this->_behavior as $behavior) {
@@ -170,8 +171,9 @@ class ZCore implements \ZCoreInterface
     {
         if ($this->hasEvent($name)) {
             $name=strtolower($name);
-            if(!isset($this->_events[$name]))
+            if(!isset($this->_events[$name])) {
                 $this->_events[$name]=new ZList;
+            }
             return $this->_events[$name];
         } else {
             Z::throwZException(

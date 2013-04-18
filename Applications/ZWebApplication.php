@@ -26,9 +26,10 @@ class ZWebApplication extends ZApplication
     
     public function processRequest()
     {
-        var_dump($this->router);
-    }
 
+        
+        var_dump($this->getRequest()->isget());
+    }
     /**
      * 获得路由组件
      * @return \Z\Router\Router  [description]
@@ -38,6 +39,10 @@ class ZWebApplication extends ZApplication
         return $this->getComponent('router');
     }
     
+    public function getRequest()
+    {
+        return $this->getComponent('request');
+    }
     /**
      * 注册系统核心组建
      * @return void
@@ -45,10 +50,14 @@ class ZWebApplication extends ZApplication
     protected function registerCoreComponents()
     {
         $components = array(
-            // 'router' => array(
-            //     'class' => 'Z\Router\ZWebRouter',
-            //     'catchAllRequest' => false,
-            // ),
+            'router' => array(
+                'class' => 'Z\Router\ZWebRouter',
+                'catchAllRequest' => false,
+            ),
+            'request' => array(
+                'class' => 'Z\Request\ZRequest',
+                'enableXss' => true,
+            ),
         );
         
         $this->setComponents($components);

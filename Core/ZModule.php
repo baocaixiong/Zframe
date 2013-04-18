@@ -83,7 +83,7 @@ class ZModule extends ZCore
      * 组建对象或者是组建的配置数组  
      * @return null
      */
-    public function setComponent($id, $component)
+    public function setComponent($id, $component, $merge = true)
     {
         if (null === $component) {
             unset($this->_component[$id]);

@@ -12,7 +12,7 @@
  * @version   GIT:<git_id>
  * @link      http://www.baocaixiong.com
  */
-
+namespace Z\Helpers;
 
 class ZMap 
 {

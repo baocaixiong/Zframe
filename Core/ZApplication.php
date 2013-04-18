@@ -68,13 +68,14 @@ abstract class ZApplication extends ZModule
      */
     public function run()
     {
-        if($this->hasEventHandler('onBeginRequest')) {
+        $this->getRequest();
+        if ($this->hasEventHandler('onBeginRequest')) {
             $this->onBeginRequest(new ZEvent($this));
         }
         register_shutdown_function(array($this, 'end'), 0, false);
         $this->processRequest();
         
-        if($this->hasEventHandler('onEndRequest')) {
+        if ($this->hasEventHandler('onEndRequest')) {
             $this->onEndRequest(new ZEvent($this));
         }
     }
@@ -190,7 +191,8 @@ abstract class ZApplication extends ZModule
         );
         $prefix = isset($arrPrefix[$errno]) ? $arrPrefix[$errno] : 'ERROR';
         throw new \ErrorException(
-            $prefix . ' : ' . $errstr, 0, $errno, $errfile, $errline);
+            $prefix . ' : ' . $errstr, 0, $errno, $errfile, $errline
+        );
     }
     
     /**

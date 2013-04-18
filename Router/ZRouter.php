@@ -15,23 +15,10 @@
 namespace Z\Router;
 
 use \Z\Z,
-    \Z\Core\ZCore;
+    \Z\Core\ZAppComponent;
 
-abstract class ZRouter extends ZCore implements \ZRouterInterface,\ZApplicationComponentInterface
+abstract class ZRouter extends ZAppComponent implements \ZRouterInterface
 {
-    protected $_isInited = false;
-    /**
-     * 初始化路由
-     * 这个方法来自接口 ZRouterInterface
-     * @return void
-     */
-    abstract public function initialize ();
-
-    /**
-     * 是否已经初始化了
-     * @return void
-     */
-    abstract public function getIsInited();
     /**
      * 增加路由规则
      * 这个方法来自接口 ZRouterInterface
@@ -44,6 +31,5 @@ abstract class ZRouter extends ZCore implements \ZRouterInterface,\ZApplicationC
      * @return void
      */
     abstract public function matchRule ();
-
 
 }

@@ -94,3 +94,9 @@ interface ZRouterInterface
 
     public function matchRule();
 }
+interface ZRequestInterfase
+{
+    public function getMethod();
+    public function getRawBody();
+    public function getContentType();
+}
