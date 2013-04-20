@@ -19,7 +19,7 @@ use Z\Core\ZCore,
 
 class ZList extends ZCore implements \IteratorAggregate,\ArrayAccess,\Countable
 {
-    //IteratorAggregate 创建外部迭代器的接口
+    //IteratorAggregate 创建外部迭代器的接口 => getIterator() 返回一个外部的迭代器 
     //ArrayAccess       提供像访问数组一样访问对象的能力的接口。
     private $_readOnly = false;
 
@@ -97,8 +97,8 @@ class ZList extends ZCore implements \IteratorAggregate,\ArrayAccess,\Countable
         elseif($index>=0 && $index<$this->_count) // in case the value is null
             return $this->_data[$index];
         else
-            throw new ZException(Yii::t('yii','List index "{index}" is out of bound.',
-                array('{index}'=>$index)));
+            throw new ZException(Z::t('List index "{index}" is out of bound.',
+                array('{index}' => $index)));
     }
 
     /**
@@ -132,11 +132,11 @@ class ZList extends ZCore implements \IteratorAggregate,\ArrayAccess,\Countable
                 $this->_count++;
             }
             else
-                throw new CException(Yii::t('yii','List index "{index}" is out of bound.',
-                    array('{index}'=>$index)));
+                throw new ZException(Z::t('List index "{index}" is out of bound.',
+                    array('{index}' => $index)));
         }
         else
-            throw new ZException(Yii::t('yii','The list is read only.'));
+            throw new ZException(Z::t('The list is read only.'));
     }
 
     /**
@@ -181,11 +181,11 @@ class ZList extends ZCore implements \IteratorAggregate,\ArrayAccess,\Countable
                 }
             }
             else
-                throw new CException(Yii::t('yii','List index "{index}" is out of bound.',
-                    array('{index}'=>$index)));
+                throw new ZException(Z::t('List index "{index}" is out of bound.',
+                    array('{index}' => $index)));
         }
         else
-            throw new CException(Yii::t('yii','The list is read only.'));
+            throw new ZException(Z::t('The list is read only.'));
     }
 
     /**
@@ -244,7 +244,7 @@ class ZList extends ZCore implements \IteratorAggregate,\ArrayAccess,\Countable
                 $this->add($item);
         }
         elseif($data!==null)
-            throw new CException(Yii::t('yii','List data must be an array or an object implementing Traversable.'));
+            throw new ZException(Z::t('List data must be an array or an object implementing Traversable.'));
     }
 
     /**
@@ -263,7 +263,7 @@ class ZList extends ZCore implements \IteratorAggregate,\ArrayAccess,\Countable
                 $this->add($item);
         }
         elseif($data!==null)
-            throw new CException(Yii::t('yii','List data must be an array or an object implementing Traversable.'));
+            throw new ZException(Z::t('List data must be an array or an object implementing Traversable.'));
     }
 
     /**

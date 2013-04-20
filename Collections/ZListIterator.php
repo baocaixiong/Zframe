@@ -5,7 +5,7 @@
  * PHP Version 5.4
  *
  * @category  System
- * @package   Helpers
+ * @package   Collections
  * @author    baocaixiong <baocaixiong@gmail.com>
  * @copyright 2013 baocaixiong.com
  * @license   Copyright (c) 2013 
