@@ -14,7 +14,8 @@
  */
 namespace Z\Core;
 
-use \Z\Z;
+use \Z\Z,
+    \Z\Collections\ZMap;
 
 class ZModule extends ZCore
 {
@@ -112,9 +113,9 @@ class ZModule extends ZCore
             return null;
         }
         if(isset($this->_componentConfig[$id]) && $merge) {
-            $this->_componentConfig[$id]=\Z\Helpers\ZMap::mergeArray($this->_componentConfig[$id],$component);
+            $this->_componentConfig[$id] = ZMap::mergeArray($this->_componentConfig[$id],$component);
         } else {
-            $this->_componentConfig[$id]=$component;
+            $this->_componentConfig[$id] = $component;
         }
     }
 

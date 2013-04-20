@@ -1,82 +1,72 @@
 <?php
 /**
- * Z List class 
+ * Z List class  实现一个数组索引的集合
  *
  * PHP Version 5.4
  *
  * @category  System
- * @package   Helpers
+ * @package   Collections
  * @author    baocaixiong <baocaixiong@gmail.com>
  * @copyright 2013 baocaixiong.com
  * @license   Copyright (c) 2013 
  * @version   GIT: <git_id>
  * @link      http://www.baocaixiong.com
  */
-namespace Z\Helpers;
+namespace Z\Collections;
 
-use \Z\Core\ZCore;
+use Z\Core\ZCore,
+    Z\Exceptions\ZException;
 
-class ZList extends ZCore implements \IteratorAggregate,\ArrayAccess,\Countable 
+class ZList extends ZCore implements \IteratorAggregate,\ArrayAccess,\Countable
 {
     //IteratorAggregate 创建外部迭代器的接口
     //ArrayAccess       提供像访问数组一样访问对象的能力的接口。
-    /**
-     * @var array internal data storage
-     */
-    private $_d=array();
-    /**
-     * @var integer number of items
-     */
-    private $_c=0;
-    /**
-     * @var boolean whether this list is read-only
-     */
-    private $_r=false;
+    private $_readOnly = false;
 
-    /**
-     * Constructor.
-     * Initializes the list with an array or an iterable object.
-     * @param array $data the initial data. Default is null, meaning no initialization.
-     * @param boolean $readOnly whether the list is read-only
-     * @throws CException If data is not null and neither an array nor an iterator.
-     */
-    public function __construct($data = null,$readOnly = false)
+    private $_count = 0;
+
+    private $_data = [];
+
+    public function __construct($data = null, $readOnly = false)
     {
-        if($data!==null)
+        if (!is_null($data)) {
             $this->copyFrom($data);
-        $this->setReadOnly($readOnly);
+        }
+        $this->_readOnly = $readOnly;
     }
 
     /**
-     * @return boolean whether this list is read-only or not. Defaults to false.
+     * 获得集合的可写行
+     * @return Boolean 
      */
     public function getReadOnly()
     {
-        return $this->_r;
+        return $this->_readOnly;
     }
 
     /**
-     * @param boolean $value whether this list is read-only or not
+     * 设置集合的可写行
+     * @param Boolean $value 
+     * @return void
      */
-    protected function setReadOnly($value)
+    public function setReadOnly($value)
     {
-        $this->_r=$value;
+        $this->_readOnly = $value;
     }
 
     /**
-     * Returns an iterator for traversing the items in the list.
-     * This method is required by the interface IteratorAggregate.
-     * @return Iterator an iterator for traversing the items in the list.
+     * 返回一个ZMap的迭代器 
+     * @return \Z\Collections\ZListIterator
      */
     public function getIterator()
     {
-        return new \ArrayIterator($this->_d);
+        return new ZListIterator($this->_data);
     }
 
     /**
-     * Returns the number of items in the list.
-     * This method is required by Countable interface.
-     * @return integer number of items in the list.
+     * 返回集合内数据个数
+     * 继承自Countable interface.
+     * @return Int 
      */
     public function count()
     {
@@ -84,27 +74,28 @@ class ZList extends ZCore implements \IteratorAggregate,\ArrayAccess,\Countable
     }
 
     /**
-     * Returns the number of items in the list.
-     * @return integer the number of items in the list
+     * 返回集合内数据个数
+     * 继承自Countable interface.
+     * @return Int the 
      */
     public function getCount()
     {
-        return $this->_c;
+        return $this->_count;
     }
 
     /**
      * Returns the item at the specified offset.
      * This method is exactly the same as {@link offsetGet}.
-     * @param integer $index the index of the item
+     * @param Int $index the index of the item
      * @return mixed the item at the index
      * @throws CException if the index is out of the range
      */
     public function itemAt($index)
     {
-        if(isset($this->_d[$index]))
-            return $this->_d[$index];
-        elseif($index>=0 && $index<$this->_c) // in case the value is null
-            return $this->_d[$index];
+        if(isset($this->_data[$index]))
+            return $this->_data[$index];
+        elseif($index>=0 && $index<$this->_count) // in case the value is null
+            return $this->_data[$index];
         else
             throw new ZException(Yii::t('yii','List index "{index}" is out of bound.',
                 array('{index}'=>$index)));
@@ -113,32 +104,32 @@ class ZList extends ZCore implements \IteratorAggregate,\ArrayAccess,\Countable
     /**
      * Appends an item at the end of the list.
      * @param mixed $item new item
-     * @return integer the zero-based index at which the item is added
+     * @return Int the zero-based index at which the item is added
      */
     public function add($item)
     {
-        $this->insertAt($this->_c,$item);
-        return $this->_c-1;
+        $this->insertAt($this->_count,$item);
+        return $this->_count-1;
     }
 
     /**
      * Inserts an item at the specified position.
      * Original item at the position and the next items
      * will be moved one step towards the end.
-     * @param integer $index the specified position.
+     * @param Int $index the specified position.
      * @param mixed $item new item
      * @throws CException If the index specified exceeds the bound or the list is read-only
      */
     public function insertAt($index,$item)
     {
-        if(!$this->_r)
+        if(!$this->_readOnly)
         {
-            if($index===$this->_c)
-                $this->_d[$this->_c++]=$item;
-            elseif($index>=0 && $index<$this->_c)
+            if($index===$this->_count)
+                $this->_data[$this->_count++]=$item;
+            elseif($index>=0 && $index<$this->_count)
             {
-                array_splice($this->_d,$index,0,array($item));
-                $this->_c++;
+                array_splice($this->_data,$index,0,array($item));
+                $this->_count++;
             }
             else
                 throw new CException(Yii::t('yii','List index "{index}" is out of bound.',
@@ -153,7 +144,7 @@ class ZList extends ZCore implements \IteratorAggregate,\ArrayAccess,\Countable
      * The list will first search for the item.
      * The first item found will be removed from the list.
      * @param mixed $item the item to be removed.
-     * @return integer the index at which the item is being removed
+     * @return Int the index at which the item is being removed
      * @throws CException If the item does not exist
      */
     public function remove($item)
@@ -169,23 +160,23 @@ class ZList extends ZCore implements \IteratorAggregate,\ArrayAccess,\Countable
 
     /**
      * Removes an item at the specified position.
-     * @param integer $index the index of the item to be removed.
+     * @param Int $index the index of the item to be removed.
      * @return mixed the removed item.
      * @throws CException If the index specified exceeds the bound or the list is read-only
      */
     public function removeAt($index)
     {
-        if(!$this->_r)
+        if(!$this->_readOnly)
         {
-            if($index>=0 && $index<$this->_c)
+            if($index>=0 && $index<$this->_count)
             {
-                $this->_c--;
-                if($index===$this->_c)
-                    return array_pop($this->_d);
+                $this->_count--;
+                if($index===$this->_count)
+                    return array_pop($this->_data);
                 else
                 {
-                    $item=$this->_d[$index];
-                    array_splice($this->_d,$index,1);
+                    $item=$this->_data[$index];
+                    array_splice($this->_data,$index,1);
                     return $item;
                 }
             }
@@ -202,7 +193,7 @@ class ZList extends ZCore implements \IteratorAggregate,\ArrayAccess,\Countable
      */
     public function clear()
     {
-        for($i=$this->_c-1;$i>=0;--$i)
+        for($i=$this->_count-1;$i>=0;--$i)
             $this->removeAt($i);
     }
 
@@ -217,11 +208,11 @@ class ZList extends ZCore implements \IteratorAggregate,\ArrayAccess,\Countable
 
     /**
      * @param mixed $item the item
-     * @return integer the index of the item in the list (0 based), -1 if not found.
+     * @return Int the index of the item in the list (0 based), -1 if not found.
      */
     public function indexOf($item)
     {
-        if(($index=array_search($item,$this->_d,true))!==false)
+        if(($index=array_search($item,$this->_data,true))!==false)
             return $index;
         else
             return -1;
@@ -230,9 +221,9 @@ class ZList extends ZCore implements \IteratorAggregate,\ArrayAccess,\Countable
     /**
      * @return array the list of items in array
      */
-    public function toArray()
+    public function get()
     {
-        return $this->_d;
+        return $this->_data;
     }
 
     /**
@@ -245,7 +236,7 @@ class ZList extends ZCore implements \IteratorAggregate,\ArrayAccess,\Countable
     {
         if(is_array($data) || ($data instanceof Traversable))
         {
-            if($this->_c>0)
+            if($this->_count>0)
                 $this->clear();
             if($data instanceof CList)
                 $data=$data->_d;
@@ -278,18 +269,18 @@ class ZList extends ZCore implements \IteratorAggregate,\ArrayAccess,\Countable
     /**
      * Returns whether there is an item at the specified offset.
      * This method is required by the interface ArrayAccess.
-     * @param integer $offset the offset to check on
+     * @param Int $offset the offset to check on
      * @return boolean
      */
     public function offsetExists($offset)
     {
-        return ($offset>=0 && $offset<$this->_c);
+        return ($offset>=0 && $offset<$this->_count);
     }
 
     /**
      * Returns the item at the specified offset.
      * This method is required by the interface ArrayAccess.
-     * @param integer $offset the offset to retrieve item.
+     * @param Int $offset the offset to retrieve item.
      * @return mixed the item at the offset
      * @throws CException if the offset is invalid
      */
@@ -301,13 +292,13 @@ class ZList extends ZCore implements \IteratorAggregate,\ArrayAccess,\Countable
     /**
      * Sets the item at the specified offset.
      * This method is required by the interface ArrayAccess.
-     * @param integer $offset the offset to set item
+     * @param Int $offset the offset to set item
      * @param mixed $item the item value
      */
     public function offsetSet($offset,$item)
     {
-        if($offset===null || $offset===$this->_c)
-            $this->insertAt($this->_c,$item);
+        if($offset===null || $offset===$this->_count)
+            $this->insertAt($this->_count,$item);
         else
         {
             $this->removeAt($offset);
@@ -318,7 +309,7 @@ class ZList extends ZCore implements \IteratorAggregate,\ArrayAccess,\Countable
     /**
      * Unsets the item at the specified offset.
      * This method is required by the interface ArrayAccess.
-     * @param integer $offset the offset to unset item
+     * @param Int $offset the offset to unset item
      */
     public function offsetUnset($offset)
     {

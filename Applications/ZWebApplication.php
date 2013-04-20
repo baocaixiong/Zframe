@@ -28,7 +28,7 @@ class ZWebApplication extends ZApplication
     {
 
         
-        var_dump($this->getRequest()->isget());
+        $this->getRequest();
     }
     /**
      * 获得路由组件
@@ -55,11 +55,16 @@ class ZWebApplication extends ZApplication
                 'catchAllRequest' => false,
             ),
             'request' => array(
-                'class' => 'Z\Request\ZRequest',
+                'class' => 'Z\Request\ZWebRequest',
                 'enableXss' => true,
             ),
         );
         
         $this->setComponents($components);
+    }
+
+    public function init()
+    {
+        $this->getRequest();
     }
 }

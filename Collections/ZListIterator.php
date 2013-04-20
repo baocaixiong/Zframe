@@ -12,7 +12,7 @@
  * @version   GIT: <git_id>
  * @link      http://www.baocaixiong.com
  */
-namespace Z\Helpers;
+namespace Z\Collections;
 /**
  *
  * 这个会允许ZList来遍历列表中的各个项目，返回一个新的迭代器.

@@ -15,7 +15,7 @@
 namespace Z\Core;
 
 use \Z\Z,
-    \Z\Helpers\ZList;
+    \Z\Collections\ZList;
 
 class ZCore implements \ZCoreInterface
 {
@@ -77,7 +77,7 @@ class ZCore implements \ZCoreInterface
             return $this->$setter($value);
         } elseif (strncasecmp($name, 'on', 2)===0 && method_exists($this, $name)) {
             $name=strtolower($name);
-            if(!isset($this->_events[$name])) {
+            if (!isset($this->_events[$name])) {
                 $this->_events[$name]=new ZList;
             }
             return $this->_events[$name]->add($value);
@@ -171,7 +171,7 @@ class ZCore implements \ZCoreInterface
     {
         if ($this->hasEvent($name)) {
             $name=strtolower($name);
-            if(!isset($this->_events[$name])) {
+            if (!isset($this->_events[$name])) {
                 $this->_events[$name]=new ZList;
             }
             return $this->_events[$name];

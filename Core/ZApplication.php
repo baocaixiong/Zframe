@@ -59,6 +59,8 @@ abstract class ZApplication extends ZModule
         $this->attachBehaviors($this->behaviors);
         
         $this->setConfig($config);
+
+        $this->init();
     }
 
     /**
@@ -68,7 +70,6 @@ abstract class ZApplication extends ZModule
      */
     public function run()
     {
-        $this->getRequest();
         if ($this->hasEventHandler('onBeginRequest')) {
             $this->onBeginRequest(new ZEvent($this));
         }

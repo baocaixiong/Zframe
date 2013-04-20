@@ -110,11 +110,11 @@ class Z
         } elseif (($pos = strpos($className, NS_SEPARATOR)) !== FALSE) {
             $rootAliasName = substr($className, 0, $pos);
             $rootaliasPath = self::getPathOfNamespace($rootAliasName);
+            
             require (
                 $rootaliasPath . DIRECTORY_SEPARATOR . str_replace(
                     NS_SEPARATOR, DIRECTORY_SEPARATOR, substr($className, $pos + 1)
                 ) . PHP_EXT);
-
         }
     }
     /**

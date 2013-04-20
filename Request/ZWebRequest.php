@@ -44,16 +44,16 @@ class ZWebRequest extends ZAppComponent implements \ZRequestInterfase
     {
         if (function_exists('get_magic_quotes_gpc') && get_magic_quotes_gpc()) {
             if (isset($_GET)) {
-                $this->_get = $_GET = $this->stripSlashes($_GET);
+                $this->_get = $this->stripSlashes($_GET);
             } 
             if (isset($_POST)) {
-                $this->_post = $_POST = $this->stripSlashes($_POST);
+                $this->_post = $this->stripSlashes($_POST);
             }
             if (isset($_REQUEST)) {
-                $this->_request = $_REQUEST = $this->stripSlashes($_REQUEST);
+                $this->_request = $this->stripSlashes($_REQUEST);
             }
             if (isset($_COOKIE)) {
-                $_cookie = $_COOKIE = $this->stripSlashes($_COOKIE);
+                $_cookie = $this->stripSlashes($_COOKIE);
             }
         } else {
             $this->_get = $_GET;
@@ -93,6 +93,15 @@ class ZWebRequest extends ZAppComponent implements \ZRequestInterfase
     public function getGet()
     {
         return new RequestData($this->_get);
+    }
+
+    /**
+     * 获取COOKIE
+     * @return \Z\Request\RequestData
+     */
+    public function getCookies()
+    {
+        return new RequestData($this->_cookie);
     }
 
     /**
@@ -231,21 +240,24 @@ class ZWebRequest extends ZAppComponent implements \ZRequestInterfase
      * check get request 
      * @return boolean 
      */
-    public function isGet(){
+    public function isGet()
+    {
         return $this->getMethod() === 'GET';
     }
     /**
      * check put request
      * @return boolean 
      */
-    public function isPut(){
+    public function isPut()
+    {
         return $this->getMethod() === 'PUT';
     }
     /**
      * check delete request 
      * @return boolean 
      */
-    public function isDelete(){
+    public function isDelete()
+    {
         return $this->getMethod() === 'DELETE';
     }
 
@@ -253,7 +265,8 @@ class ZWebRequest extends ZAppComponent implements \ZRequestInterfase
      * check spider 
      * @return boolean 
      */
-    public function isSpider() {
+    public function isSpider()
+    {
         $agent   = strtolower($_SERVER['HTTP_USER_AGENT']);
         $spiders = array(
             '/baiduspider/',
@@ -281,8 +294,8 @@ class ZWebRequest extends ZAppComponent implements \ZRequestInterfase
             '/bot@bot.bot/i',
             '/seznambot/i'
         );
-        foreach($spiders as $spider) {
-            if(preg_match($spider, $agent)) {
+        foreach ($spiders as $spider) {
+            if (preg_match($spider, $agent)) {
                 return $spider;
             }
         }
@@ -338,7 +351,11 @@ class ZWebRequest extends ZAppComponent implements \ZRequestInterfase
      */
     public function getRawBody()
     {
-        return file_get_contents('php://input');
+        static $rawBody;
+        if ($rawBody===null) {
+            $rawBody=file_get_contents('php://input');
+        }
+        return $rawBody;
     }
 
     /**
