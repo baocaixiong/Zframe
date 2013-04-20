@@ -93,7 +93,7 @@ class ZWebRequest extends ZAppComponent implements \ZRequestInterfase
      */
     public function getGet()
     {
-        return new RequestData($this->_get);
+        return new RequestData($_GET);
     }
 
     /**

@@ -36,7 +36,7 @@ class RequestData extends \ArrayObject
     }
 
     /**
-     * 不做修改requset data
+     * not modify request data
      * @return Array
      */
     public function getData()

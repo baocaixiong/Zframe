@@ -18,8 +18,26 @@ use \Z\Z;
 
 class ZWebRouter extends ZRouter
 {
+    const GET_FORMAT = 'get';
+    const PATH_FORMAT = 'path';
 
-    public $catchAllRequest;
+    public $rules = [];
+    public $urlSuffix = '';
+    public $showScriptName = true;
+    public $routeVar = 'r';
+
+    private $_urlFormat = self::GET_FORMAT;
+
+    //private $_baseUrl;
+    /**
+     * 处理request 获得url
+     * @param  \ZRequestInterfase $request ZHttpRequest
+     * @return String
+     */
+    public function parseUrl(\ZRequestInterfase $request)
+    {
+
+    }
     /**
      * 解析路由
      * @return [type] [description]
@@ -45,6 +63,6 @@ class ZWebRouter extends ZRouter
      */
     public function matchRule ()
     {
-
+        
     }
 }

@@ -32,4 +32,6 @@ abstract class ZRouter extends ZAppComponent implements \ZRouterInterface
      */
     abstract public function matchRule ();
 
+    abstract public function parseUrl(\ZRequestInterfase $request);
+
 }

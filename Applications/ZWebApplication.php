@@ -18,17 +18,31 @@ use Z\Core\ZApplication;
 
 class ZWebApplication extends ZApplication
 {
-    public function  __construct($config)
-    {
-        parent::__construct($config);
-    }
-
-    
+    /**
+     * 是否catch所有的reque
+     * <code>   
+     * 'catchAllRequest' => [
+     *     true,'<router>'
+     * ];
+     * </code>
+     * @var boolean
+     */
+    public $catchAllRequest = [
+        false, ''
+    ];
+    /**
+     * 处理request
+     * 
+     */
     public function processRequest()
     {
-
-        var_dump($this->getRequest()->getRequestUri());
-        var_dump($this->getRequest()->getPathInfo());
+        if ($this->catchAllRequest[0] && isset($this->catchAllRequest[1])) {
+            $route = $this->catchAllRequest[1];
+        } else {
+            $route = $this->getRouter()->parseUrl($this->getRequest());
+        }
+        var_dump($route);exit;
+        //$this->runController($route);
     }
     /**
      * 获得路由组件
@@ -51,8 +65,7 @@ class ZWebApplication extends ZApplication
     {
         $components = array(
             'router' => array(
-                'class' => 'Z\Router\ZWebRouter',
-                'catchAllRequest' => false,
+                'class' => 'Z\Router\ZWebRouter'
             ),
             'request' => array(
                 'class' => 'Z\Request\ZWebRequest',
