@@ -54,7 +54,7 @@ class RequestData extends \ArrayObject
     public function get($name, $type, $defaultValue = null)
     {
         if (!$this->offsetExists($name)) {
-            return $default;
+            return $defaultValue;
         }
         $ret = $this->offsetGet($name);
         switch ($type) {

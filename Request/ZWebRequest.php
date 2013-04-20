@@ -25,6 +25,8 @@ class ZWebRequest extends ZAppComponent implements \ZRequestInterfase
     public $enableXss = false;
 
     private $_post, $_get, $_request, $_cookie, $_put, $_delete;
+
+    private $_requestUri, $_pathInfo, $_scriptName, $_baseUrl;
     /**
      * 初始化 request
      * @return void
@@ -44,21 +46,17 @@ class ZWebRequest extends ZAppComponent implements \ZRequestInterfase
     {
         if (function_exists('get_magic_quotes_gpc') && get_magic_quotes_gpc()) {
             if (isset($_GET)) {
-                $this->_get = $this->stripSlashes($_GET);
+                $_GET = $this->stripSlashes($_GET);
             } 
             if (isset($_POST)) {
-                $this->_post = $this->stripSlashes($_POST);
+                $_POST = $this->stripSlashes($_POST);
             }
             if (isset($_REQUEST)) {
-                $this->_request = $this->stripSlashes($_REQUEST);
+                $_POST = $this->stripSlashes($_REQUEST);
             }
             if (isset($_COOKIE)) {
-                $_cookie = $this->stripSlashes($_COOKIE);
+                $_COOKIE = $this->stripSlashes($_COOKIE);
             }
-        } else {
-            $this->_get = $_GET;
-            $this->_post = $_POST;
-            $this->_cookie = $_COOKIE;
         }
 
         if ($this->enableXss) {
@@ -83,7 +81,10 @@ class ZWebRequest extends ZAppComponent implements \ZRequestInterfase
      */
     public function getScriptName()
     {
-        return $_SERVER['SCRIPT_NAME'];
+        if (is_null($this->_scriptName)) {
+            return $this->_scriptName = $_SERVER['SCRIPT_NAME'];
+        }
+        return $this->_scriptName;
     }
 
     /**
@@ -101,7 +102,7 @@ class ZWebRequest extends ZAppComponent implements \ZRequestInterfase
      */
     public function getCookies()
     {
-        return new RequestData($this->_cookie);
+        return new RequestData($_COOKIE);
     }
 
     /**
@@ -110,12 +111,15 @@ class ZWebRequest extends ZAppComponent implements \ZRequestInterfase
      */
     public function getPost()
     {
-        $data = $this->parsePayload();
-
-        foreach ($data as $key => $value) {
-            $this->_post[$key] = $value;
+        if (!is_null($this->_post)) {
+            return $this->_post;
         }
-        return new RequestData($this->_post);
+        $data = $this->parseIOStreams();
+        $post = [];
+        foreach ($data as $key => $value) {
+            $post[$key] = $value;
+        }
+        return $this->_post = new RequestData($post);
     }
 
     public function parseIOStreams()
@@ -142,11 +146,16 @@ class ZWebRequest extends ZAppComponent implements \ZRequestInterfase
      */
     public function getDelete()
     {
-        if (!is_null($this->_put)) {
-            return $this->_put;
+        if (!is_null($this->_delete)) {
+            return $this->_delete;
         }
         $data = $this->parseIOStreams();
-        return new RequestData($this->_put = $data);
+
+        $delete = [];
+        foreach ($data as $key => $value) {
+            $delete[$key] = $value;
+        }
+        return $this->_post = new RequestData($delete);
     }
     /**
      * 获得PUT值
@@ -158,7 +167,12 @@ class ZWebRequest extends ZAppComponent implements \ZRequestInterfase
             return $this->_put;
         }
         $data = $this->parseIOStreams();
-        return new RequestData($this->_put = $data);
+
+        $put = [];
+        foreach ($data as $key => $value) {
+            $put[$key] = $value;
+        }
+        return $this->_post = new RequestData($put);
     }
 
     /**
@@ -176,7 +190,26 @@ class ZWebRequest extends ZAppComponent implements \ZRequestInterfase
      */
     public function getRequestUri()
     {
-        return $_SERVER['REQUEST_URI'];
+        if (is_null($this->_requestUri)) {
+            if (isset($_SERVER['REQUEST_URI'])) {
+                $this->_requestUri=$_SERVER['REQUEST_URI'];
+                if (!empty($_SERVER['HTTP_HOST'])) {
+                    if ((strpos($this->_requestUri, $_SERVER['HTTP_HOST'])) !== false) {
+                        $this->_requestUri = preg_replace(
+                            '/^\w+:\/\/[^\/]+/', '', $this->_requestUri
+                        );
+                    } else {
+                        $this->_requestUri = preg_replace(
+                            '/^(http|https):\/\/[^\/]+/i', '', $this->_requestUri
+                        );
+                    }
+                }
+            } else {
+                throw new ZException("Your Server is IIS or Other?");
+            }
+        }
+
+        return $this->_requestUri;
     }
 
     /**
@@ -212,13 +245,73 @@ class ZWebRequest extends ZAppComponent implements \ZRequestInterfase
      */
     public function getPathInfo()
     {
-        if (isset($_SERVER['PATH_INFO'])) {
-            return $_SERVER['PATH_INFO'];
+        if (is_null($this->_pathInfo)) {
+
+            if (isset($_SERVER['PATH_INFO'])) {
+                $pathInfo = $this->decodePathInfo(trim($_SERVER['PATH_INFO'], '/'));
+                if (strpos($pathInfo, '%')) {
+                    $pathInfo = $this->decodePathInfo($pathInfo);
+                }
+                return $this->_pathInfo = $pathInfo;
+            }
+
+            $pathInfo = $this->getRequestUri();
+
+            if (($pos = strpos($pathInfo, '?')) !== false) {
+                $pathInfo = substr($pathInfo, 0, $pos);
+            }
+
+            $pathInfo = $this->decodePathInfo($pathInfo);
+
+            $scriptName = $this->getScriptName();
+
+            if (strpos($pathInfo, $scriptName)) {
+                $pathInfo = substr($pathInfo, strlen($scriptName));
+            } elseif (strpos($_SERVER['PHP_SELF'], $scriptName) === 0) {
+                $pathInfo = substr($pathInfo, strlen($_SERVER['PHP_SELF']));
+            } else {
+                throw new ZException(
+                    Z::t('ZFrame is unable to determine the path info of the request.')
+                );
+            }
+
+            $this->_pathInfo = trim($pathInfo, '/');;
         }
-        return null;
+        
+        return $this->_pathInfo;
     }
+
     /**
-     * check post request 
+     * decode path info  from Yii
+     * @param  String $pathInfo pathInfo 
+     * @return String
+     */
+    protected function decodePathInfo($pathInfo)
+    {
+        $pathInfo = urldecode($pathInfo);
+
+        // is it UTF-8?
+        // http://w3.org/International/questions/qa-forms-utf-8.html
+        if (preg_match(
+            '%^(?:
+           [\x09\x0A\x0D\x20-\x7E]            # ASCII
+         | [\xC2-\xDF][\x80-\xBF]             # non-overlong 2-byte
+         | \xE0[\xA0-\xBF][\x80-\xBF]         # excluding overlongs
+         | [\xE1-\xEC\xEE\xEF][\x80-\xBF]{2}  # straight 3-byte
+         | \xED[\x80-\x9F][\x80-\xBF]         # excluding surrogates
+         | \xF0[\x90-\xBF][\x80-\xBF]{2}      # planes 1-3
+         | [\xF1-\xF3][\x80-\xBF]{3}          # planes 4-15
+         | \xF4[\x80-\x8F][\x80-\xBF]{2}      # plane 16
+        )*$%xs', $pathInfo
+        )) {
+            return $pathInfo;
+        } else {
+            return utf8_encode($pathInfo);
+        }
+    }
+
+    /**
+     * 判断是否为POST请求 
      * @return boolean 
      */
     public function isPost()
@@ -227,7 +320,7 @@ class ZWebRequest extends ZAppComponent implements \ZRequestInterfase
     }
 
     /**
-     * check ajax request
+     * 判断是否为AJAX请求
      * @return boolean 
      */
     public function isAjax()
@@ -237,7 +330,7 @@ class ZWebRequest extends ZAppComponent implements \ZRequestInterfase
     }
 
     /**
-     * check get request 
+     * 判断是否为GET请求
      * @return boolean 
      */
     public function isGet()
@@ -245,7 +338,7 @@ class ZWebRequest extends ZAppComponent implements \ZRequestInterfase
         return $this->getMethod() === 'GET';
     }
     /**
-     * check put request
+     * 判断是否为PUT请求
      * @return boolean 
      */
     public function isPut()
@@ -253,7 +346,7 @@ class ZWebRequest extends ZAppComponent implements \ZRequestInterfase
         return $this->getMethod() === 'PUT';
     }
     /**
-     * check delete request 
+     * 判断是否为DELETE请求
      * @return boolean 
      */
     public function isDelete()
@@ -262,7 +355,7 @@ class ZWebRequest extends ZAppComponent implements \ZRequestInterfase
     }
 
     /**
-     * check spider 
+     * 判断是否为搜索引擎 
      * @return boolean 
      */
     public function isSpider()
@@ -352,8 +445,8 @@ class ZWebRequest extends ZAppComponent implements \ZRequestInterfase
     public function getRawBody()
     {
         static $rawBody;
-        if ($rawBody===null) {
-            $rawBody=file_get_contents('php://input');
+        if ($rawBody === null) {
+            $rawBody = file_get_contents('php://input');
         }
         return $rawBody;
     }

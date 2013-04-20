@@ -27,8 +27,8 @@ class ZWebApplication extends ZApplication
     public function processRequest()
     {
 
-        
-        $this->getRequest();
+        var_dump($this->getRequest()->getRequestUri());
+        var_dump($this->getRequest()->getPathInfo());
     }
     /**
      * 获得路由组件

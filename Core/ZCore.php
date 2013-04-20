@@ -15,7 +15,8 @@
 namespace Z\Core;
 
 use \Z\Z,
-    \Z\Collections\ZList;
+    \Z\Collections\ZList,
+    \Z\Exceptions\ZException;
 
 class ZCore implements \ZCoreInterface
 {
@@ -58,7 +59,7 @@ class ZCore implements \ZCoreInterface
                     return $behavior->$name;
             }
         }
-        Z::throwZException(
+        throw new ZException(
             Z::t(
                 'Property "{class}.{property}" is not defined.',
                 array('{class}' => get_class($this), '{property}' => $name)
@@ -89,7 +90,7 @@ class ZCore implements \ZCoreInterface
             }
         }
         if (method_exists($this, 'get' . $name)) {
-            Z::throwZException(
+            throw new ZException(
                 Z::t(
                     'Property {class}.{property} is read only.',
                     ['{class}' => get_class($this), '{property}' => $name]
@@ -97,7 +98,7 @@ class ZCore implements \ZCoreInterface
             );
         }
 
-        Z::throwZException(
+        throw new ZException(
             Z::t(
                 'Property "{class}.{property}" is not defined.',
                 array('{class}' => get_class($this), '{property}' => $name)
@@ -176,7 +177,7 @@ class ZCore implements \ZCoreInterface
             }
             return $this->_events[$name];
         } else {
-            Z::throwZException(
+            throw new ZException(
                 Z::t(
                     'Event "{class}.{event}" is not defined.',
                     ['{class}' => get_class($this), '{evnet}' => $name]
@@ -231,7 +232,7 @@ class ZCore implements \ZCoreInterface
                         } elseif (method_exists($object, $method)) {
                             $object->$method($event);
                         } else {
-                            Z::throwZException(
+                            throw new ZException(
                                 Z::t(
                                     'Event "{class}.{event}" is 
                                     attached with an invalid handler "{handler}".',
@@ -247,7 +248,7 @@ class ZCore implements \ZCoreInterface
                         call_user_func($handler, $evnet);
                     }
                 } else {
-                    Z::throwZException(
+                    throw new ZException(
                         Z::t(
                             'Event "{class}.{event}" is 
                             attached with an invalid handler "{handler}".',
@@ -264,7 +265,7 @@ class ZCore implements \ZCoreInterface
                 }
             }
         } elseif (Z_DEBUG && !$this->hasEvent($name)) {
-            Z::throwZException(
+            throw new ZException(
                 Z::t(
                     'Event "{class}.{event}" is not defined.',
                     ['{class}' => get_class($this), '{event}' => $name]
@@ -340,6 +341,20 @@ class ZCore implements \ZCoreInterface
             $this->_behavior[$name]->setEnabled(true);
         }
     }
+
+    /**
+     * 设置当前类的所有行为可用
+     * @return void
+     */
+    public function setBehaviorsEnable()
+    {
+        if (!empty($this->_behavior)) {
+            foreach ($this->_behavior as $behavior) {
+                $behavior->setEnabled(true);
+            }
+        }
+    }
+    
     /**
      * 设置行为不可用
      * @param String $name 行为名称
@@ -361,19 +376,6 @@ class ZCore implements \ZCoreInterface
         if (!empty($this->_behavior)) {
             foreach ($this->_behavior as $behavior) {
                 $behavior->setEnabled(false);
-            }
-        }
-    }
-
-    /**
-     * 设置当前类的所有行为可用
-     * @return void
-     */
-    public function setBehaviorsEnable()
-    {
-        if (!empty($this->_behavior)) {
-            foreach ($this->_behavior as $behavior) {
-                $behavior->setEnabled(true);
             }
         }
     }
