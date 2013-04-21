@@ -17,7 +17,7 @@ namespace Z\Router;
 use \Z\Z,
     \Z\Core\ZAppComponent;
 
-abstract class ZRouter extends ZAppComponent implements \ZRouterInterface
+abstract class ZRouterAbstract extends ZAppComponent implements \ZRouterInterface
 {
     /**
      * 增加路由规则
