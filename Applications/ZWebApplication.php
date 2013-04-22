@@ -89,8 +89,9 @@ class ZWebApplication extends ZApplication
                     return $this->createController($route, $module);
                 }
                 $basePath = $owner->getControllerPath();
+                $controllerID='';
             } else {
-                $controllerId = '/';
+                $controllerId .= '/';
             }
 
             $className = 'WebRoot\Controller\\' . ucfirst($id).'Controller';
@@ -102,9 +103,12 @@ class ZWebApplication extends ZApplication
                 }
 
                 if (class_exists($className) && is_subclass_of($className,'Z\Executors\ZController')) {
+                    
                     return new $className();
                 }
             }
+            $controllerID .= $id;
+            $basePath .= DIRECTORY_SEPARATOR.$id;
         }
     }
 
