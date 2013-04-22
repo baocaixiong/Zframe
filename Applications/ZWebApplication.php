@@ -66,7 +66,7 @@ class ZWebApplication extends ZApplication
         $components = array(
             'router' => array(
                 'class'     => 'Z\Router\ZWebRouter',
-                'urlFormat' => 'get',
+                'urlFormat' => 'path',
                 'rules'     => [],
             ),
             'request' => array(

@@ -265,7 +265,7 @@ class ZWebRequest extends ZAppComponent implements \ZRequestInterfase
 
             $scriptName = $this->getScriptName();
 
-            if (strpos($pathInfo, $scriptName)) {
+            if (strpos($pathInfo, $scriptName) !== false) {
                 $pathInfo = substr($pathInfo, strlen($scriptName));
             } elseif (strpos($_SERVER['PHP_SELF'], $scriptName) === 0) {
                 $pathInfo = substr($pathInfo, strlen($_SERVER['PHP_SELF']));
