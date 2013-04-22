@@ -233,7 +233,7 @@ class Z
     {
         if (isset(self::$_namespaceMapper[$name])) {
             return self::$_namespaceMapper[$name];
-        } elseif (($pos = strpos($name, NS_SEPARATOR) !== FALSE)) {
+        } elseif (($pos = strpos($name, NS_SEPARATOR)) !== false) {
             $rootAliasName = substr($name, 0, $pos);
             if (isset(self::$_namespaceMapper[$rootAliasName])) {
                 return self::$_namespaceMapper[$name] = rtrim(

@@ -14,12 +14,16 @@
  */
 namespace Z\Applications;
 
-use Z\Core\ZApplication;
+use Z\Core\ZApplication,
+    Z\Z;
 
 class ZWebApplication extends ZApplication
 {
     public $defaultController = 'site';
     public $defaultAction = 'index';
+    public $layout='main';
+
+    private $_controllerPath;
     /**
      * 是否catch所有的reque
      * <code>   
@@ -44,7 +48,7 @@ class ZWebApplication extends ZApplication
             $route = $this->getRouter()->parseUrl($this->getRequest());
         }
 
-        $this->runExecutor($route);
+        $this->runController($route);
     }
 
     /**
@@ -52,9 +56,56 @@ class ZWebApplication extends ZApplication
      * @param  String $route asdf/asdf
      * @return void
      */
-    public function runExecutor($route)
+    public function runController($route)
     {
-        var_dump($route);
+        if ($this->createController($route) !== null) {
+            
+        } else {
+            
+        }
+    }
+
+
+    public function createController($route, $owner = null)
+    {
+        if (is_null($owner)) {
+            $owner = $this;
+        }
+        if (($route = trim($route, '/')) === '') {
+            $route=$owner->defaultController;
+        }
+    
+        $route .= '/';
+        while (($pos = strpos($route, '/')) !== false) {
+            $id = substr($route, 0, $pos);
+
+            if ($this->getRouter()->caseSensitive) {
+                $id = strtolower($id);
+            }
+            $route=(string)substr($route, $pos + 1);
+
+            if (!isset($basePath)) {
+                if (($moduel = $owner->getModule($id)) !== null) {
+                    return $this->createController($route, $module);
+                }
+                $basePath = $owner->getControllerPath();
+            } else {
+                $controllerId = '/';
+            }
+
+            $className = 'WebRoot\Controller\\' . ucfirst($id).'Controller';
+            $classFile = $basePath . DIRECTORY_SEPARATOR . ucfirst($id).'Controller.php';
+
+            if (is_file($classFile)) {
+                if (!class_exists($className, false)) {
+                    Z::loadFile($classFile);
+                }
+
+                if (class_exists($className) && is_subclass_of($className,'Z\Executors\ZController')) {
+                    return new $className();
+                }
+            }
+        }
     }
 
     /**
@@ -89,6 +140,15 @@ class ZWebApplication extends ZApplication
         );
         
         $this->setComponents($components);
+    }
+    public function getControllerPath()
+    {
+        if ($this->_controllerPath !== null) {
+            return $this->_controllerPath;
+        } else {
+            return $this->_controllerPath = 
+                $this->getBasePath() . DIRECTORY_SEPARATOR . 'Controller';
+        }
     }
 
     /**

@@ -21,12 +21,16 @@ class ZWebRouter extends ZRouterAbstract
     const GET_FORMAT = 'get';
     const PATH_FORMAT = 'path';
     const CACHE_KEY = 'z.webrRouter.cache';
+    
     public $rules = [];
     public $urlSuffix = '';
     public $showScriptName = true;
     public $routeVar = 'r';
     public $cacheId = 'cache';
+    public $caseSensitive = false;
+
     private $_urlFormat = self::GET_FORMAT;
+
 
     //private $_baseUrl;
     /**

@@ -154,6 +154,11 @@ class ZModule extends ZCore
         }
     }
 
+    public function getModule($moduleName)
+    {
+        return null;
+    }
+
     public function getModules()
     {
         return $this->_moduleConfig;
