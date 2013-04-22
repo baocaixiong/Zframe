@@ -58,10 +58,10 @@ class ZWebApplication extends ZApplication
      */
     public function runController($route)
     {
-        if ($this->createController($route) !== null) {
-            
+        if (($co = $this->createController($route)) !== null) {
+            var_dump($co);
         } else {
-            
+            echo '<br>没有找到控制器';
         }
     }
 

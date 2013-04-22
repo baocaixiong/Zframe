@@ -28,6 +28,8 @@ abstract class ZApplication extends ZModule
 
     public $language = 'zh_cn';
 
+    public $projectNamespace;
+
     private $_basePath;//应用目录
     private $_runtimePath; //程序运行目录
 
@@ -51,7 +53,8 @@ abstract class ZApplication extends ZModule
         } else {
             $this->setBasePath('Protected');
         }
-        Z::setPathOfNamespace('WebRoot', dirname($_SERVER['SCRIPT_FILENAME']));
+        $projectNamespace = $this->projectNamespace ?: 'WebRoot';
+        Z::setPathOfNamespace($projectNamespace, dirname($_SERVER['SCRIPT_FILENAME']));
         Z::setPathOfNamespace('Z', Z_PATH);
         $this->preinit();
         $this->initSystemHandlers();
