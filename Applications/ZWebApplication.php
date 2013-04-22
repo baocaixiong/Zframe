@@ -44,7 +44,7 @@ class ZWebApplication extends ZApplication
             $route = $this->getRouter()->parseUrl($this->getRequest());
         }
 
-        $this->runController($route);
+        $this->runExecutor($route);
     }
 
     /**
@@ -52,7 +52,7 @@ class ZWebApplication extends ZApplication
      * @param  String $route asdf/asdf
      * @return void
      */
-    public function runController ($route)
+    public function runExecutor($route)
     {
         var_dump($route);
     }
@@ -91,6 +91,10 @@ class ZWebApplication extends ZApplication
         $this->setComponents($components);
     }
 
+    /**
+     * 初始化 web 
+     * @return void
+     */
     public function init()
     {
         $this->getRequest();
