@@ -25,6 +25,8 @@ class ZModule extends ZCore
     private $_components = [];
     private $_componentConfig = [];
 
+    private $_moduleConfig = [];
+
     public function __construct($id, $parent, $config=null)
     {
         $this->_id=$id;
@@ -152,4 +154,13 @@ class ZModule extends ZCore
         }
     }
 
+    public function getModules()
+    {
+        return $this->_moduleConfig;
+    }
+
+    public function setModules($modules)
+    {
+        //do something
+    }
 }

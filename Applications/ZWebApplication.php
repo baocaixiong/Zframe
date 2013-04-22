@@ -18,6 +18,8 @@ use Z\Core\ZApplication;
 
 class ZWebApplication extends ZApplication
 {
+    public $defaultController = 'site';
+    public $defaultAction = 'index';
     /**
      * 是否catch所有的reque
      * <code>   
@@ -41,9 +43,20 @@ class ZWebApplication extends ZApplication
         } else {
             $route = $this->getRouter()->parseUrl($this->getRequest());
         }
-        var_dump($route);exit;
-        //$this->runController($route);
+
+        $this->runController($route);
     }
+
+    /**
+     * 运行控制器
+     * @param  String $route asdf/asdf
+     * @return void
+     */
+    public function runController ($route)
+    {
+        var_dump($route);
+    }
+
     /**
      * 获得路由组件
      * @return \Z\Router\Router  [description]
