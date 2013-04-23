@@ -58,14 +58,29 @@ class ZWebApplication extends ZApplication
      */
     public function runController($route)
     {
-        if (($co = $this->createController($route)) !== null) {
-            var_dump($co);
+        if (($ca = $this->createController($route)) !== null) {
+            list($controller, $actionId) = $ca;
+
+            $controller->init();
+            $controller->run($actionID);
         } else {
-            echo '<br>没有找到控制器';
+            throw new \Z\Exceptions\ZHttpException(
+                Z::t(
+                    'Unable to resolve the request "{route}".',
+                    ['{route}' => $route === '' ? $this->defaultController : $route]
+                )
+            );
         }
     }
 
 
+    /**
+     * 创建控制器对象
+     * 
+     * @param  String $route route
+     * @param  Object $owner ..
+     * @return Array [Controller, $route]
+     */
     public function createController($route, $owner = null)
     {
         if (is_null($owner)) {
@@ -86,7 +101,10 @@ class ZWebApplication extends ZApplication
 
             if (!isset($basePath)) {
                 if (($moduel = $owner->getModule($id)) !== null) {
-                    return $this->createController($route, $module);
+                    return [
+                        $this->createController($route, $module),
+                        $this->parseActionParams($route)
+                    ];
                 }
                 $basePath = $owner->getControllerPath();
             }
@@ -99,12 +117,27 @@ class ZWebApplication extends ZApplication
                     Z::loadFile($classFile);
                 }
 
-                if (class_exists($className) && is_subclass_of($className,'Z\Executors\ZController')) {
-                    return new $className();
+                if (class_exists($className)
+                    && is_subclass_of($className, 'Z\Executors\ZController')) {
+                    return [
+                        new $className(),
+                        $this->parseActionParams($route)
+                    ];
                 }
             }
+
             $basePath .= DIRECTORY_SEPARATOR . $id;
         }
+    }
+
+    public function parseActionParams($route)
+    {
+        if (($pos = strpos($route, '/')) !== false) {
+               $actionId = substr($route, 0, $pos);
+               return Z::app()->getRouter()->caseSensitive ? $actionId : strtolower($actionId);
+        } else {
+            return $route;
+        }   
     }
 
     /**

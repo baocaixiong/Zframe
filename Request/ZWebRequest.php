@@ -59,9 +59,9 @@ class ZWebRequest extends ZAppComponent implements \ZRequestInterfase
             }
         }
 
-        if ($this->enableXss) {
-            Z::app()->attachEventHandler('onBeginRequest', array($this, 'validateXssfToken'));
-        }
+        // if ($this->enableXss) {
+        //     Z::app()->attachEventHandler('onBeginRequest', array($this, 'validateXssfToken'));
+        // }
     }
 
     /**
@@ -251,6 +251,9 @@ class ZWebRequest extends ZAppComponent implements \ZRequestInterfase
                 $pathInfo = $this->decodePathInfo(trim($_SERVER['PATH_INFO'], '/'));
                 if (strpos($pathInfo, '%')) {
                     $pathInfo = $this->decodePathInfo($pathInfo);
+                }
+                if (($pos = strpos($pathInfo, '?')) !== false) {
+                    $pathInfo = substr($pathInfo, 0, $pos);
                 }
                 return $this->_pathInfo = $pathInfo;
             }
@@ -466,6 +469,17 @@ class ZWebRequest extends ZAppComponent implements \ZRequestInterfase
      */
     public function validateXssfToken()
     {
-        echo '夸张攻击的处理等等';
+        echo '跨站攻击的处理等等';
+    }
+
+
+    public function getCsrfToken ()
+    {
+
+    }
+
+    public function createCsrfCookie()
+    {
+
     }
 }

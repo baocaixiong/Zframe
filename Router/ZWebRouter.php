@@ -74,7 +74,7 @@ class ZWebRouter extends ZRouterAbstract
     {
         $requestUri = $request->getRequestUri();
         $routeVar = $this->routeVar;
-        
+
         if ($this->getUrlFormat() === self::PATH_FORMAT) {
             $rawPathInfo = $request->getPathInfo();
             $pathInfo = $this->removeUrlSuffix($rawPathInfo);
