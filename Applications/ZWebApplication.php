@@ -89,12 +89,9 @@ class ZWebApplication extends ZApplication
                     return $this->createController($route, $module);
                 }
                 $basePath = $owner->getControllerPath();
-                $controllerID='';
-            } else {
-                $controllerId .= '/';
             }
 
-            $className = 'WebRoot\Controller\\' . ucfirst($id).'Controller';
+            $className = $this->projectNamespace . '\Controller\\' . ucfirst($id).'Controller';
             $classFile = $basePath . DIRECTORY_SEPARATOR . ucfirst($id).'Controller.php';
 
             if (is_file($classFile)) {
@@ -103,12 +100,10 @@ class ZWebApplication extends ZApplication
                 }
 
                 if (class_exists($className) && is_subclass_of($className,'Z\Executors\ZController')) {
-                    
                     return new $className();
                 }
             }
-            $controllerID .= $id;
-            $basePath .= DIRECTORY_SEPARATOR.$id;
+            $basePath .= DIRECTORY_SEPARATOR . $id;
         }
     }
 
@@ -121,6 +116,11 @@ class ZWebApplication extends ZApplication
         return $this->getComponent('router');
     }
     
+    /**
+     * 获取 http request 组建
+     * 
+     * @return \Z\Request\ZWebRequset
+     */
     public function getRequest()
     {
         return $this->getComponent('request');

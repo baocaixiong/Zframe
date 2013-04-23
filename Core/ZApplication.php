@@ -53,8 +53,8 @@ abstract class ZApplication extends ZModule
         } else {
             $this->setBasePath('Protected');
         }
-        $projectNamespace = $this->projectNamespace ?: 'WebRoot';
-        Z::setPathOfNamespace($projectNamespace, dirname($_SERVER['SCRIPT_FILENAME']));
+        $this->projectNamespace = $this->projectNamespace ?: 'WebRoot';
+        Z::setPathOfNamespace($this->projectNamespace, dirname($_SERVER['SCRIPT_FILENAME']));
         Z::setPathOfNamespace('Z', Z_PATH);
         $this->preinit();
         $this->initSystemHandlers();
