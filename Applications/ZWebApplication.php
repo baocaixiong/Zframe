@@ -62,7 +62,7 @@ class ZWebApplication extends ZApplication
             list($controller, $actionId) = $ca;
 
             $controller->init();
-            $controller->run($actionID);
+            $controller->run($actionId);
         } else {
             throw new \Z\Exceptions\ZHttpException(
                 Z::t(

@@ -18,8 +18,24 @@ use Z\Z;
 
 class ZController
 {
+    protected $app;
+
+    public function init ()
+    {
+
+    }
+
+    public function run ($actionId)
+    {
+        var_dump($actionId);
+    }
+    /**
+     * 构造方法
+     *
+     * @return \Z\Executors\ZController
+     */
     public function __construct()
     {
-        echo 123;
+        $this->app = Z::app();
     }
 }
