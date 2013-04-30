@@ -20,13 +20,25 @@ use \Z\Z,
 /**
  * ZRequest class
  */
-class ZWebRequest extends ZBaseRequest 
+class ZWebRequest extends ZBaseRequest
 {
-    public $enableXss = false;
+    public $enableCsrf = false;
 
     private $_post, $_get, $_request, $_cookie, $_put, $_delete;
 
-    private $_requestUri, $_pathInfo, $_scriptName, $_baseUrl;
+    private $_requestUri, $_pathInfo, $_scriptName;
+
+    private $_method; //request method
+
+    private $_referer; //http referer
+
+    private $_isSecure; //is secure https 
+
+    private $_requestRoot;
+
+    private $_scriptUrl;
+
+    private $_hostInfo;
     /**
      * 初始化 request
      * @return void
@@ -59,7 +71,7 @@ class ZWebRequest extends ZBaseRequest
             }
         }
 
-        // if ($this->enableXss) {
+        // if ($this->enableCsrf) {
         //     Z::app()->attachEventHandler('onBeginRequest', array($this, 'validateCsrfToken'));
         // }
     }
@@ -103,6 +115,18 @@ class ZWebRequest extends ZBaseRequest
     public function getCookies()
     {
         return new RequestData($_COOKIE);
+    }
+
+    /**
+     * 获取指定的COOKIE值
+     *
+     * @param string $key 指定的参数
+     * @param string $default 默认的参数
+     * @return mixed
+     */
+    public function getCookie($key, $default = NULL)
+    {
+        return isset($_COOKIE[$key]) ? $_COOKIE[$key] : $default;
     }
 
     /**
@@ -227,16 +251,11 @@ class ZWebRequest extends ZBaseRequest
      */
     public function getMethod()
     {
-        return strtoupper($_SERVER['REQUEST_METHOD']);;
-    }
-
-    /**
-     * get queryString 
-     * @return String
-     */
-    public function getQueryString()
-    {
-        return $_SERVER['QUERY_STRING'];
+        if (null === $this->_method) {
+            $this->_method = strtoupper($_SERVER['REQUEST_METHOD']);
+        }
+        
+        return $this->_method;
     }
 
     /**
@@ -314,10 +333,79 @@ class ZWebRequest extends ZBaseRequest
     }
 
     /**
+     * 返回除掉脚本文件名的url
+     * 当参数 $absolute 为 true 时，返回带hostinfo的url，否则不带hostinfo
+     * @param  boolean $absolute ..
+     * @return string
+     */
+    public function getRequestRoot($absolute = false)
+    {
+        if (null === $this->_requestRoot) {
+            $this->_requestRoot = rtrim(dirname($this->getScriptUrl()), '/');
+        }
+
+        return $absolute ? $this->getHostInfo() . $this->_requestRoot : $this->_requestRoot;
+    }
+
+    /**
+     * 返回 请求方式和域名 
+     * 当参数 $absolute 为 true 时，返回带hostinfo的url，否则不带hostinfo
+     * eg: http://localhost[/index.php] 这是本地
+     * @return string
+     */
+    public function getHostInfo()
+    {
+        if (null === $this->_hostInfo) {
+            $this->_hostInfo = $this->getIsSecure() ? 'https' : 'http' . '://' . 
+                (isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : 'localhost'); 
+        }
+        return $this->_hostInfo;
+    }
+
+    /**
+     * 返回 脚本名称 
+     * eg:  http://localhost/zapp/index.php => /zapp/index.php
+     * @return string
+     */
+    public function getScriptUrl($absolute = false)
+    {
+        if ($this->_scriptUrl===null) {
+
+            $scriptName = isset($_SERVER['SCRIPT_FILENAME']) ? $_SERVER['SCRIPT_FILENAME'] : '';
+
+            if (basename($_SERVER['SCRIPT_NAME']) === $scriptName) {
+                $this->_scriptUrl = $_SERVER['SCRIPT_NAME'];
+            } elseif (basename($_SERVER['PHP_SELF']) === $scriptName) {
+                $this->_scriptUrl=$_SERVER['PHP_SELF'];
+            } elseif (isset($_SERVER['ORIG_SCRIPT_NAME']) && basename($_SERVER['ORIG_SCRIPT_NAME'])===$scriptName) {
+                /**
+                 * 要知道PHP当前是通过CGI来运行，还是在Apache内部运行，
+                 * 可以检查一下环境变量ORIG_SCRIPT_NAME。
+                 * 如果PHP通过CGI来运行，这个变量的值就是/Php/Php.exe。
+                 * 如果Apache将PHP脚本作为模块来运行，该变量的值应该是/Phptest.php
+                 */
+                $this->_scriptUrl = $_SERVER['ORIG_SCRIPT_NAME'];
+            } elseif (($pos = strpos($_SERVER['PHP_SELF'], '/' . $scriptName)) !== false) {
+                $this->_scriptUrl = substr($_SERVER['SCRIPT_NAME'], 0, $pos). '/' . $scriptName;
+            } elseif (
+                isset($_SERVER['DOCUMENT_ROOT']) && strpos($_SERVER['SCRIPT_FILENAME'], $_SERVER['DOCUMENT_ROOT']) === 0
+            ) {
+                $this->_scriptUrl = str_replace(
+                    '\\', '/', str_replace($_SERVER['DOCUMENT_ROOT'], '', $_SERVER['SCRIPT_FILENAME'])
+                );
+            } else {
+                throw new ZException(Z::t('ZWebRequest is unable to determine the entry script URL.'));
+            }
+        }
+
+        return $absolute ? $this->getHostInfo() . $this->_scriptUrl : $this->_scriptUrl;
+    }
+
+    /**
      * 判断是否为POST请求 
      * @return boolean 
      */
-    public function isPost()
+    public function getIsPost()
     {
         return ($this->getMethod() === 'POST');
     }
@@ -326,7 +414,7 @@ class ZWebRequest extends ZBaseRequest
      * 判断是否为AJAX请求
      * @return boolean 
      */
-    public function isAjax()
+    public function getIsAjax()
     {
         return (isset($_SERVER['HTTP_X_REQUESTED_WITH']) 
             && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest');
@@ -336,7 +424,7 @@ class ZWebRequest extends ZBaseRequest
      * 判断是否为GET请求
      * @return boolean 
      */
-    public function isGet()
+    public function getIsGet()
     {
         return $this->getMethod() === 'GET';
     }
@@ -344,7 +432,7 @@ class ZWebRequest extends ZBaseRequest
      * 判断是否为PUT请求
      * @return boolean 
      */
-    public function isPut()
+    public function getIsPut()
     {
         return $this->getMethod() === 'PUT';
     }
@@ -352,16 +440,26 @@ class ZWebRequest extends ZBaseRequest
      * 判断是否为DELETE请求
      * @return boolean 
      */
-    public function isDelete()
+    public function getIsDelete()
     {
         return $this->getMethod() === 'DELETE';
+    }
+
+    /**
+     * 是否为上传模式 
+     * 
+     * @return boolean
+     */
+    public function getIsUpload()
+    {
+        return !empty($_FILES);
     }
 
     /**
      * 判断是否为搜索引擎 
      * @return boolean 
      */
-    public function isSpider()
+    public function getIsSpider()
     {
         $agent   = strtolower($_SERVER['HTTP_USER_AGENT']);
         $spiders = array(
@@ -398,6 +496,21 @@ class ZWebRequest extends ZBaseRequest
         return false;
     }
 
+    /**
+     * 是否为安全连接 
+     * 
+     * @return boolean
+     */
+    public function getIsSecure()
+    {
+        if (null === $this->_isSecure) {
+            $this->_isSecure = (isset($_SERVER['HTTPS']) && 'on' == $_SERVER['HTTPS'])
+            || (isset($_SERVER['SERVER_PORT']) && 443 == $_SERVER['SERVER_PORT']);
+        }
+        
+        return $this->_isSecure;
+    }
+
     public function getServerName()
     {
         return $_SERVER['SERVER_NAME'];
@@ -409,7 +522,11 @@ class ZWebRequest extends ZBaseRequest
     
     public function getUrlReferrer()
     {
-        return isset($_SERVER['HTTP_REFERER'])?$_SERVER['HTTP_REFERER']:null;
+        if (null === $this->_referer) {
+            $this->_referer = isset($_SERVER['HTTP_REFERER']) ? $_SERVER['HTTP_REFERER'] : null;
+        }
+
+        return $this->_referer;
     }
     /**
      * 获取客户机器的真实IP
@@ -462,6 +579,37 @@ class ZWebRequest extends ZBaseRequest
     {
         return explode(';', $_SERVER['CONTENT_TYPE'])[0];
     }
+
+    /**
+     * 设置request的请求方法，此方法一般在test中使用
+     * 
+     * @param  string $value eg:GET,POST,PUT...
+     * @return void
+     */
+    public function setMethod($value)
+    {
+        $this->_method = $value;
+    }
+
+    /**
+     * 设置request root ，此方法一般在test中使用
+     * @param string $value ''
+     * @return void
+     */
+    public function setRequestRoot($value)
+    {
+        $this->_requestRoot = $value;
+    }
+
+    /**
+     * set  host info value 
+     * @param string $value ''
+     * @return void
+     */
+    public function setHostInfo($value)
+    {
+        $this->_hostInfo = $value;
+    }
     /**
      * 防范处理跨站攻击
      * 
@@ -471,7 +619,6 @@ class ZWebRequest extends ZBaseRequest
     {
         echo '跨站攻击的处理等等';
     }
-
 
     public function getCsrfToken ()
     {

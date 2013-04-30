@@ -34,6 +34,6 @@ class ZController extends ZExecutor
     }
     public function execute ()
     {
-        var_dump($this->application);
+        //var_dump($this->application);
     }
 }

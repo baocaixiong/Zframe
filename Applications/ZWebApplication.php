@@ -47,7 +47,7 @@ class ZWebApplication extends ZApplication
         } else {
             $route = $this->getRouter()->parseUrl($this->getRequest());
         }
-
+        
         $this->runController($route);
     }
 
@@ -167,12 +167,12 @@ class ZWebApplication extends ZApplication
         $components = array(
             'router' => array(
                 'class'     => 'Z\Router\ZWebRouter',
-                'urlFormat' => 'path',
+                'urlFormat' => 'get',
                 'rules'     => [],
             ),
             'request' => array(
                 'class'     => 'Z\Request\ZWebRequest',
-                'enableXss' => true,
+                'enableCsrf' => true,
             ),
         );
         
