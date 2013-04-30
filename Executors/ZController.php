@@ -5,7 +5,7 @@
  * PHP Version 5.4
  *
  * @category  System
- * @package   Application
+ * @package   Executors
  * @author    baocaixiong <baocaixiong@gmail.com>
  * @copyright 2013 baocaixiong.com
  * @license   Copyright (c) 2013 
@@ -16,19 +16,8 @@ namespace Z\Executors;
 
 use Z\Z;
 
-class ZController
+class ZController extends ZExecutor
 {
-    protected $app;
-
-    public function init ()
-    {
-
-    }
-
-    public function run ($actionId)
-    {
-        var_dump($actionId);
-    }
     /**
      * 构造方法
      *
@@ -36,6 +25,15 @@ class ZController
      */
     public function __construct()
     {
-        $this->app = Z::app();
+        $this->application = Z::app();
+    }
+
+    public function init ()
+    {
+
+    }
+    public function execute ()
+    {
+        var_dump($this->application);
     }
 }

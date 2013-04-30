@@ -100,3 +100,7 @@ interface ZRequestInterfase
     public function getRawBody();
     public function getContentType();
 }
+
+interface ZExecutorInterface {
+    public function execute();
+}

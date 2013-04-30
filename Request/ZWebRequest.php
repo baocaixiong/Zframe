@@ -20,7 +20,7 @@ use \Z\Z,
 /**
  * ZRequest class
  */
-class ZWebRequest extends ZAppComponent implements \ZRequestInterfase
+class ZWebRequest extends ZBaseRequest 
 {
     public $enableXss = false;
 
@@ -60,7 +60,7 @@ class ZWebRequest extends ZAppComponent implements \ZRequestInterfase
         }
 
         // if ($this->enableXss) {
-        //     Z::app()->attachEventHandler('onBeginRequest', array($this, 'validateXssfToken'));
+        //     Z::app()->attachEventHandler('onBeginRequest', array($this, 'validateCsrfToken'));
         // }
     }
 
@@ -467,7 +467,7 @@ class ZWebRequest extends ZAppComponent implements \ZRequestInterfase
      * 
      * @return void
      */
-    public function validateXssfToken()
+    public function validateCsrfToken()
     {
         echo '跨站攻击的处理等等';
     }
@@ -475,7 +475,7 @@ class ZWebRequest extends ZAppComponent implements \ZRequestInterfase
 
     public function getCsrfToken ()
     {
-
+        
     }
 
     public function createCsrfCookie()

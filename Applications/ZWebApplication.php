@@ -62,7 +62,7 @@ class ZWebApplication extends ZApplication
             list($controller, $actionId) = $ca;
 
             $controller->init();
-            $controller->run($actionId);
+            $controller->execute($actionId);
         } else {
             throw new \Z\Exceptions\ZHttpException(
                 Z::t(
@@ -109,7 +109,7 @@ class ZWebApplication extends ZApplication
                 $basePath = $owner->getControllerPath();
             }
 
-            $className = $this->projectNamespace . '\Controller\\' . ucfirst($id).'Controller';
+            $className = $this->projectNamespace . '\Controllers\\' . ucfirst($id).'Controller';
             $classFile = $basePath . DIRECTORY_SEPARATOR . ucfirst($id).'Controller.php';
 
             if (is_file($classFile)) {
@@ -184,7 +184,7 @@ class ZWebApplication extends ZApplication
             return $this->_controllerPath;
         } else {
             return $this->_controllerPath = 
-                $this->getBasePath() . DIRECTORY_SEPARATOR . 'Controller';
+                $this->getBasePath() . DIRECTORY_SEPARATOR . 'Controllers';
         }
     }
 
