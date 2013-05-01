@@ -33,6 +33,12 @@ abstract class ZExecutor implements \ZExecutorInterface
     public $application;
     public function __construct(\ZRequestInterfase $request, ZApplication $application)
     {
-        
+        $this->request = $request;
+        $this->application = $application;
+    }
+
+    public function executor($actionId)
+    {
+        $response = $this->execute($actionId);
     }
 }

@@ -102,5 +102,5 @@ interface ZRequestInterfase
 }
 
 interface ZExecutorInterface {
-    public function execute();
+    public function execute($actionId);
 }

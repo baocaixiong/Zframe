@@ -29,11 +29,20 @@ abstract class ZBaseRequest extends ZAppComponent implements \ZRequestInterfase
     abstract public function getRawBody();
     abstract public function getContentType();
 
+    /**
+     * 设置url属性参数
+     * @param  array $params [description]
+     * @return void
+     */
     public function setParams(array $params)
     {
         $this->_params = array_merge($this->_params, $params);
     }
 
+    /**
+     * 获得url属性参数
+     * @return array
+     */
     public function getParams()
     {
         return $this->_params;

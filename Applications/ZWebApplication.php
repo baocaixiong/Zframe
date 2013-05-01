@@ -120,7 +120,7 @@ class ZWebApplication extends ZApplication
                 if (class_exists($className)
                     && is_subclass_of($className, 'Z\Executors\ZController')) {
                     return [
-                        new $className(),
+                        new $className($this->getRequest(), $this),
                         $this->parseActionParams($route)
                     ];
                 }

@@ -14,26 +14,36 @@
  */
 namespace Z\Executors;
 
-use Z\Z;
+use Z\Z,
+    Z\Exceptions\ZException;
 
 class ZController extends ZExecutor
 {
+    public $defaultAction = 'index';
     /**
-     * 构造方法
-     *
-     * @return \Z\Executors\ZController
+     * 预处理方法
+     * @return [type] [description]
      */
-    public function __construct()
-    {
-        $this->application = Z::app();
-    }
-
     public function init ()
     {
-        var_dump($this->application->createUrl('site/index', ['id' => 123, 'name' => 'zhangming', 'web' => 'nihaoa']));
+        
     }
-    public function execute ()
+
+    public function execute($actionId)
     {
-        //var_dump($this->application);
+        if (empty($actionId)) {
+            $actionId = $this->defaultAction;
+        }
+        $params = Z::app()->getRequest()->getParams();
+
+        $callable = [$this, $actionId];
+
+        if (is_callable($callable)) {
+            $response = call_user_func_array($callable, $params);
+
+            $response->respond();
+        } else {
+            throw new ZException(Z::t("This controller has not action \"{action}\".", ['{action}' => $actionId]));
+        }
     }
 }
