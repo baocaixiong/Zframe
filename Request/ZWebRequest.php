@@ -364,6 +364,7 @@ class ZWebRequest extends ZBaseRequest
 
     /**
      * 返回 脚本名称 
+     * from Yii
      * eg:  http://localhost/zapp/index.php => /zapp/index.php
      * @return string
      */

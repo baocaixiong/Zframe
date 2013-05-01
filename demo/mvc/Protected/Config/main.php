@@ -6,7 +6,7 @@ return array(
     'components' => array(
         'router' => array(
                 'class'     => 'Z\Router\ZWebRouter',
-                'urlFormat' => 'get',
+                'urlFormat' => 'path',
                 'rules'     => array(
                     '/site/:id/:name' => 'site/index',
                 ),
