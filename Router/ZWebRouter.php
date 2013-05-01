@@ -161,6 +161,7 @@ class ZWebRouter extends ZRouterAbstract
         $route = '/' . trim($route, '/');
         $key = md5($route);
 
+        $params = [];
         if ($this->_ruleValue->exists($key)) {
             $route = preg_replace_callback('@/:([_a-z]+)@i', function ($matches) use (&$params) {
                     $params[] = $matches[1];
@@ -184,7 +185,7 @@ class ZWebRouter extends ZRouterAbstract
             return $route . '?' . http_build_query($queryString);
         } else {
             $route = trim($route, '/');
-            return $this->routeVar . '=' . $route . '&' .  http_build_query($queryString);
+            return '?' . $this->routeVar . '=' . $route . '&' .  http_build_query($queryString);
         }
     }
 

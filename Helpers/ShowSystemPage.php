@@ -42,9 +42,11 @@ class ShowSystemPage
         $html .= '<hr />';
         $html .= '<p><strong> Stack trace: </strong></p><p style="padding:15px;">';
 
-        foreach ($traces as $key => $trace) {
-            $html .= ($key + 1) . '. ' . $trace['file'] 
-            . '(' . $trace['line'] . ')' . "<br />";
+        foreach ($traces as $key     => $trace) {
+            $fileName = isset($trace['file']) ? $trace['file'] : '';
+            $fileLine = isset($trace['line']) ? $trace['line'] : '';
+            $html .= ($key + 1) . '. ' . $fileName 
+            . '(' . $fileLine . ')' . "<br />";
         }
 
         $html .= '</p></div></div></body></html>';

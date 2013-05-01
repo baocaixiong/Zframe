@@ -30,7 +30,7 @@ class ZController extends ZExecutor
 
     public function init ()
     {
-        
+        var_dump($this->application->createUrl('site/index', ['id' => 123, 'name' => 'zhangming', 'web' => 'nihaoa']));
     }
     public function execute ()
     {
