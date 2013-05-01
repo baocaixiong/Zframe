@@ -90,9 +90,9 @@ interface ZBehaviorInterface
 }
 interface ZRouterInterface
 {
-    public function addRule();
+    public function addRule($pattern, $route);
 
-    public function matchRule();
+    public function matchRule($route);
 }
 interface ZRequestInterfase
 {

@@ -22,7 +22,20 @@ use \Z\Z,
  */
 abstract class ZBaseRequest extends ZAppComponent implements \ZRequestInterfase
 {
+
+	private $_params = [];
+
     abstract public function getMethod();
     abstract public function getRawBody();
     abstract public function getContentType();
+
+    public function setParams(array $params)
+    {
+        $this->_params = array_merge($this->_params, $params);
+    }
+
+    public function getParams()
+    {
+        return $this->_params;
+    }
 }

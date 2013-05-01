@@ -31,6 +31,8 @@ class ZWebRouter extends ZRouterAbstract
 
     private $_urlFormat = self::GET_FORMAT;
 
+    private $_rules;
+
 
     //private $_baseUrl;
     /**
@@ -52,17 +54,17 @@ class ZWebRouter extends ZRouterAbstract
             return null;
         }
         //url 缓存
-        if ($this->cacheId !== false && Z::app()->getComponent($this->cacheId) !== false) {
-            //do something $cache = ...
-        }
+        // if ($this->cacheId !== false && Z::app()->getComponent($this->cacheId) !== false) {
+        //     //do something $cache = ...
+        // }
 
         foreach ($this->rules as $pattern => $route) {
             $this->_rules[] = $this->addRule($pattern, $route);
         }
 
-        if(isset($cache)) { //增加缓存
-            $cache->set(self::CACHE_KEY, array($this->_rules, $hash));
-        }
+        // if(isset($cache)) { //增加缓存
+        //     $cache->set(self::CACHE_KEY, array($this->_rules, $hash));
+        // }
     }
 
     /**
@@ -78,21 +80,23 @@ class ZWebRouter extends ZRouterAbstract
         if ($this->getUrlFormat() === self::PATH_FORMAT) {
             $rawPathInfo = $request->getPathInfo();
             $pathInfo = $this->removeUrlSuffix($rawPathInfo);
-            return $pathInfo;
+            $route = $pathInfo;
         } elseif(isset($request->getGet()->$routeVar)) {
-            return $request->getGet()->$routeVar;
+            $route = $request->getGet()->$routeVar;
         } elseif (isset($request->getPost()->$routeVar)) {
-            return $request->getPost()->$routeVar;
+            $route = $request->getPost()->$routeVar;
         } else {
-            return '';
+            $route = '';
         }
+
+        return $this->matchRule($route);
     }
     /**
      * 增加路由规则
      * 这个方法来自接口 ZRouterInterface
      * @return void
      */
-    public function addRule ()
+    public function addRule ($pattern, $route)
     {
 
     }
@@ -101,9 +105,44 @@ class ZWebRouter extends ZRouterAbstract
      * 这个方法来自接口 ZRouterInterface
      * @return void
      */
-    public function matchRule ()
+    public function matchRule ($routeStr)
     {
-        
+        if (empty($routeStr)) {
+            return '';
+        }
+
+        $routeStr = '/' . trim($routeStr, '/');
+
+        if (isset($this->rules[$routeStr])) {
+            return $this->rules[$routeStr];
+        } else {
+            $request = Z::app()->getRequest();
+            foreach ($this->rules as $pattern => $routeValue) {
+                if (false === strpos($pattern, ':')) { //如果定义个的路由没有:，说明不是正则路由
+                    continue;
+                }
+
+                $pattern = '/' . trim($pattern, '/');
+
+                $params = array();
+                $route = preg_replace_callback('@:([_a-z]+)@i', function ($matches) use (&$params) {
+                    $params[] = $matches[1];
+                    return '%';
+                }, $pattern);
+
+                $route = str_replace('%', '([^\/]+)', preg_quote($route));
+                if (preg_match('@^' . $route . '$@', $routeStr, $matches)) {
+                    array_shift($matches);
+                    if (!empty($params)) {
+                        $params = array_combine($params, $matches);
+                        $request->setParams($params);
+                    }
+
+                    return $routeValue;
+                }
+                return $routeStr;
+            }
+        }
     }
 
     /**

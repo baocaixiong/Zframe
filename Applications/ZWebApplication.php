@@ -47,7 +47,7 @@ class ZWebApplication extends ZApplication
         } else {
             $route = $this->getRouter()->parseUrl($this->getRequest());
         }
-        
+var_dump($route, $this->getRequest()->getParams());
         $this->runController($route);
     }
 
@@ -178,6 +178,10 @@ class ZWebApplication extends ZApplication
         
         $this->setComponents($components);
     }
+    /**
+     * 获得应用中controller的路径
+     * @return void
+     */
     public function getControllerPath()
     {
         if ($this->_controllerPath !== null) {

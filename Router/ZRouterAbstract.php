@@ -19,19 +19,22 @@ use \Z\Z,
 
 abstract class ZRouterAbstract extends ZAppComponent implements \ZRouterInterface
 {
+    
     /**
      * 增加路由规则
      * 这个方法来自接口 ZRouterInterface
      * @return void
      */
-    abstract public function addRule ();
+    abstract public function addRule ($pattern, $route);
     /**
      * 匹配路由规则
      * 这个方法来自接口 ZRouterInterface
      * @return void
      */
-    abstract public function matchRule ();
+    abstract public function matchRule ($route);
 
     abstract public function parseUrl(\ZRequestInterfase $request);
 
+
+    
 }
