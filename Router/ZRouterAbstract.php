@@ -25,7 +25,7 @@ abstract class ZRouterAbstract extends ZAppComponent implements \ZRouterInterfac
      * 这个方法来自接口 ZRouterInterface
      * @return void
      */
-    abstract public function addRule ($pattern, $route);
+    abstract public function createRule ($pattern, $route);
     /**
      * 匹配路由规则
      * 这个方法来自接口 ZRouterInterface

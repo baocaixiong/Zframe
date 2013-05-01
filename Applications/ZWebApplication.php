@@ -47,7 +47,7 @@ class ZWebApplication extends ZApplication
         } else {
             $route = $this->getRouter()->parseUrl($this->getRequest());
         }
-var_dump($route, $this->getRequest()->getParams());
+
         $this->runController($route);
     }
 
@@ -157,6 +157,17 @@ var_dump($route, $this->getRequest()->getParams());
     public function getRequest()
     {
         return $this->getComponent('request');
+    }
+
+    /**
+     * 创建一个url(代理方法)
+     * @param  string $route     url
+     * @param  array  $urlParams url的参数
+     * @return string 处理好的url
+     */
+    public function createUrl($route, $urlParams = [])
+    {
+        return $this->getRouter()->createUrl($route, $urlParams);
     }
     /**
      * 注册系统核心组建

@@ -14,7 +14,9 @@
  */
 namespace Z\Router;
 
-use \Z\Z;
+use Z\Z,
+    Z\Exceptions\ZException,
+    Z\Collections\Zmap;
 
 class ZWebRouter extends ZRouterAbstract
 {
@@ -33,6 +35,10 @@ class ZWebRouter extends ZRouterAbstract
 
     private $_rules;
 
+    private $_pattern;
+
+    private $_ruleValue;
+
 
     //private $_baseUrl;
     /**
@@ -50,7 +56,7 @@ class ZWebRouter extends ZRouterAbstract
      */
     public function processRules()
     {
-        if (empty($this->rules) || $this->getUrlFormat() === self::GET_FORMAT) {
+        if (empty($this->rules)) {
             return null;
         }
         //url 缓存
@@ -59,7 +65,7 @@ class ZWebRouter extends ZRouterAbstract
         // }
 
         foreach ($this->rules as $pattern => $route) {
-            $this->_rules[] = $this->addRule($pattern, $route);
+            $this->_rules[] = $this->createRule($pattern, $route);
         }
 
         // if(isset($cache)) { //增加缓存
@@ -91,17 +97,102 @@ class ZWebRouter extends ZRouterAbstract
 
         return $this->matchRule($route);
     }
+
     /**
      * 增加路由规则
+     * @param array   $rules  要增加的路由规则
+     * @param boolean $append 是否是append
+     */
+    public function addRule ($rules, $append = felse)
+    {
+        if ($append) {
+            foreach($rules as $pattern => $route) {
+                $this->_rules[] = $this->createUrlRule($pattern, $route);
+            }
+        } else {
+            $rules = array_reverse($rules);
+            foreach ($rules as $pattern => $route) {
+                array_unshift($this->_rules, $this->createUrlRule($pattern, $route));
+            }
+        }
+    }
+
+
+    /**
+     * 创建一个路由规则
      * 这个方法来自接口 ZRouterInterface
+     * @param  string $pattern 路由正则
+     * @param  string $route   匹配路由
      * @return void
      */
-    public function addRule ($pattern, $route)
+    public function createRule ($pattern, $routeValue)
     {
+        if ($pattern === '' || $routeValue === '') {
+            return null;
+        }
 
+        if (strncasecmp($pattern, '/', 1) !== 0) {
+            throw new ZException(Z::t('rule pattern must be start with "/"'));
+        }
+
+        $routeValue = '/' . trim($routeValue, '/');
+
+        $key = md5($routeValue);
+
+        if (!isset($this->_pattern[$key])) {
+            $this->_pattern = new Zmap;
+            $this->_ruleValue = new Zmap;
+        }
+
+        $this->_pattern[$key] = $pattern;
+        $this->_ruleValue[$key] = $routeValue;
+
+        return [$this->_pattern, $this->_ruleValue];
     }
+
+    /**
+     * 创建一个url
+     * @param  string $route     url
+     * @param  array  $urlParams url的参数
+     * @return string 处理好的url
+     */
+    public function createUrl($route, $urlParams = [])
+    {
+        $route = '/' . trim($route, '/');
+        $key = md5($route);
+
+        if ($this->_ruleValue->exists($key)) {
+            $route = preg_replace_callback('@/:([_a-z]+)@i', function ($matches) use (&$params) {
+                    $params[] = $matches[1];
+                    return '';
+                }, $this->_pattern[$key]);
+        }
+
+        $queryString = [];
+        $routeArray = [];
+        foreach ($urlParams as $key => $value) {
+            if (in_array($key, $params)) {
+                $routeArray[$key] = $value;
+            } else {
+                $queryString[$key] = $value;
+            }
+        }
+
+        $route .= '/' . trim(implode('/', $routeArray), '/');
+
+        if ($this->getUrlFormat() === self::PATH_FORMAT) {
+            return $route . '?' . http_build_query($queryString);
+        } else {
+            $route = trim($route, '/');
+            return $this->routeVar . '=' . $route . '&' .  http_build_query($queryString);
+        }
+    }
+
     /**
      * 匹配路由规则
+     * <code>
+     * '/:id' => 'site/index' => $request->getParams()return ['id' => 'XXX'];
+     * </code>
      * 这个方法来自接口 ZRouterInterface
      * @return void
      */

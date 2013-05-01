@@ -30,7 +30,7 @@ class ZController extends ZExecutor
 
     public function init ()
     {
-
+        
     }
     public function execute ()
     {
