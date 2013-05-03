@@ -159,6 +159,11 @@ class ZWebApplication extends ZApplication
         return $this->getComponent('request');
     }
 
+    public function getHttpResponse()
+    {
+        return $this->getComponent('httpResponse');
+    }
+
     /**
      * 创建一个url(代理方法)
      * @param  string $route     url
@@ -184,6 +189,9 @@ class ZWebApplication extends ZApplication
             'request' => array(
                 'class'     => 'Z\Request\ZWebRequest',
                 'enableCsrf' => true,
+            ),
+            'httpResponse' => array(
+                'class' => 'Z\Response\ZHttpResponse'
             ),
         );
         

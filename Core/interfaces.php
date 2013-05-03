@@ -101,6 +101,17 @@ interface ZRequestInterfase
     public function getContentType();
 }
 
-interface ZExecutorInterface {
+interface ZExecutorInterface
+{
     public function execute($actionId);
+}
+interface ZResponseInterface
+{
+    public function respond();
+
+    public function output();
+
+    public function setHeader($headerName, $replace=false);
+
+    public function setStatusCode($code);
 }
