@@ -41,7 +41,7 @@ abstract class ZResponseAbstract extends ZAppComponent implements \ZResponseInte
      * default http status code 200
      * @var integer
      */
-    public $defaultStatusCode = 200;
+    public $statusCode = 200;
 
     /**
      * whether enable eTag
@@ -65,7 +65,7 @@ abstract class ZResponseAbstract extends ZAppComponent implements \ZResponseInte
      * http Content-Type 
      * @var string
      */
-    protected $contentType = '';
+    protected $contentType = 'text/html';
 
     /**
      * HTTP status description
@@ -73,7 +73,9 @@ abstract class ZResponseAbstract extends ZAppComponent implements \ZResponseInte
      */
     protected $statusDesc = '';
 
-    //from Gandalf WeberLiu
+    /**
+     * from Gandalf
+     */
     // [Informational 1xx]
     const HTTP_CONTINUE = 100;
     const HTTP_SWITCHING_PROTOCOLS = 101;
@@ -129,7 +131,7 @@ abstract class ZResponseAbstract extends ZAppComponent implements \ZResponseInte
      * 推荐的HTTP码描述
      * @var array
      */
-    private $_recommendedStatusDesc = array(
+    protected $recommendedStatusDesc = array(
         // [Informational 1xx]
         100 => 'Continue',
         101 => 'Switching Protocols',
@@ -183,19 +185,127 @@ abstract class ZResponseAbstract extends ZAppComponent implements \ZResponseInte
     );
     
     /**
-     * response construct method
-     * @param  string $charset charset
+     * response initialize method 
+     * submethod can Overloading this methid to initialize
      * @return void
+     * @todo   initialize
      */
     public function initialize() 
     {
         
     }
-    abstract public function respond();
 
-    abstract public function output();
+    /**
+     * set reponse not found 404
+     * @return \Z\Response\ZResponseAbstract 
+     */
+    public function notFount()
+    {
+        return $this->setStatus(self::HTTP_NOT_FOUND);
+    }
 
-    abstract public function setHeader($headerName, $replace=false);
+    /**
+     * set reponse 416
+     * @return \Z\Response\ZResponseAbstract 
+     */
+    public function notInRange ()
+    {
+        return $this->setStatus(self::HTTP_REQUESTED_RANGE_NOT_SATISFIABLE);
+    }
 
+    /**
+     * set reponse 400
+     * @return \Z\Response\ZResponseAbstract 
+     */
+    public function badRequest ()
+    {
+        return $this->setStatus(self::HTTP_BAD_REQUEST);
+    }
+
+    /**
+     * set reponse 403
+     * @return \Z\Response\ZResponseAbstract 
+     */
+    public function forbidden ()
+    {
+        return $this->setStatus(self::HTTP_FORBIDDEN);
+    }
+
+    /**
+     * set reponse 409
+     * @return \Z\Response\ZResponseAbstract 
+     */
+    public function conflict ()
+    {
+        return $this->setStatus(self::HTTP_CONFLICT);
+    }
+
+    /**
+     * set reponse 500
+     * @return \Z\Response\ZResponseAbstract
+     */
+    public function internalError()
+    {
+        return $this->setStatus(self::HTTP_INTERNAL_SERVER_ERROR);
+    }
+
+    /**
+     * set reponse 406
+     * @return \Z\Response\ZResponseAbstract
+     */
+    public function notAcceptable()
+    {
+        $this->body = '';
+        return $this->setStatus(self::HTTP_NOT_ACCEPTABLE);
+    }
+
+    /**
+     * set reponse 304
+     * @return \Z\Response\ZResponseAbstract
+     */
+    public function notModified()
+    {
+        $this->body = '';
+        return $this->setStatus(self::HTTP_NOT_ACCEPTABLE);
+    }
+
+    /**
+     * set reponse 201
+     * @return \Z\Response\ZResponseAbstract
+     */
+    public function created()
+    {
+        return $this->setStatus(self::HTTP_CREATED);
+    }
+    /**
+     * 获得所有的 Header 信息
+     * 
+     * @return array
+     */
+    abstract public function getAllHeaders();
+
+    /**
+     * 将要返回的内容填充，直接respond
+     *
+     * @param string $content 返回值
+     * @return void
+     */
+    abstract public function output($content = '');
+
+    /**
+     * 设置头
+     * @param string         $headerName header name
+     * @param boolean|string $replace    replace value
+     *
+     * @return \Z\Response\ZResponseAbstract
+     */
+    abstract public function setHeader($headerName, $replace = false);
+
+    /**
+     * set response http code
+     * @param int $code status code value
+     *
+     * @return \Z\Response\ZResponseAbstract
+     */
     abstract public function setStatusCode($code);
 }

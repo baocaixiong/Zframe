@@ -20,6 +20,16 @@ use Z\Z,
 class ZController extends ZExecutor
 {
     public $defaultAction = 'index';
+
+    public function __get ($name)
+    {
+        if ($name = 'httpResponse') {
+            return $this->application->getHttpResponse();
+        } else {
+            return parent::__get($name);
+        }
+    }
+
     /**
      * 预处理方法
      * @return [type] [description]
@@ -41,9 +51,27 @@ class ZController extends ZExecutor
         if (is_callable($callable)) {
             $response = call_user_func_array($callable, $params);
 
-            $response->respond();
+            $this->responed($response);
         } else {
             throw new ZException(Z::t("This controller has not action \"{action}\".", ['{action}' => $actionId]));
+        }   
+    }
+
+    /**
+     * Respond to client
+     * @param  \Z\Resposne\ZReponseAbstract $resposne response instance
+     * @return void
+     */
+    protected function responed (\ZResponseInterface $resposne)
+    {
+        if (null == $resposne) {
+            return;
         }
+
+        foreach ($resposne->getAllheaders() as $str => $replace) {
+            header($str, $replace);
+        }
+
+        echo $resposne->getBody();
     }
 }

@@ -15,9 +15,10 @@
 namespace Z\Executors;
 
 use Z\Z,
-    Z\Core\ZApplication;
+    Z\Core\ZApplication,
+    Z\Core\ZCore;
 
-abstract class ZExecutor implements \ZExecutorInterface
+abstract class ZExecutor extends ZCore implements \ZExecutorInterface
 {
     /**
      * Current Request

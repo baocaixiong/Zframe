@@ -191,7 +191,8 @@ class ZWebApplication extends ZApplication
                 'enableCsrf' => true,
             ),
             'httpResponse' => array(
-                'class' => 'Z\Response\ZHttpResponse'
+                'class' => 'Z\Response\ZHttpResponse',
+                'enableEtag' => true,
             ),
         );
         

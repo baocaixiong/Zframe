@@ -107,9 +107,9 @@ interface ZExecutorInterface
 }
 interface ZResponseInterface
 {
-    public function respond();
+    public function getAllHeaders();
 
-    public function output();
+    public function output($content = '');
 
     public function setHeader($headerName, $replace=false);
 
