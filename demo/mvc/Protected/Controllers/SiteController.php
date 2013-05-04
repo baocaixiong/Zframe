@@ -14,6 +14,7 @@ class SiteController extends ZController
             ->setBody('HELLO WORLD')
             ->setEtag()
             ->setExpires()
+            ->setLastModified(time())
             ->setStatus(200);
     }
 }

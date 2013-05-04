@@ -22,9 +22,11 @@ use \Z\Z,
  */
 class ZWebRequest extends ZBaseRequest
 {
+    const DEFAULT_EXPIRES = 1000;
+
     public $enableCsrf = false;
 
-    private $_post, $_get, $_request, $_cookie, $_put, $_delete;
+    private $_post, $_get, $_put, $_delete;
 
     private $_requestUri, $_pathInfo, $_scriptName;
 
@@ -74,6 +76,21 @@ class ZWebRequest extends ZBaseRequest
         // if ($this->enableCsrf) {
         //     Z::app()->attachEventHandler('onBeginRequest', array($this, 'validateCsrfToken'));
         // }
+    }
+
+    /**
+     * check client cache whether valid
+     * @param  int $expires expires time
+     * @return boolean
+     */
+    public function checkClientCacheIsValid($expires = self::DEFAULT_EXPIRES)
+    {
+        if (isset($_SERVER['HTTP_IF_MODIFIED_SINCE'])
+            && ((time() - strtotime($_SERVER['HTTP_IF_MODIFIED_SINCE'])) < $expires)
+        ) {
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -146,7 +163,7 @@ class ZWebRequest extends ZBaseRequest
         return $this->_post = new RequestData($post);
     }
 
-    public function parseIOStreams()
+    protected function parseIOStreams()
     {
         $content = $this->getRawBody();
         $data = [];

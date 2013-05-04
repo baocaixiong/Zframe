@@ -218,7 +218,8 @@ abstract class ZResponseAbstract extends ZAppComponent implements \ZResponseInte
      * @return \Z\Response\ZResponseAbstract 
      */
     public function badRequest ()
-    {
+    {   
+        $this->body = '';
         return $this->setStatus(self::HTTP_BAD_REQUEST);
     }
 
@@ -266,7 +267,7 @@ abstract class ZResponseAbstract extends ZAppComponent implements \ZResponseInte
     public function notModified()
     {
         $this->body = '';
-        return $this->setStatus(self::HTTP_NOT_ACCEPTABLE);
+        return $this->setStatus(self::HTTP_NOT_MODIFIED);
     }
 
     /**

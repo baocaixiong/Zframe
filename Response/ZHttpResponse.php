@@ -35,7 +35,7 @@ class ZHttpResponse extends ZResponseAbstract
             $str = "{$key}: {$value}";
             $arr[$str] = isset($value[1]) && $value[1];
         }
-var_dump($arr);
+        
         return $arr;
     }
 

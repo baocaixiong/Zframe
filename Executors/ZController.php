@@ -44,11 +44,19 @@ class ZController extends ZExecutor
         if (empty($actionId)) {
             $actionId = $this->defaultAction;
         }
-        $params = Z::app()->getRequest()->getParams();
+
+        $request = Z::app()->getRequest();
+        $params = $request->getParams();
 
         $callable = [$this, $actionId];
 
         if (is_callable($callable)) {
+            if ($request->checkClientCacheIsValid()) {
+                Z::app()->getHttpResponse()->notModified();
+                $this->responed(Z::app()->getHttpResponse());
+                return ;
+            }
+
             $response = call_user_func_array($callable, $params);
 
             $this->responed($response);
