@@ -116,11 +116,11 @@ interface ZResponseInterface
     public function setStatusCode($code);
 }
 
-interface AnnotationCollectionInterface
+interface AnnotationUrlPathCollectionInterface
 {
-    public function getAnnotation($name = null, $default = null);
+    public function get($name = null, $default = null);
 
-    public function setAnnotation($option, $optionValue = null);
+    public function set($option, $optionValue = null);
 }
 
 interface AnnotationInterface

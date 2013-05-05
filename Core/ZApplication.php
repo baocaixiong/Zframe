@@ -227,7 +227,7 @@ abstract class ZApplication extends ZModule
     {
         return array(
             'annotation' => array(
-                'class' => 'Z\Core\Annotation\Annotation',
+                'class' => 'Z\Core\Annotation\AnnotationManager',
                 'separator' => '.',
             ),
             'parseComment' => array(
