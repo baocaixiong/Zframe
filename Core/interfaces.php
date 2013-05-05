@@ -115,3 +115,15 @@ interface ZResponseInterface
 
     public function setStatusCode($code);
 }
+
+interface AnnotationCollectionInterface
+{
+    public function getAnnotation($name = null, $default = null);
+
+    public function setAnnotation($option, $optionValue = null);
+}
+
+interface AnnotationInterface
+{
+    public function getAnnotationCollection();
+}

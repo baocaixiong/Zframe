@@ -85,6 +85,16 @@ abstract class ZApplication extends ZModule
     }
 
     /**
+     * 获得 annotation 组件
+     * 
+     * @return \Z\Core\Annotation\Annotation
+     */
+    public function getAnnotation()
+    {
+        return $this->getComponent('annotation');
+    }
+
+    /**
      * 程序启动时的事件
      * @param \Z\Core\ZEvent $event 事件对象
      * @return void
@@ -199,6 +209,19 @@ abstract class ZApplication extends ZModule
         );
     }
     
+    /**
+     * 系统核心commponents
+     * @return array
+     */
+    protected function coreComponents ()
+    {
+        return array(
+            'annotation' => array(
+                'class' => 'Z\Core\Annotation\Annotation',
+                'separator' => '.',
+            ),
+        );
+    }
     /**
      * prepare initialize
      * 

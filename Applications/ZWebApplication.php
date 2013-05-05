@@ -180,6 +180,7 @@ class ZWebApplication extends ZApplication
      */
     protected function registerCoreComponents()
     {
+        $coreComponents = $this->coreComponents();
         $components = array(
             'router' => array(
                 'class'     => 'Z\Router\ZWebRouter',
@@ -196,7 +197,7 @@ class ZWebApplication extends ZApplication
             ),
         );
         
-        $this->setComponents($components);
+        $this->setComponents(array_merge($coreComponents, $components));
     }
     /**
      * 获得应用中controller的路径

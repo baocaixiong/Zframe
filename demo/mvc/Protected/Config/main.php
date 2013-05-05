@@ -11,6 +11,10 @@ return array(
                     '/site/:id/:name' => 'site/index',
                 ),
             ),
+        'annotation' => array(
+                'class' => 'Z\Core\Annotation\Annotation',
+                'separator' => '/',
+            ),
     ),
 );
 

@@ -8,8 +8,8 @@ use Z\Z,
 
 class SiteController extends ZController
 {
-    public function index()
-    {   
+    public function index($name, $id)
+    {   var_dump($this->application->getAnnotation());
         return $this->httpResponse
             ->setBody('HELLO WORLD')
             ->setEtag()
