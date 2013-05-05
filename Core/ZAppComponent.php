@@ -16,30 +16,30 @@ namespace Z\Core;
 
 class ZAppComponent extends ZCore implements \ZApplicationComponentInterface
 {
-	/**
-	 * 行为列表
-	 * @var Array
-	 */
-	public $behaviors = [];
+    /**
+     * 行为列表
+     * @var Array
+     */
+    public $behaviors = [];
 
-	protected $_isInited = false;
+    protected $_isInited = false;
 
-	/**
-	 * 初始化组件，将行为添加到组件
-	 * @return void
-	 */
-	public function initialize()
-	{
-		$this->attachBehaviors($this->behaviors);
-		$this->_isInited = true;
-	}
+    /**
+     * 初始化组件，将行为添加到组件
+     * @return void
+     */
+    public function initialize()
+    {
+        $this->attachBehaviors($this->behaviors);
+        $this->_isInited = true;
+    }
 
-	/**
-	 * 检查一个组件是否已经初始化
-	 * @return void
-	 */
-	public function getIsInited()
-	{
-		return $this->_isInited;
-	}
+    /**
+     * 检查一个组件是否已经初始化
+     * @return void
+     */
+    public function getIsInited()
+    {
+        return $this->_isInited;
+    }
 }

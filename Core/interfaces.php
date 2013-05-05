@@ -125,5 +125,13 @@ interface AnnotationCollectionInterface
 
 interface AnnotationInterface
 {
-    public function getAnnotationCollection();
+    /**
+     * 收集annotations
+     */
+    public function collect();
+}
+
+interface ZParseCommentInterface
+{
+    public function parse($comment);
 }

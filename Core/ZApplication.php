@@ -95,6 +95,16 @@ abstract class ZApplication extends ZModule
     }
 
     /**
+     * 获得document parse 组件
+     * 
+     * @return \Z\Core\CoreComponents\ZParseComment
+     */
+    public function getParseComment()
+    {
+        return $this->getComponent('parseComment');
+    }
+
+    /**
      * 程序启动时的事件
      * @param \Z\Core\ZEvent $event 事件对象
      * @return void
@@ -219,6 +229,9 @@ abstract class ZApplication extends ZModule
             'annotation' => array(
                 'class' => 'Z\Core\Annotation\Annotation',
                 'separator' => '.',
+            ),
+            'parseComment' => array(
+                'class' => 'Z\Core\CoreComponents\ZParseComment',
             ),
         );
     }

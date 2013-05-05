@@ -1,6 +1,6 @@
 <?php
 
-    $config = include dirname(__FILE__) . '/Protected/Config/main.php';
+    $config = include dirname(__FILE__) . '/Protected/config/main.php';
 
     include dirname(__FILE__) . '/../../Z.php';
 
