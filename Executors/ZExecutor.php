@@ -44,6 +44,11 @@ abstract class ZExecutor extends ZCore implements \ZExecutorInterface
         $this->application = $application;
     }
 
+    public function init()
+    {
+        $this->attachBehaviors($this->behaviors());
+    }
+
     /**
      * 执行 action
      * @param  string $actionId action id
@@ -52,6 +57,19 @@ abstract class ZExecutor extends ZCore implements \ZExecutorInterface
     public function executor(\ZDispatchContextInterface $dispath)
     {
         $response = $this->execute($dispath);
+    }
+
+    /**
+     * 行为列表
+     * @return array
+     */
+    protected function behaviors()
+    {
+        return array(
+            'dispatch' => array(
+                'class' => 'Z\Executors\ZExecutorBehavior',
+            ),
+        );
     }
 
     protected function bindParams()

@@ -36,7 +36,7 @@ class ZController extends ZExecutor
      */
     public function init ()
     {
-        
+        parent::init();
     }
 
     public function execute(\ZDispatchContextInterface $dispatch)

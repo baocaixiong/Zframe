@@ -65,7 +65,6 @@ class ZWebApplication extends ZApplication
                 ->assignment($this->getRequest(), $controller, $actionId);
 
             $controller->init();
-            
             $controller->executor($dispatch);
         } else {
             throw new \Z\Exceptions\ZHttpException(
