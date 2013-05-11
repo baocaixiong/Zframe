@@ -45,7 +45,7 @@ class ZBehavior extends Zcore implements \ZBehaviorInterface
      * @param \Z\Core\ZCore $owner 行为的所有者，必须是ZCore的子类
      * @return [type]        [description]
      */
-    public function attach(ZCore $owner)
+    public function attach(\ZCoreInterface $owner)
     {
         $this->_enabled=true;
         $this->_owner=$owner;
@@ -57,7 +57,7 @@ class ZBehavior extends Zcore implements \ZBehaviorInterface
      * @param \Z\Core\ZCore $owner 行为的所有者
      * @return void
      */
-    public function detach(ZCore $owner)
+    public function detach(\ZCoreInterface $owner)
     {
         foreach($this->events() as $event=>$handler){
             $owner->detachEventHandler($event,array($this,$handler));
@@ -113,8 +113,9 @@ class ZBehavior extends Zcore implements \ZBehaviorInterface
     {
         $class = new \ReflectionClass($this);
         foreach ($this->events() as $event => $handler) {
-            if($class->getMethod($handler)->isPublic())
+            if($class->getMethod($handler)->isPublic()) {
                 $this->_owner->attachEventHandler($event,array($this, $handler));
+            }
         }
     }
 }
