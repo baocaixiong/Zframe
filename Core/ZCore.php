@@ -322,7 +322,7 @@ class ZCore implements \ZCoreInterface
      */
     public function attachBehavior($name, $behavior)
     {
-        if ($behavior instanceof ZBehaviorInterface) {
+        if (!($behavior instanceof ZBehaviorInterface)) {
             $behavior = Z::createComponent($behavior);
         }
         $behavior->setEnabled(true);

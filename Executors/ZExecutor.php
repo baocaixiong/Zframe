@@ -16,7 +16,8 @@ namespace Z\Executors;
 
 use Z\Z,
     Z\Core\ZApplication,
-    Z\Core\ZCore;
+    Z\Core\ZCore,
+    Z\Core\ZEvent;
 
 abstract class ZExecutor extends ZCore implements \ZExecutorInterface
 {
@@ -51,11 +52,17 @@ abstract class ZExecutor extends ZCore implements \ZExecutorInterface
      */
     public function executor(\ZDispatchContextInterface $dispath)
     {
+        $this->onBeforeDispatch(new ZEvent());
         $response = $this->execute($dispath);
     }
 
     protected function bindParams()
     {
 
+    }
+    
+    public function onBeforeDispatch($event)
+    {
+        $this->raiseEvent('onBeforeDispatch',   $event);
     }
 }

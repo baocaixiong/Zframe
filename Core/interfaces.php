@@ -73,12 +73,12 @@ interface ZBehaviorInterface
      * 增加一个行为对象组建
      * @param \Z\Core\ZCore $component 一个可以增加的组建
      */
-    public function attach($component);
+    public function attach(ZCoreInterface $component);
     /**
      * 删除一个行为组建
      * @param \Z\Core\ZCore $component  $component 一个可以删除的组建
      */
-    public function detach($component);
+    public function detach(ZCoreInterface $component);
     /**
      * @return boolean 行为是否可用
      */
