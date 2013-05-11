@@ -20,7 +20,7 @@ use \Z\Z,
 /**
  * ZBaseRequest class
  */
-abstract class ZBaseRequest extends ZAppComponent implements \ZRequestInterfase
+abstract class ZRequestAbstract extends ZAppComponent implements \ZRequestInterfase
 {
 
 	private $_params = [];

@@ -20,7 +20,7 @@ use \Z\Z,
 /**
  * ZRequest class
  */
-class ZWebRequest extends ZBaseRequest
+class ZWebRequest extends ZRequestAbstract
 {
     const DEFAULT_EXPIRES = 1000;
 

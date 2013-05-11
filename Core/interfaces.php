@@ -103,7 +103,7 @@ interface ZRequestInterfase
 
 interface ZExecutorInterface
 {
-    public function execute($actionId);
+    public function execute(\ZDispatchContextInterface $dispatch);
 }
 interface ZResponseInterface
 {
@@ -134,4 +134,10 @@ interface AnnotationInterface
 interface ZParseCommentInterface
 {
     public function parse($comment);
+}
+interface ZDispatchContextInterface
+{
+    public function assignment(
+        \ZRequestInterfase $request, \ZExecutorInterface $executor, $actionId
+    );
 }

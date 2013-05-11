@@ -32,14 +32,30 @@ abstract class ZExecutor extends ZCore implements \ZExecutorInterface
      * @var \Z\Core\ZApplication $application application
      */
     public $application;
+
+    /**
+     * 构造方法，初始化整个executer
+     * @param \ZRequestInterfase $request     [description]
+     * @param ZApplication       $application [description]
+     */
     public function __construct(\ZRequestInterfase $request, ZApplication $application)
     {
         $this->request = $request;
         $this->application = $application;
     }
 
-    public function executor($actionId)
+    /**
+     * 执行 action
+     * @param  string $actionId action id
+     * @return void
+     */
+    public function executor(\ZDispatchContextInterface $dispath)
     {
-        $response = $this->execute($actionId);
+        $response = $this->execute($dispath);
+    }
+
+    protected function bindParams()
+    {
+
     }
 }

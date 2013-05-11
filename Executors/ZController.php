@@ -39,25 +39,26 @@ class ZController extends ZExecutor
         
     }
 
-    public function execute($actionId)
+    public function execute(\ZDispatchContextInterface $dispatch)
     {
+        $actionId = $dispatch->actionId;
         if (empty($actionId)) {
             $actionId = $this->defaultAction;
         }
 
-        $request = Z::app()->getRequest();
-        $params = $request->getParams();
-
         $callable = [$this, $actionId];
 
         if (is_callable($callable)) {
-            if ($request->checkClientCacheIsValid()) {
-                Z::app()->getHttpResponse()->notModified();
-                $this->responed(Z::app()->getHttpResponse());
-                return ;
-            }
+            /**
+             * http cache
+             */
+            // if ($request->checkClientCacheIsValid()) {
+            //     Z::app()->getHttpResponse()->notModified();
+            //     $this->responed(Z::app()->getHttpResponse());
+            //     return ;
+            // }
 
-            $response = call_user_func_array($callable, $params);
+            $response = call_user_func_array($callable, $dispatch->params);
 
             $this->responed($response);
         } else {

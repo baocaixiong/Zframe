@@ -61,8 +61,12 @@ class ZWebApplication extends ZApplication
         if (($ca = $this->createController($route)) !== null) {
             list($controller, $actionId) = $ca;
 
+            $dispatch = $this->getContext()
+                ->assignment($this->getRequest(), $controller, $actionId);
+
             $controller->init();
-            $controller->execute($actionId);
+            
+            $controller->executor($dispatch);
         } else {
             throw new \Z\Exceptions\ZHttpException(
                 Z::t(
@@ -130,6 +134,11 @@ class ZWebApplication extends ZApplication
         }
     }
 
+    /**
+     * 将 actionId parse出来
+     * @param  string $route route without controller id
+     * @return string actionId
+     */
     public function parseActionParams($route)
     {
         if (($pos = strpos($route, '/')) !== false) {

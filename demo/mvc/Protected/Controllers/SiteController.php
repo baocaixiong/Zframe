@@ -22,7 +22,7 @@ class SiteController extends ZController
      * @http-method GET
      * @return [type]       [description]
      */
-    public function index($name, $id)
+    public function index($name,$id)
     {
 
         $this->application->getAnnotation();

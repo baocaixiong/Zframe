@@ -105,6 +105,15 @@ abstract class ZApplication extends ZModule
     }
 
     /**
+     * get dispatch context component
+     * @return \Z\Executors\ZDispatchContext
+     */
+    public function getContext()
+    {
+        return $this->getComponent('context');
+    }
+
+    /**
      * 程序启动时的事件
      * @param \Z\Core\ZEvent $event 事件对象
      * @return void
@@ -232,6 +241,9 @@ abstract class ZApplication extends ZModule
             ),
             'parseComment' => array(
                 'class' => 'Z\Core\CoreComponents\ZParseComment',
+            ),
+            'context' => array(
+                'class' => 'Z\Executors\ZDispatchContext',
             ),
         );
     }
