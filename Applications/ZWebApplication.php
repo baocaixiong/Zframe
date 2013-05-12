@@ -61,11 +61,11 @@ class ZWebApplication extends ZApplication
         if (($ca = $this->createController($route)) !== null) {
             list($controller, $actionId) = $ca;
 
-            $dispatch = $this->getContext()
+            $dispatch = $this->getDispatch()
                 ->assignment($this->getRequest(), $controller, $actionId);
 
-            $controller->init();
-            $controller->executor($dispatch);
+            $controller->init($dispatch);
+            $controller->executor();
         } else {
             throw new \Z\Exceptions\ZHttpException(
                 Z::t(
@@ -123,7 +123,7 @@ class ZWebApplication extends ZApplication
                 if (class_exists($className)
                     && is_subclass_of($className, 'Z\Executors\ZController')) {
                     return [
-                        new $className($this->getRequest(), $this),
+                        new $className($this),
                         $this->parseActionParams($route)
                     ];
                 }

@@ -26,7 +26,10 @@ class ZWebRouter extends ZRouterAbstract
     
     public $rules = [];
     public $urlSuffix = '';
+
     public $showScriptName = true;
+    public $scriptName = '.html';
+    
     public $routeVar = 'r';
     public $cacheId = 'cache';
     public $caseSensitive = false;

@@ -34,11 +34,17 @@ class ZController extends ZExecutor
      * 预处理方法
      * @return [type] [description]
      */
-    public function init ()
+    public function init (\ZDispatchContextInterface $dispatch)
     {
-        parent::init();
+        parent::init($dispatch);
     }
 
+    /**
+     * 执行 action
+     * @param  \ZDispatchContextInterface $dispatch [description]
+     * @return void
+     * @throws \Z\Exceptions\ZException
+     */
     public function execute(\ZDispatchContextInterface $dispatch)
     {
         $actionId = $dispatch->actionId;
@@ -76,7 +82,7 @@ class ZController extends ZExecutor
         if (null == $resposne) {
             return;
         }
-
+        
         foreach ($resposne->getAllheaders() as $str => $replace) {
             header($str, $replace);
         }

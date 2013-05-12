@@ -19,6 +19,10 @@ use Z\Z,
 
 class ZExecutorBehavior extends ZBehavior
 {
+    /**
+     * 所有者(owner)的事件列表
+     * @return array
+     */
     public function events()
     {
         return array_merge(parent::events(), array(
@@ -26,8 +30,46 @@ class ZExecutorBehavior extends ZBehavior
         ));
     }
 
-    public function beforeDispatch()
+    /**
+     * before dispatch 
+     * @return void
+     */
+    public function beforeDispatch($event)
     {
-        echo 13;
+        $this->bindParams($this->getOwner()->dispatch);
+    }
+
+    /**
+     * band action default parameters
+     * @param  \Z\Executors\ZDispatchContext $dispatch dispatch
+     * @return void
+     */
+    protected function bindParams(\ZDispatchContextInterface $dispatch)
+    {
+        $params = $dispatch->request->getParams();
+        if (empty($params)) {
+            return;
+        }
+
+        $rfMethod = new \ReflectionMethod(get_class($this->getOwner()), $dispatch->actionId);
+
+        $methodParams = $rfMethod->getParameters();
+
+        $retParams = [];
+        foreach ($methodParams as $methodParam) {
+            $name = $methodParam->name;
+
+            foreach ($params as $paramsKey => $paramsValue) {
+                if ($paramsKey == $name) {
+                    $retParams[$name] = $paramsValue;
+                }
+
+                if (!isset($params[$name]) && $methodParam->isOptional()) {
+                    $retParams[$name] = $methodParam->getDefaultValue();
+                }
+            }
+        }
+
+        $dispatch->params = $retParams;
     }
 }

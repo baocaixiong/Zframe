@@ -103,6 +103,7 @@ interface ZRequestInterfase
 
 interface ZExecutorInterface
 {
+    public function init(\ZDispatchContextInterface $dispatch);
     public function execute(\ZDispatchContextInterface $dispatch);
 }
 interface ZResponseInterface

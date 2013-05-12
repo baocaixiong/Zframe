@@ -108,9 +108,9 @@ abstract class ZApplication extends ZModule
      * get dispatch context component
      * @return \Z\Executors\ZDispatchContext
      */
-    public function getContext()
+    public function getDispatch()
     {
-        return $this->getComponent('context');
+        return $this->getComponent('dispatch');
     }
 
     /**
@@ -242,7 +242,7 @@ abstract class ZApplication extends ZModule
             'parseComment' => array(
                 'class' => 'Z\Core\CoreComponents\ZParseComment',
             ),
-            'context' => array(
+            'dispatch' => array(
                 'class' => 'Z\Executors\ZDispatchContext',
             ),
         );

@@ -23,11 +23,6 @@ class ZEvent implements \ZEventInterface
     private $_handlers = null;
 
     public $handled = false;
-    /**
-     * event name
-     * @var String
-     */
-    public $eventName = '';
 
     public function addHandler($handler)
     {

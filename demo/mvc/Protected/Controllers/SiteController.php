@@ -9,7 +9,7 @@ use Z\Z,
 /**
  * 你好啊
  * @root /test
- * @default-mapper fsdaasdf
+ * @default-mapper defaultMapper
  */
 class SiteController extends ZController
 {
@@ -18,11 +18,11 @@ class SiteController extends ZController
      * @param  [type] $name [description]
      * @param  [type] $id   [description]
      *
-     * @path /
-     * @http-method GET
-     * @return [type]       [description]
+     * @http method|GET path|/ cache|300
+     * @aha  asdf
+     * @return [type]       [description] $name, $id = 123123   $id = 123123, $name
      */
-    public function index($name,$id)
+    public function index($name = 123, $id = 123123)
     {
 
         $this->application->getAnnotation();

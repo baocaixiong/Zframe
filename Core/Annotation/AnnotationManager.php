@@ -83,9 +83,9 @@ class AnnotationManager extends ZAppComponent implements AnnotationInterface
         }
 
         $this->checkScanDirAndCacheDir();//检查目录
-        $this->collect();
+        $collection = $this->collect();
         echo '<pre>';
-        print_r($this->getUrlPathAnnotation()->get());
+        print_r($collection);
     }
 
     /**
@@ -99,6 +99,7 @@ class AnnotationManager extends ZAppComponent implements AnnotationInterface
         $files = $this->getAllScriptFiles($this->scanDir);
 
         $paramComment = $this->getParseComment();
+
         foreach ($files as $file) {
 
             $classes = $this->findClassFromFile($file);
@@ -107,43 +108,32 @@ class AnnotationManager extends ZAppComponent implements AnnotationInterface
                 
                 $rfClass = new \ReflectionClass($class);
 
-                $root = '';
                 foreach ($paramComment->parse($rfClass->getDocComment()) as $meta) {
-                    list($name, $arguments) = $meta;
-                    if ($name === $this->exectorAnnotation) { //说明是controller or resource
-                        $this->addUrlPath($rfClass, $meta);
-                        $root = $arguments[0];
-                    }
 
                     $annotation = $this->createAnnotation($rfClass, $meta);
                     $annotation != null && $collection->add($class, $annotation);
                 }
 
-                foreach ($rfClass->getMethods(\ReflectionMethod::IS_PUBLIC) as $method) {
-                    foreach ($paramComment->parse($method->getDocComment()) as $meta) {
-
-                        list($name, $arguments) = $meta;
-                        
-                        $this->addUrlPath($method, $meta, $root);
-                        
-
-                        $annotation = $this->createAnnotation($rfClass, $meta, $method);
-                        $annotation != null &&  $collection->add($method->getName(), $annotation);
+                foreach ($rfClass->getMethods(\ReflectionMethod::IS_PUBLIC) as $rfMethod) {
+                    foreach ($paramComment->parse($rfMethod->getDocComment()) as $meta) {
+                        $annotation = $this->createAnnotation($rfClass, $meta, $rfMethod);
+                        $annotation != null && $collection->add($class, $annotation);
                     }
-
                 }
             }
         }
+
+        return $collection;
     }
 
     /**
      * 
      * @param  [type] $rfClass [description]
      * @param  [type] $meta    [description]
-     * @param  [type] $method  [description]
+     * @param  [type] $rfMethod  [description]
      * @return [type]          [description]
      */
-    public function createAnnotation($rfClass, $meta, \ReflectionMethod $method = null)
+    public function createAnnotation($rfClass, $meta, \ReflectionMethod $rfMethod = null)
     {
         list($name, $arguments) = $meta;
 
@@ -156,9 +146,9 @@ class AnnotationManager extends ZAppComponent implements AnnotationInterface
         $annotation->class = $rfClass->getName();
         $annotation->arguments = $arguments;
 
-        if ($method != null) {
-            $annotation->method = $method->getName();
-            $annotation->methodParameters = $method->getParameters();
+        if ($rfMethod != null) {
+            $annotation->method = $rfMethod->getName();
+            $annotation->methodParameters = $rfMethod->getParameters();
             $annotation->methodParametersCount = count($annotation->methodParameters);
         }
 
