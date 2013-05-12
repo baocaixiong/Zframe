@@ -24,8 +24,6 @@ class SiteController extends ZController
      */
     public function index($name = 123, $id = 123123)
     {
-
-        $this->application->getAnnotation();
         return $this->httpResponse
             ->setBody('HELLO WORLD')
             ->setEtag()

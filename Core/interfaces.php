@@ -54,10 +54,7 @@ interface ZCoreInterface
 
 interface ZEventInterface
 {
-    /**
-     * add event handler
-     */
-    public function addHandler($handler);
+    
 }
 
 interface ZConfigureRegisterInterface

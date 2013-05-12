@@ -64,7 +64,7 @@ abstract class ZExecutor extends ZCore implements \ZExecutorInterface
      */
     public function executor()
     {
-        $this->onBeforeDispatch(new ZEvent());
+        $this->onBeforeDispatch(new ZEvent($this));
         $response = $this->execute($this->dispatch);
     }
 

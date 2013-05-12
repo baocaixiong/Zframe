@@ -17,41 +17,30 @@ namespace Z\Core;
 class ZEvent implements \ZEventInterface
 {
     /**
-     * event handler 
-     * @var mixed instance of ZEvent and sub ZEvent
+     * 事件是否已经触发
+     * @var boolean
      */
-    private $_handlers = null;
-
     public $handled = false;
 
-    public function addHandler($handler)
-    {
-        if (is_callable($handler)) {
-            $this->_handlers[] = $handler;
-            $this->handled = true;
-        } else {
-            throw new ZException('this handler ' . $handler . ' is not callable');
-        }
-    }
+    /**
+     * 事件的触发者
+     * @var \Z\Core\ZCore
+     */
+    public $sender;
 
     /**
-     * whether has event handler
-     * @return boolean [description]
+     * @var mixed additional event parameters.
      */
-    public function hasHandler()
-    {
-        if (empty($this->_handlers)) {
-            return false;
-        }
-        return true;
-    }
-    /**
-     * get handler 
-     * @return mixed
-     */
-    public function getHandlers()
-    {
-        return $this->_handlers;
-    }
+    public $params;
 
+    /**
+     * construct method
+     * @param \Z\Core\ZCore $sender 事件的触发者
+     * @param mixed         $params 参数
+     */
+    public function __construct($sender = null,$params = null)
+    {
+        $this->sender = $sender;
+        $this->params = $params;
+    }
 }
