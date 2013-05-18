@@ -53,7 +53,7 @@ abstract class ZResponseAbstract extends ZAppComponent implements \ZResponseInte
      * will set header
      * @var array
      */
-    protected $headers = [];
+    protected $headers = array();
 
     /**
      * http body

@@ -20,7 +20,7 @@ class ConfigureRegister implements ZConfigureRegisterInterface
 {
     use \Z\Helpers\ZSingleton;
 
-    private static $_config = [];
+    private static $_config = array();
 
     /**
      * get application configure

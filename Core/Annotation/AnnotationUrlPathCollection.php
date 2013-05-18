@@ -21,7 +21,7 @@ class AnnotationUrlPathCollection implements AnnotationUrlPathCollectionInterfac
 
     public $separator = '.';
 
-    private static $_annotation = [];
+    private static $_annotation = array();
 
     /**
      * set separator 

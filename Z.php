@@ -39,7 +39,7 @@ defined('PHP_EXT') or define('PHP_EXT', '.php');
 /**
  * require singleton file trait
  */
-require_once Z_PATH . '/Helpers/ZSingleton.php';
+//require_once Z_PATH . '/Helpers/ZSingleton.php';
 /**
  * Z Framework base class 
  *
@@ -52,13 +52,13 @@ class Z
     const Z_VERSION = 'v0.1';
     private static $_app; 
     
-    private static $_namespaceMapper = [];
+    private static $_namespaceMapper = array();
 
-    private static $_imports = [];
+    private static $_imports = array();
 
-    private static $_language = [];
+    private static $_language = array();
 
-    private static $_loadedFile = [];
+    private static $_loadedFile = array();
 
     /**
      * get z framework version 
@@ -126,7 +126,7 @@ class Z
         if (self::$_app === null || $application === null) {
             self::$_app=$application;
         } else {
-            self::throwZException(Z::t('The application has been created', []));
+            self::throwZException(Z::t('The application has been created', array()));
         }
     }
 
@@ -263,10 +263,10 @@ class Z
                     return self::$_imports[$alias] = $alias;
                 }
             } else {
-                self::throwZException(Z::t('import alias {alias} error', ['{alias}' => $alias]));
+                self::throwZException(Z::t('import alias {alias} error', array('{alias}' => $alias)));
             }
         }
-        self::throwZException(Z::t('import alias {alias} error', ['{alias}' => $alias]));
+        self::throwZException(Z::t('import alias {alias} error', array('{alias}' => $alias)));
     }
 
     /**
@@ -302,5 +302,5 @@ class Z
     );
 }//end of Z class 
 
-spl_autoload_register(['Z\Z', 'autoload']);
+spl_autoload_register(array('Z\Z', 'autoload'));
 require(Z_PATH . '/Core/interfaces.php');

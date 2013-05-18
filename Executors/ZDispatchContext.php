@@ -43,7 +43,7 @@ class ZDispatchContext implements ZDispatchContextInterface
      * will band inject parameters
      * @var array
      */
-    public $params = [];
+    public $params = array();
 
     /**
      * response object

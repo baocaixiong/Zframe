@@ -28,7 +28,7 @@ class RequestData extends \ArrayObject
      * @param Array $arr 要转换的数组
      * @return \Z\Request\RequestData
      */
-    public function __construct(Array $arr = [])
+    public function __construct(Array $arr = array())
     {
         parent::__construct($arr);
         $this->_data = $arr;

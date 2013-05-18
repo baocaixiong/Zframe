@@ -24,13 +24,13 @@ class ZCore implements \ZCoreInterface
      * list of events
      * @var Array
      */
-    private $_events = [];
+    private $_events = array();
 
     /**
      * 行为
      * @var Array
      */
-    private $_behavior = [];
+    private $_behavior = array();
     /**
      * __get
      * 
@@ -93,7 +93,7 @@ class ZCore implements \ZCoreInterface
             throw new ZException(
                 Z::t(
                     'Property {class}.{property} is read only.',
-                    ['{class}' => get_class($this), '{property}' => $name]
+                    array('{class}' => get_class($this), '{property}' => $name)
                 )
             );
         }
@@ -180,7 +180,7 @@ class ZCore implements \ZCoreInterface
             throw new ZException(
                 Z::t(
                     'Event "{class}.{event}" is not defined.',
-                    ['{class}' => get_class($this), '{evnet}' => $name]
+                    array('{class}' => get_class($this), '{evnet}' => $name)
                 )
             );
         }
@@ -236,11 +236,11 @@ class ZCore implements \ZCoreInterface
                                 Z::t(
                                     'Event "{class}.{event}" is 
                                     attached with an invalid handler "{handler}".',
-                                    [
+                                    array(
                                         '{class}' => get_class($this),
                                         '{event}' => $name,
                                         '{handler}' => $handler[1]
-                                    ]
+                                    )
                                 )
                             );
                         }
@@ -252,11 +252,11 @@ class ZCore implements \ZCoreInterface
                         Z::t(
                             'Event "{class}.{event}" is 
                             attached with an invalid handler "{handler}".',
-                            [
+                            array(
                                 '{class}' => get_class($this),
                                 '{event}' => $name,
                                 '{handler}' => $handler[1]
-                            ]
+                            )
                         )
                     );
                 }
@@ -268,7 +268,7 @@ class ZCore implements \ZCoreInterface
             throw new ZException(
                 Z::t(
                     'Event "{class}.{event}" is not defined.',
-                    ['{class}' => get_class($this), '{event}' => $name]
+                    array('{class}' => get_class($this), '{event}' => $name)
                 )
             );
         }
@@ -296,7 +296,7 @@ class ZCore implements \ZCoreInterface
             foreach ($this->_behavior as $behavior) {
                 $this->detachBehavior($name);
             }
-            $this->_behavior = [];
+            $this->_behavior = array();
         }
     }
     /**

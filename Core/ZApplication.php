@@ -167,7 +167,7 @@ abstract class ZApplication extends ZModule
     public function setBasePath($path)
     {
         if (($this->_basePath = realpath($path)) === false || !is_dir($this->_basePath)) {
-            Z::throwZException(Z::t('Error BasePath {basePath}', ['{basePath}' => $path]));
+            Z::throwZException(Z::t('Error BasePath {basePath}', array('{basePath}' => $path)));
         }
     }
     /**

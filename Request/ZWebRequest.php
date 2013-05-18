@@ -156,7 +156,7 @@ class ZWebRequest extends ZRequestAbstract
             return $this->_post;
         }
         $data = $this->parseIOStreams();
-        $post = [];
+        $post = array();
         foreach ($data as $key => $value) {
             $post[$key] = $value;
         }
@@ -166,7 +166,7 @@ class ZWebRequest extends ZRequestAbstract
     protected function parseIOStreams()
     {
         $content = $this->getRawBody();
-        $data = [];
+        $data = array();
         if ($content === false) {
             return $data;
         }
@@ -178,7 +178,7 @@ class ZWebRequest extends ZRequestAbstract
                 parse_str($content, $data);
                 break;
         }
-        return is_array($data) ? $data : [];
+        return is_array($data) ? $data : array();
     }
 
     /**
@@ -192,7 +192,7 @@ class ZWebRequest extends ZRequestAbstract
         }
         $data = $this->parseIOStreams();
 
-        $delete = [];
+        $delete = array();
         foreach ($data as $key => $value) {
             $delete[$key] = $value;
         }
@@ -209,7 +209,7 @@ class ZWebRequest extends ZRequestAbstract
         }
         $data = $this->parseIOStreams();
 
-        $put = [];
+        $put = array();
         foreach ($data as $key => $value) {
             $put[$key] = $value;
         }
@@ -595,7 +595,8 @@ class ZWebRequest extends ZRequestAbstract
      */
     public function getContentType()
     {
-        return explode(';', $_SERVER['CONTENT_TYPE'])[0];
+        $r = explode(';', $_SERVER['CONTENT_TYPE']);
+        return $r[0];
     }
 
     /**

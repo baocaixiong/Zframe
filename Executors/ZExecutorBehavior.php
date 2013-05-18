@@ -55,7 +55,7 @@ class ZExecutorBehavior extends ZBehavior
 
         $methodParams = $rfMethod->getParameters();
 
-        $retParams = [];
+        $retParams = array();
         foreach ($methodParams as $methodParam) {
             $name = $methodParam->name;
 

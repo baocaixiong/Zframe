@@ -22,10 +22,10 @@ class ZModule extends ZCore
     public $behaviors=array();
     private $_id;
     private $_parentModule;
-    private $_components = [];
-    private $_componentConfig = [];
+    private $_components = array();
+    private $_componentConfig = array();
 
-    private $_moduleConfig = [];
+    private $_moduleConfig = array();
 
     public function __construct($id, $parent, $config=null)
     {

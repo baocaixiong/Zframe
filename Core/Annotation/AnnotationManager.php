@@ -266,7 +266,7 @@ class AnnotationManager extends ZAppComponent implements AnnotationInterface
      */
     protected function getAllScriptFiles($dir)
     {
-        $files = [];
+        $files = array();
         $dirIterator = new \DirectoryIterator($dir);
 
         foreach ($dirIterator as $file) {
@@ -312,18 +312,18 @@ class AnnotationManager extends ZAppComponent implements AnnotationInterface
     protected function checkScanDirAndCacheDir()
     {
         if (!is_dir($this->scanDir)) {
-            throw new ZAnnotationException(Z::t('{scanDir} is not existing', ['{scanDir}' => $this->scanDir]));
+            throw new ZAnnotationException(Z::t('{scanDir} is not existing', array('{scanDir}' => $this->scanDir)));
         } else {
             if (!is_writeable($this->scanDir)) {
-                throw new ZAnnotationException(Z::t('{scanDir} is not writeable', ['{scanDir}' => $this->scanDir]));
+                throw new ZAnnotationException(Z::t('{scanDir} is not writeable', array('{scanDir}' => $this->scanDir)));
             }
         }
 
         if (!is_dir($this->cacheDir)) {
-            throw new ZAnnotationException(Z::t('{cacheDir} is not existing', ['{cacheDir}' => $this->cacheDir]));
+            throw new ZAnnotationException(Z::t('{cacheDir} is not existing', array('{cacheDir}' => $this->cacheDir)));
         } else {
             if (!is_writeable($this->cacheDir)) {
-                throw new ZAnnotationException(Z::t('{cacheDir} is not writeable', ['{cacheDir}' => $this->cacheDir]));
+                throw new ZAnnotationException(Z::t('{cacheDir} is not writeable', array('{cacheDir}' => $this->cacheDir)));
             }
         }
     }

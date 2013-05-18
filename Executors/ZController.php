@@ -52,7 +52,7 @@ class ZController extends ZExecutor
             $actionId = $this->defaultAction;
         }
 
-        $callable = [$this, $actionId];
+        $callable = array($this, $actionId);
 
         if (is_callable($callable)) {
             /**
@@ -68,7 +68,7 @@ class ZController extends ZExecutor
 
             $this->responed($response);
         } else {
-            throw new ZException(Z::t("This controller has not action \"{action}\".", ['{action}' => $actionId]));
+            throw new ZException(Z::t("This controller has not action \"{action}\".", array('{action}' => $actionId)));
         }   
     }
 

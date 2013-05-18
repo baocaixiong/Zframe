@@ -23,7 +23,7 @@ use \Z\Z,
 abstract class ZRequestAbstract extends ZAppComponent implements \ZRequestInterfase
 {
 
-	private $_params = [];
+	private $_params = array();
 
     abstract public function getMethod();
     abstract public function getRawBody();

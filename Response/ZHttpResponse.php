@@ -108,7 +108,7 @@ class ZHttpResponse extends ZResponseAbstract
      */
     public function setHeader ($headerName, $replace = false)
     {
-        $headername = str_replace(["\n", "\r"], ['', ''], $headerName);
+        $headername = str_replace(array("\n", "\r"), array('', ''), $headerName);
         $this->headers[$headerName] = $replace !== false ? $replace : false;
 
         return $this;

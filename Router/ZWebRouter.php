@@ -24,7 +24,7 @@ class ZWebRouter extends ZRouterAbstract
     const PATH_FORMAT = 'path';
     const CACHE_KEY = 'z.webrRouter.cache';
     
-    public $rules = [];
+    public $rules = array();
     public $urlSuffix = '';
 
     public $showScriptName = true;
@@ -150,7 +150,7 @@ class ZWebRouter extends ZRouterAbstract
         $this->_pattern[$key] = $pattern;
         $this->_ruleValue[$key] = $routeValue;
 
-        return [$this->_pattern, $this->_ruleValue];
+        return array($this->_pattern, $this->_ruleValue);
     }
 
     /**
@@ -159,12 +159,12 @@ class ZWebRouter extends ZRouterAbstract
      * @param  array  $urlParams url的参数
      * @return string 处理好的url
      */
-    public function createUrl($route, $urlParams = [])
+    public function createUrl($route, $urlParams = array())
     {
         $route = '/' . trim($route, '/');
         $key = md5($route);
 
-        $params = [];
+        $params = array();
         if ($this->_ruleValue->exists($key)) {
             $route = preg_replace_callback('@/:([_a-z]+)@i', function ($matches) use (&$params) {
                     $params[] = $matches[1];
@@ -172,8 +172,8 @@ class ZWebRouter extends ZRouterAbstract
                 }, $this->_pattern[$key]);
         }
 
-        $queryString = [];
-        $routeArray = [];
+        $queryString = array();
+        $routeArray = array();
         foreach ($urlParams as $key => $value) {
             if (in_array($key, $params)) {
                 $routeArray[$key] = $value;

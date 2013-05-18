@@ -33,9 +33,9 @@ class ZWebApplication extends ZApplication
      * </code>
      * @var boolean
      */
-    public $catchAllRequest = [
+    public $catchAllRequest = array(
         false, ''
-    ];
+    );
     /**
      * 处理request
      * 
@@ -70,7 +70,7 @@ class ZWebApplication extends ZApplication
             throw new \Z\Exceptions\ZHttpException(
                 Z::t(
                     'Unable to resolve the request "{route}".',
-                    ['{route}' => $route === '' ? $this->defaultController : $route]
+                    array('{route}' => $route === '' ? $this->defaultController : $route)
                 )
             );
         }
@@ -104,10 +104,10 @@ class ZWebApplication extends ZApplication
 
             if (!isset($basePath)) {
                 if (($moduel = $owner->getModule($id)) !== null) {
-                    return [
+                    return array(
                         $this->createController($route, $module),
                         $this->parseActionParams($route)
-                    ];
+                    );
                 }
                 $basePath = $owner->getControllerPath();
             }
@@ -122,10 +122,10 @@ class ZWebApplication extends ZApplication
 
                 if (class_exists($className)
                     && is_subclass_of($className, 'Z\Executors\ZController')) {
-                    return [
+                    return array(
                         new $className($this),
                         $this->parseActionParams($route)
-                    ];
+                    );
                 }
             }
 
@@ -178,7 +178,7 @@ class ZWebApplication extends ZApplication
      * @param  array  $urlParams url的参数
      * @return string 处理好的url
      */
-    public function createUrl($route, $urlParams = [])
+    public function createUrl($route, $urlParams = array())
     {
         return $this->getRouter()->createUrl($route, $urlParams);
     }
@@ -193,7 +193,7 @@ class ZWebApplication extends ZApplication
             'router' => array(
                 'class'     => 'Z\Router\ZWebRouter',
                 'urlFormat' => 'get',
-                'rules'     => [],
+                'rules'     => array(),
             ),
             'request' => array(
                 'class'     => 'Z\Request\ZWebRequest',
