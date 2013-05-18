@@ -19,13 +19,13 @@ class Annotation
 {
     public $name;
     
-    public $arguments = [];
+    public $arguments = array();
 
     public $class = '';
 
     public $method = null;
 
-    public $methodParameters = [];
+    public $methodParameters = array();
 
     public $methodParametersCount = 0;
 

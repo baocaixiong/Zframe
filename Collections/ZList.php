@@ -25,7 +25,7 @@ class ZList extends ZCore implements \IteratorAggregate,\ArrayAccess,\Countable
 
     private $_count = 0;
 
-    private $_data = [];
+    private $_data = array();
 
     public function __construct($data = null, $readOnly = false)
     {

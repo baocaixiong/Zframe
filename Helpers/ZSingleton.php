@@ -16,7 +16,7 @@ namespace Z\Helpers;
 
 trait ZSingleton
 {
-    protected static $__instance = [];
+    protected static $__instance = array();
     
     private $_className;
     

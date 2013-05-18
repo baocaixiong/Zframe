@@ -33,9 +33,9 @@ class ZWebApplication extends ZApplication
      * </code>
      * @var boolean
      */
-    public $catchAllRequest = [
+    public $catchAllRequest = array(
         false, ''
-    ];
+    );
     /**
      * 处理request
      * 
@@ -104,10 +104,10 @@ class ZWebApplication extends ZApplication
 
             if (!isset($basePath)) {
                 if (($moduel = $owner->getModule($id)) !== null) {
-                    return [
+                    return array(
                         $this->createController($route, $module),
                         $this->parseActionParams($route)
-                    ];
+                    );
                 }
                 $basePath = $owner->getControllerPath();
             }
@@ -122,10 +122,10 @@ class ZWebApplication extends ZApplication
 
                 if (class_exists($className)
                     && is_subclass_of($className, 'Z\Executors\ZController')) {
-                    return [
+                    return array(
                         new $className($this),
                         $this->parseActionParams($route)
-                    ];
+                    );
                 }
             }
 

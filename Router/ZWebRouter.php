@@ -24,7 +24,7 @@ class ZWebRouter extends ZRouterAbstract
     const PATH_FORMAT = 'path';
     const CACHE_KEY = 'z.webrRouter.cache';
     
-    public $rules = [];
+    public $rules = array();
     public $urlSuffix = '';
 
     public $showScriptName = true;
@@ -150,7 +150,7 @@ class ZWebRouter extends ZRouterAbstract
         $this->_pattern[$key] = $pattern;
         $this->_ruleValue[$key] = $routeValue;
 
-        return [$this->_pattern, $this->_ruleValue];
+        return array($this->_pattern, $this->_ruleValue);
     }
 
     /**

@@ -266,7 +266,7 @@ class AnnotationManager extends ZAppComponent implements AnnotationInterface
      */
     protected function getAllScriptFiles($dir)
     {
-        $files = [];
+        $files = array();
         $dirIterator = new \DirectoryIterator($dir);
 
         foreach ($dirIterator as $file) {

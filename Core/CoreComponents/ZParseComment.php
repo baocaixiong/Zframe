@@ -25,8 +25,8 @@ class ZParseComment extends ZAppComponent implements ZParseCommentInterface
      * 丢掉的annotation
      * @var array
      */
-    public $ignoredAnnotations = ['access', 'author', 'copyright', 'see', 'package', 
-            'id', 'param', 'return', 'version', 'throws'];
+    public $ignoredAnnotations = array('access', 'author', 'copyright', 'see', 'package', 
+            'id', 'param', 'return', 'version', 'throws');
 
     /**
      * parse comment
@@ -35,7 +35,7 @@ class ZParseComment extends ZAppComponent implements ZParseCommentInterface
      */
     public function parse($comment)
     {
-        $result = [];
+        $result = array();
 
         if (empty($comment)) {
             return $result;

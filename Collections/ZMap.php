@@ -22,7 +22,7 @@ class ZMap extends ZCore implements \IteratorAggregate, \ArrayAccess, \Countable
 
     private $_readOnly = false;
 
-    private $_data = [];
+    private $_data = array();
 
     public function __construct($data = null, $readOnly = false)
     {
@@ -121,7 +121,7 @@ class ZMap extends ZCore implements \IteratorAggregate, \ArrayAccess, \Countable
         if (!$this->_readOnly) {
             if (isset($this->_data[$keu])) {
                 $value = $this->_data[$key];
-                usset($this->_data[$key]);
+                unset($this->_data[$key]);
                 return $value;
             } else {
                 usset($this->_data[$key]);

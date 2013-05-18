@@ -52,13 +52,13 @@ class Z
     const Z_VERSION = 'v0.1';
     private static $_app; 
     
-    private static $_namespaceMapper = [];
+    private static $_namespaceMapper = array();
 
-    private static $_imports = [];
+    private static $_imports = array();
 
-    private static $_language = [];
+    private static $_language = array();
 
-    private static $_loadedFile = [];
+    private static $_loadedFile = array();
 
     /**
      * get z framework version 
@@ -126,7 +126,7 @@ class Z
         if (self::$_app === null || $application === null) {
             self::$_app=$application;
         } else {
-            self::throwZException(Z::t('The application has been created', []));
+            self::throwZException(Z::t('The application has been created', array()));
         }
     }
 
