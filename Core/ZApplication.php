@@ -34,6 +34,19 @@ abstract class ZApplication extends ZModule
     private $_runtimePath; //程序运行目录
 
     /**
+     * 是否catch所有的reque
+     * <code>   
+     * 'catchAllRequest' => [
+     *     true,'<router>'
+     * ];
+     * </code>
+     * @var boolean
+     */
+    public $catchAllRequest = array(
+        false, ''
+    );
+
+    /**
      * run application construct method
      * 
      * @param Mixed $config the application instance
@@ -111,6 +124,16 @@ abstract class ZApplication extends ZModule
     public function getDispatch()
     {
         return $this->getComponent('dispatch');
+    }
+
+    /**
+     * 获取 http request 组建
+     * 
+     * @return \Z\Request\ZWebRequset
+     */
+    public function getRequest()
+    {
+        return $this->getComponent('request');
     }
 
     /**
@@ -244,6 +267,10 @@ abstract class ZApplication extends ZModule
             ),
             'dispatch' => array(
                 'class' => 'Z\Executors\ZDispatchContext',
+            ),
+            'request' => array(
+                'class'     => 'Z\Request\ZWebRequest',
+                'enableCsrf' => true,
             ),
         );
     }

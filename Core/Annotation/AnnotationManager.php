@@ -83,9 +83,6 @@ class AnnotationManager extends ZAppComponent implements AnnotationInterface
         }
 
         $this->checkScanDirAndCacheDir();//检查目录
-        $collection = $this->collect();
-        echo '<pre>';
-        print_r($collection);
     }
 
     /**
@@ -101,83 +98,10 @@ class AnnotationManager extends ZAppComponent implements AnnotationInterface
         $paramComment = $this->getParseComment();
 
         foreach ($files as $file) {
-
-            $classes = $this->findClassFromFile($file);
-
-            foreach ($classes as $class) {
-                
-                $rfClass = new \ReflectionClass($class);
-
-                foreach ($paramComment->parse($rfClass->getDocComment()) as $meta) {
-
-                    $annotation = $this->createAnnotation($rfClass, $meta);
-                    $annotation != null && $collection->add($class, $annotation);
-                }
-
-                foreach ($rfClass->getMethods(\ReflectionMethod::IS_PUBLIC) as $rfMethod) {
-                    foreach ($paramComment->parse($rfMethod->getDocComment()) as $meta) {
-                        $annotation = $this->createAnnotation($rfClass, $meta, $rfMethod);
-                        $annotation != null && $collection->add($class, $annotation);
-                    }
-                }
-            }
+            
         }
 
         return $collection;
-    }
-
-    /**
-     * 
-     * @param  [type] $rfClass [description]
-     * @param  [type] $meta    [description]
-     * @param  [type] $rfMethod  [description]
-     * @return [type]          [description]
-     */
-    public function createAnnotation($rfClass, $meta, \ReflectionMethod $rfMethod = null)
-    {
-        list($name, $arguments) = $meta;
-
-        $annotation = $this->getAnnotation($name);
-
-        if ($annotation == null) {
-            return null;
-        }
-
-        $annotation->class = $rfClass->getName();
-        $annotation->arguments = $arguments;
-
-        if ($rfMethod != null) {
-            $annotation->method = $rfMethod->getName();
-            $annotation->methodParameters = $rfMethod->getParameters();
-            $annotation->methodParametersCount = count($annotation->methodParameters);
-        }
-
-        return $annotation;
-    }
-
-    /**
-     * 向 url path collection 中丢入exector
-     * @param \ReflectionClass $rfClass reflectionClass
-     * @param array            $meta    
-     */
-    public function addUrlPath($rfClass, array $meta, $root = '')
-    {
-        list($name, $arguments) = $meta;
-
-        $urlPathAnnotation = $this->getUrlPathAnnotation();
-
-        if ($root === '') {
-            $urlPathAnnotation->set(
-                trim($arguments[0], $this->separator),
-                [($this->exectorAnnotation) => $arguments[0]]
-            );
-        } else {
-            $urlPathAnnotation->set(
-                trim($root, $this->separator) . $this->separator . trim('methods', $this->separator) . $this->separator . $rfClass->getName(),
-                [$name => $arguments[0]]
-            );
-        }
-        
     }
 
     /**
@@ -197,19 +121,6 @@ class AnnotationManager extends ZAppComponent implements AnnotationInterface
     public function setAnnotationClass($className)
     {
         $this->annotationClass = $className;
-    }
-
-    /**
-     * get url path annotation 
-     * @return \Z\Core\Annotation\AnnotationCollection
-     */
-    public function getUrlPathAnnotation()
-    {
-        if ($this->urlPathAnnotation === null) {
-            return $this->urlPathAnnotation = new AnnotationUrlPathCollection();
-        }
-
-        return $this->urlPathAnnotation;
     }
 
     /**

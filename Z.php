@@ -80,6 +80,16 @@ class Z
     }
 
     /**
+     * create a restful web application
+     * @param  Array $config config array
+     * @return ZWebApplication
+     */
+    public static function createRestfulApplication($config = null)
+    {
+        return self::createApplication('Z\Applications\ZRestfulApplication', $config);
+    }
+
+    /**
      * Returns the application singleton or null if the singleton has not been created yet.
      * @return \Z\Core\ZApplication 
      */
@@ -293,6 +303,7 @@ class Z
     private static $_coreClasses=array(
         'Z\Core\ZApplication' => '/Core/ZApplication.php',
         'Z\Applications\ZWebApplication' => '/Applications/ZWebApplication.php',
+        'Z\Applications\ZRestfulApplication' => '/Applications/ZRestfulApplication.php',
         'Z\Exceptions\ZException' => '/Exceptions/ZException.php',
         'Z\Core\ZCore' => '/Core/Zcore.php',
         'Z\Core\ZModule' => '/Core/ZModule.php',

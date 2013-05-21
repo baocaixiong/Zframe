@@ -24,18 +24,7 @@ class ZWebApplication extends ZApplication
     public $layout='main';
 
     private $_controllerPath;
-    /**
-     * 是否catch所有的reque
-     * <code>   
-     * 'catchAllRequest' => [
-     *     true,'<router>'
-     * ];
-     * </code>
-     * @var boolean
-     */
-    public $catchAllRequest = array(
-        false, ''
-    );
+    
     /**
      * 处理request
      * 
