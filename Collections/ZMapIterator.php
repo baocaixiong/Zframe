@@ -17,28 +17,30 @@ namespace Z\Collections;
 use Z\ZCore,
     Z\Exceptions\ZException;
 
-class ZMapIterator implements Iterator
+class ZMapIterator implements \Iterator
 {
+    /**
+     * @var array the data to be iterated through
+     */
     private $_data;
-
+    /**
+     * @var array list of keys in the map
+     */
+    private $_keys;
+    /**
+     * @var mixed current key
+     */
     private $_curKey;
 
-    private $_keys;
-
+    /**
+     * Constructor.
+     * @param array $data the data to be iterated through
+     */
     public function __construct(&$data)
     {
-        $this->_data = $data;
-        $this->_keys=array_keys($data);
-        $this->_curKey=reset($this->_keys); //当前数组指针
-    }
-
-    /**
-     * 当前key
-     * @return String|Int
-     */
-    public function key()
-    {
-        return $this->_curKey;
+        $this->_data = &$data;
+        $this->_keys = array_keys($data);
+        $this->_surKey = reset($this->_keys);
     }
 
     /**
@@ -47,12 +49,21 @@ class ZMapIterator implements Iterator
      */
     public function rewind()
     {
-        $this->_key=reset($this->_keys);
+        $this->_curKey = reset($this->_keys);
+    }
+
+    /**
+     * 当前key
+     * @return string|int
+     */
+    public function key()
+    {
+        return $this->_curKey;
     }
 
     /**
      * 当前值
-     * @return Mixed
+     * @return mixed
      */
     public function current()
     {
@@ -65,7 +76,7 @@ class ZMapIterator implements Iterator
      */
     public function next()
     {
-        $this->_key = next($this->_keys);
+        $this->_curKey = next($this->_keys);
     }
 
     /**

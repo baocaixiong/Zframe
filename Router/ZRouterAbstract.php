@@ -23,6 +23,7 @@ abstract class ZRouterAbstract extends ZAppComponent implements \ZRouterInterfac
     const PATH_FORMAT = 'path';
     public $urlSuffix = '';
 
+    private $_urlFormat = self::PATH_FORMAT;
     
     /**
      * 增加路由规则

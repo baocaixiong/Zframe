@@ -50,7 +50,12 @@ class ZRestfulRouter extends ZRouterAbstract
 
     public function addRoutesToRouteNode(ZRouteNode $routeNode, AnnotationInterface $am)
     {
-        
+        $anntations = $am->collect();
+echo "<pre>";
+        foreach ($anntations as $anntation) {
+            
+            print_r($anntation);
+        }
     }
 
     /**

@@ -16,11 +16,16 @@ namespace Z\Core\CoreComponents;
 
 use Z\Z,
     Z\Core\ZAppComponent,
-    ZParseCommentInterface;
+    ZParseCommentInterface,
+    Z\Exceptions\ZAnnotationException;
 
 class ZParseComment extends ZAppComponent implements ZParseCommentInterface
 {
+    public $exectorActionAnnotation = 'http';
 
+    public $routeKey = array(
+        'method', 'path', 'cache', 'etag'
+    );
     /**
      * 丢掉的annotation
      * @var array
@@ -43,7 +48,7 @@ class ZParseComment extends ZAppComponent implements ZParseCommentInterface
 
         if (preg_match_all('#\* @([^@\n\r\t]*)#', $comment, $matches, PREG_PATTERN_ORDER) > 0) {
             foreach ($matches[1] as $matche) {
-                if (!preg_match('#([0-9a-zA-Z-]+)#', $matche, $subMatch)) {
+                if (!preg_match('#([0-9a-zA-Z]+)#', $matche, $subMatch)) {
                     continue;
                 }
 
@@ -60,11 +65,47 @@ class ZParseComment extends ZAppComponent implements ZParseCommentInterface
                     $arguments = [];
                 }
 
-                $result[] = [$name, $arguments];
+                $result[] = array($name, $arguments);
             }
         }
 
-        return $result;
+        return $this->_parseHttpRoute($result);
+    }
+
+    /**
+     * parse http route
+     * 
+     * @param  array $annotations annotations
+     * @return array
+     */
+    protected function _parseHttpRoute($annotations)
+    {
+        $httpResult = [];
+        foreach ($annotations as $key => $annotation) {
+            if ($annotation[0] === $this->exectorActionAnnotation) {
+                foreach ($annotation[1] as $value) {
+                    $temp = explode('|', $value);
+                    if (!in_array($temp[0], $this->routeKey)) {
+                        var_dump($temp[0]);
+                        throw new ZAnnotationException(
+                            Z::t("route key error, {key}", array('{key}' => $temp[0]))
+                        );
+                    }
+                    if (isset($temp[1])) {
+                        if (strtolower($temp[1]) === 'false') {
+                            $httpResult[$temp[0]] = false;
+                        } else {
+                            $httpResult[$temp[0]] = $temp[1];
+                        }
+                    } else {
+                        $httpResult[$temp[0]] = true;
+                    }
+                }
+
+                $annotations[$key] = $httpResult;
+            }
+        }
+        return $annotations;
     }
 }
 

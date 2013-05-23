@@ -31,8 +31,6 @@ class ZWebRouter extends ZRouterAbstract
     public $cacheId = 'cache';
     public $caseSensitive = false;
 
-    private $_urlFormat = self::GET_FORMAT;
-
     private $_rules;
 
     private $_pattern;

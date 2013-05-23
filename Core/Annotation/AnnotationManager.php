@@ -17,7 +17,9 @@ namespace Z\Core\Annotation;
 use Z\Z,
     Z\Core\ZAppComponent,
     AnnotationInterface,
-    Z\Exceptions\ZAnnotationException;
+    Z\Exceptions\ZAnnotationException,
+    Z\Collections\ZMap,
+    Z\Router\ZRoute;
 
 class AnnotationManager extends ZAppComponent implements AnnotationInterface
 {
@@ -33,7 +35,7 @@ class AnnotationManager extends ZAppComponent implements AnnotationInterface
      */
     public $exectorAnnotation = 'root';
 
-    public $exectorActionAnnotation = 'http-method';
+    public $exectorActionAnnotation = 'http';
 
     /**
      * 要忽略扫描的目录
@@ -59,11 +61,8 @@ class AnnotationManager extends ZAppComponent implements AnnotationInterface
      */
     public $cacheName = 'annotation.cache';
 
-    public $annotationClass = 'Z\Core\Annotation\Annotation';
+    public $annotationClass = 'Z\Core\Annotation\ZClassAnnotation';
 
-    protected static $annotationCollection;
-
-    protected $urlPathAnnotation;
     /**
      * 初始化方法
      * @return void
@@ -71,8 +70,6 @@ class AnnotationManager extends ZAppComponent implements AnnotationInterface
     public function initialize()
     {
         parent::initialize();
-        $annotationUrlPathCollection = $this->getUrlPathAnnotation();
-        $annotationUrlPathCollection->separator = $this->separator;
 
         if (empty($this->scanDir)) {
             $this->scanDir = Z::app()->getBasePath();
@@ -85,20 +82,51 @@ class AnnotationManager extends ZAppComponent implements AnnotationInterface
         $this->checkScanDirAndCacheDir();//检查目录
     }
 
+
+
     /**
      * 收集
-     * @return [type] [description]
+     * @return \Z\Collections\ZMap
      */
-    public function collect()
+    public function collect($scanDir = '')
     {
-        $collection = $this->getAnnotationCollection();
+        $collection = new ZMap();
 
-        $files = $this->getAllScriptFiles($this->scanDir);
+        if (empty($scanDir)) {
+            $scanDir = $this->scanDir;
+        }
+        $files = $this->getAllScriptFiles($scanDir);
 
         $paramComment = $this->getParseComment();
 
         foreach ($files as $file) {
-            
+
+            $classes = $this->findClassFromFile($file);
+
+            foreach ($classes as $class) {
+                $rfClass = new \ReflectionClass($class);
+                $classAnnotation = $this->getClassAnnotation($rfClass->getName());
+                foreach ($paramComment->parse($rfClass->getdoccomment()) as $meta) {
+                    $classAnnotation->{$meta[0]} = $meta[1][0];
+                }
+
+                if (!isset($classAnnotation->{$this->exectorAnnotation})) {
+                    unset($classAnnotation);
+                    continue;
+                }
+
+                foreach ($rfClass->getMethods(\ReflectionMethod::IS_PUBLIC) as $method) {
+                    foreach ($paramComment->parse($method->getdoccomment()) as $meta) {
+                        $route = new ZRoute($class, $method->getName(), $meta['method'], $meta['path']);
+                        $route->etag = isset($meta['etag']) ? $meta['etag'] : false;
+                        $route->fileDefine = $method->getStartLine();
+                        $classAnnotation->routes[] = $route;
+
+                        $classAnnotation->methodUrls[$method->getName()] = $meta['path'];
+                    }
+                }
+                $collection->add($classAnnotation->root, $classAnnotation);
+            }
         }
 
         return $collection;
@@ -106,9 +134,9 @@ class AnnotationManager extends ZAppComponent implements AnnotationInterface
 
     /**
      * get Annotation object
-     * @return \Z\Core\Annotation\Annotation
+     * @return \Z\Core\Annotation\ZClassAnnotation
      */
-    public function getAnnotation($name)
+    public function getClassAnnotation($name)
     {
         $className = $this->annotationClass;
         return new $className($name);
@@ -118,45 +146,39 @@ class AnnotationManager extends ZAppComponent implements AnnotationInterface
      * set annotation class
      * @param string $className 应该是一个可以访问的类
      */
-    public function setAnnotationClass($className)
+    public function setClassAnnotation($className)
     {
         $this->annotationClass = $className;
     }
 
     /**
      * 从文件中获得class name
-     * @param  string $file filename
+     * @param  string  $file      filename
+     * @param  boolean $filtrateZ whether filtrate ZFrame class
      * @return array
      */
-    protected function findClassFromFile($file)
+    protected function findClassFromFile($file, $filtrateZ = true)
     {
         $declaredClasses = get_declared_classes();//获得已经加载了的class
-        include_once $file;
-        $newClass = array_diff($declaredClasses, get_declared_classes());
+        include $file;
 
-        if (empty($newClass)) {
-            foreach ($declaredClasses as $class) {
-                $rfClass = new \ReflectionClass($class);
-                if ($rfClass->getFileName() === $file) {
-                    $newClass[] = $rfClass->getName();
+        $newClasses = array_diff(get_declared_classes(), $declaredClasses);
+
+        $result = [];
+
+        if ($filtrateZ) {
+            foreach ($newClasses as $class) {
+                if (strncasecmp($class, 'Z', 1) === 0) {
+                    continue;
                 }
+                $result[] = $class;
             }
+        } else {
+            $result = $newClasses;
         }
+        
 
-        return $newClass;
-    }
-
-    /**
-     * get annotation collection 
-     * @return \Z\Core\Annotation\AnnotationCollection
-     */
-    protected function getAnnotationCollection()
-    {
-        if (!is_null(self::$annotationCollection)) {
-            return self::$annotationCollection;
-        }
-
-        return new AnnotationCollection();
+        return $result;
     }
 
     /**
@@ -166,7 +188,9 @@ class AnnotationManager extends ZAppComponent implements AnnotationInterface
      */
     protected function getParseComment()
     {
-        return Z::app()->getParseComment();
+        $parse = Z::app()->getParseComment();
+        $parse->exectorActionAnnotation = $this->exectorActionAnnotation;
+        return $parse;
     }
 
     /**

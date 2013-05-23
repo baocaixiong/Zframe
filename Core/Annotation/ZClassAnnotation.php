@@ -15,30 +15,19 @@
 namespace Z\Core\Annotation;
 
 
-class Annotation
+class ZClassAnnotation
 {
-    public $name;
+    public $className;
     
-    public $arguments = array();
-
-    public $class = '';
-
-    public $method = null;
-
-    public $methodParameters = array();
-
-    public $methodParametersCount = 0;
-
     /**
      * comments of __construct
      * 
-     * @param string $name name
+     * @param string $name className
      * 
      * @return return_value
-     * @author v.k <string@ec3s.com>
      */
-    public function __construct($name)
+    public function __construct($className)
     {
-        $this->name = $name;
+        $this->className = $className;
     }
 }
