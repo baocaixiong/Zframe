@@ -126,7 +126,7 @@ interface AnnotationInterface
     /**
      * 收集annotations
      */
-    public function collect();
+    public function getAnnotations();
 }
 
 interface ZParseCommentInterface

@@ -56,13 +56,17 @@ class ZRestfulRouter extends ZRouterAbstract
      */
     public function addRoutesToRouteNode(ZRouteNode $routeNode, AnnotationInterface $am)
     {
-        $anntations = $am->collect();
+        $anntations = $am->getAnnotations();
 
         foreach ($anntations as $anntation) {
-            foreach ($anntation->getMethods() as $action) {
-                $routeNode->addRoute($this, $action, $this->routingPrefix);
+            if (isset($anntation->root)) {
+                foreach ($anntation->getMethods() as $action) {
+                    $routeNode->addRoute($this, $action, $this->routingPrefix);
+                }
             }
         }
+var_dump($routeNode->findRouteFor(Z::app()->getRequest()));
+
     }
 
     /**

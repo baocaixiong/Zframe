@@ -35,29 +35,29 @@ class ZParseComment extends ZAppComponent implements ZParseCommentInterface
         if (empty($docString)) {
             return $result;
         }
-
-        preg_match_all('#!(\S+)[^\n\r\S]*(.*)#', $docString, $matches, PREG_PATTERN_ORDER);
-
-        $annotations = $matches[1]; //类似 * !Root /test   => $annotations = ['Root']
-
-        $values = $matches[2]; //类似* !Root /test  => $values = ['/test'];
-        //annotations 和 values 的值是一一对应的
         
-        if (empty($annotations)) {
-            return $result;
+        preg_match_all('%!([a-z0-9/\.\\\#@$& =]*)!%is', $docString, $matches, PREG_PATTERN_ORDER);
+
+        $matches = $matches[1];
+        foreach ($matches as $key => $matche) {
+            $matches[$key] = preg_replace('%\ +%', ' ', $matche); //将多个空格转为一个空格
         }
 
-        foreach ($annotations as $key => $annotation) {
-            $values[$key] = preg_replace('/\ +/', ' ', $values[$key]); //将多个空格转为一个空格
-            
-            if (isset($result[$annotation])) {
-                $result[$annotation] = $values[$key] . ' ' . $result[$annotation];
+        $annotations = array();
+        foreach ($matches as $key => $matche) {
+            $temp = explode('=', $matche);
+            if (isset($temp[1])) {
+                if (strtolower($temp[1]) === 'false') {
+                    $annotations[$temp[0]] = false;
+                } else  {
+                    $annotations[$temp[0]] = $temp[1];
+                }
             } else {
-                $result[$annotation] = $values[$key];
+                $annotations[$temp[0]] = true;
             }
         }
 
-        return $result;
+        return $annotations;
     }
 
     /**

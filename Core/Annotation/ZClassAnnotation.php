@@ -28,11 +28,6 @@ class ZClassAnnotation
      * @var array [\Z\Core\Annotations\ZMethodAnnotation, ...]
      */
     protected $methods;
-
-
-    protected $methodUrls = array();
-
-    protected $httpMethods = array();
     /**
      * comments of __construct
      * 
@@ -75,11 +70,6 @@ class ZClassAnnotation
             return;
         }
         $this->methods = $methods;
-
-        foreach ($methods as $method) {
-            $this->methodUrls[$method->methodName] = $method->path;
-            $this->httpMethods[$method->method] = true;
-        }
     }
 
     /**
@@ -93,7 +83,5 @@ class ZClassAnnotation
         }
 
         $this->methods[] = $method;
-        $this->methodUrls[$method->methodName] = $method->path;
-        $this->httpMethods[$method->method] = true;
     }
 }

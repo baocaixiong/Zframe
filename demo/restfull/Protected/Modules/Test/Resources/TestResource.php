@@ -9,57 +9,19 @@ use Z\Executors\ZResource;
 /**
  * TestResource
  *
- * !Root   /test/sadf             sadf
- * !Layout /style/sadfasd
- * @haha asdfafasdfasd
+ * !root=/test! !layout=index.html    sadf!
+ * !asdfasd=as\df!
+ * !etag=false!
  */
 class TestResource extends ZResource
 {
     /**
-     * get method
-     *
-     * @http method|POST path|/ cache|300 etag|false
-     * 
-     * @return [type] [description]
-     */
-    public function get()
-    {
-
-    }
-
-    /**
-     * get method
-     *
-     * !Route method|GET path|/seta
-     * !Cache cache|300  etag|false
-     * !Cache aaa|aaa
-     * @return [type] [description]
-     */
-    public function set($name, $ma)
-    {
-
-    }
-
-    /**
-     * get method
-     *
-     * !Route method|GET path|/seta
-     * !Cache cache|300  etag|false
-     * !Cache aaa|aaaasdf
-     * @return [type] [description]
-     */
-    public function set1()
-    {
-
-    }
-
-    /**
      * get method 
      *
-     * !method=GET! !path=/! !cache=300! !etag!
+     * !method=GET! !path=/haha/$xxxx! !cache=300! !etag!
      * @return [type] [description]
      */
-    protected function get111()
+    public function get111()
     {
 
     }

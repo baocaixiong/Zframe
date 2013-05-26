@@ -15,7 +15,8 @@
 namespace Z\Collections;
 
 use Z\Core\ZCore,
-    Z\Exceptions\ZException;
+    Z\Exceptions\ZException,
+    Z\Z;
 
 class ZMap extends ZCore implements \IteratorAggregate, \ArrayAccess, \Countable
 {

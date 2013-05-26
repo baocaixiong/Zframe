@@ -29,8 +29,6 @@ class AnnotationManager extends ZAppComponent implements AnnotationInterface
      */
     public $separator = '.';
 
-    public $exectorActionAnnotation = 'http';
-
     /**
      * 要忽略扫描的目录
      * @var array
@@ -55,7 +53,7 @@ class AnnotationManager extends ZAppComponent implements AnnotationInterface
      */
     public $cacheName = 'annotation.cache';
 
-    public $annotationClass = 'Z\Core\Annotation\ZClassAnnotation';
+    private $_collection;
 
     /**
      * 初始化方法
@@ -76,15 +74,13 @@ class AnnotationManager extends ZAppComponent implements AnnotationInterface
         $this->checkScanDirAndCacheDir();//检查目录
     }
 
-
-
     /**
      * 收集
-     * @return \Z\Collections\ZMap
+     * @return \Z\Annotation\ZAnnotationCollection
      */
-    public function collect($scanDir = '')
+    private function _collect($scanDir = '')
     {
-        $collection = new ZAnnotationCollection();
+        $this->_collection = new ZAnnotationCollection();
 
         if (empty($scanDir)) {
             $scanDir = $this->scanDir;
@@ -94,6 +90,10 @@ class AnnotationManager extends ZAppComponent implements AnnotationInterface
         $paramComment = $this->getParseComment();
 
         foreach ($files as $file) {
+
+            if ($this->isScandedFile($file)) {
+                continue;
+            }
 
             $classes = $this->findClassFromFile($file);
 
@@ -105,34 +105,33 @@ class AnnotationManager extends ZAppComponent implements AnnotationInterface
                     $classAnnotation->{$key} = $meta;
                 }
 
-                
                 foreach ($this->getOwnMethods($rfClass, \ReflectionMethod::IS_PUBLIC) as $rfMethod) {
-                    $methodMeta = array();
-                    foreach ($paramComment->parse($rfMethod->getdoccomment()) as $key => $meta) {
-                        $methodMeta[$rfMethod->getName()][$key] = $paramComment->parseMeta($meta);
-                    }
-
                     $methodAnnotation = $this->createMethodAnnotation($rfMethod->class, $rfMethod->getName());
-                    
-                    foreach ($methodMeta as $method) {
-                        foreach ($method as $key => $value) {
-                            $temp = array();
-                            foreach ($value as $k => $v) {
-                                $temp[$k] = $v;
-                                $methodAnnotation->{$k} = $v;
-                            }
-                        }
-                        $methodAnnotation->methodName = $rfMethod->getName();
-
-                        $methodAnnotation->params = $rfMethod->getParameters();
-                        $classAnnotation->setMethod($methodAnnotation);
+                    foreach ($paramComment->parse($rfMethod->getdoccomment()) as $key => $meta) {
+                        $methodAnnotation->{$key} = $meta;
                     }
+
+                    $methodAnnotation->params = $rfMethod->getParameters();
+                    $classAnnotation->setMethod($methodAnnotation);
                 }
-                $collection->add($classAnnotation->getName(), $classAnnotation);
+
+                $this->_collection->add($classAnnotation->getName(), $classAnnotation);
             }
         }
+    }
 
-        return $collection;
+    /**
+     * get annotations
+     * 
+     * @return \Z\Core\Annotation\ZAnnotationCollection
+     */
+    public function getAnnotations()
+    {
+        if (is_null($this->_collection)) {
+            $this->_collect();
+        }
+
+        return $this->_collection;
     }
 
     /**
@@ -141,8 +140,7 @@ class AnnotationManager extends ZAppComponent implements AnnotationInterface
      */
     public function createClassAnnotation($name)
     {
-        $className = $this->annotationClass;
-        return new $className($name);
+        return new ZClassAnnotation($name);
     }
 
     /**
@@ -154,15 +152,6 @@ class AnnotationManager extends ZAppComponent implements AnnotationInterface
     public function createMethodAnnotation($className, $name)
     {
         return new ZMethodAnnotation($className, $name);
-    }
-
-    /**
-     * set annotation class
-     * @param string $className 应该是一个可以访问的类
-     */
-    public function setClassAnnotation($className)
-    {
-        $this->annotationClass = $className;
     }
 
     /**
@@ -191,7 +180,6 @@ class AnnotationManager extends ZAppComponent implements AnnotationInterface
             $result = $newClasses;
         }
         
-
         return $result;
     }
 
@@ -249,6 +237,24 @@ class AnnotationManager extends ZAppComponent implements AnnotationInterface
         }
 
         return $files;
+    }
+
+    /**
+     * is scanded dir 
+     * @param  string  $fileName [description]
+     * @return boolean           [description]
+     */
+    protected function isScandedFile($fileName)
+    {
+        foreach (get_included_files() as $incluededFile) {
+
+            if (strtolower($fileName) == strtolower($incluededFile)) {
+                return true;
+            }
+
+        }
+
+        return false;
     }
 
     /**
