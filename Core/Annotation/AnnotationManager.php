@@ -29,12 +29,6 @@ class AnnotationManager extends ZAppComponent implements AnnotationInterface
      */
     public $separator = '.';
 
-    /**
-     * controller or resource path annotation
-     * @var string
-     */
-    public $exectorAnnotation = 'root';
-
     public $exectorActionAnnotation = 'http';
 
     /**
@@ -90,7 +84,7 @@ class AnnotationManager extends ZAppComponent implements AnnotationInterface
      */
     public function collect($scanDir = '')
     {
-        $collection = new ZMap();
+        $collection = new ZAnnotationCollection();
 
         if (empty($scanDir)) {
             $scanDir = $this->scanDir;
@@ -105,27 +99,36 @@ class AnnotationManager extends ZAppComponent implements AnnotationInterface
 
             foreach ($classes as $class) {
                 $rfClass = new \ReflectionClass($class);
-                $classAnnotation = $this->getClassAnnotation($rfClass->getName());
-                foreach ($paramComment->parse($rfClass->getdoccomment()) as $meta) {
-                    $classAnnotation->{$meta[0]} = $meta[1][0];
+                $classAnnotation = $this->createClassAnnotation($rfClass->getName());
+               
+                foreach ($paramComment->parse($rfClass->getdoccomment()) as $key => $meta) {
+                    $classAnnotation->{$key} = $meta;
                 }
 
-                if (!isset($classAnnotation->{$this->exectorAnnotation})) {
-                    unset($classAnnotation);
-                    continue;
-                }
+                
+                foreach ($this->getOwnMethods($rfClass, \ReflectionMethod::IS_PUBLIC) as $rfMethod) {
+                    $methodMeta = array();
+                    foreach ($paramComment->parse($rfMethod->getdoccomment()) as $key => $meta) {
+                        $methodMeta[$rfMethod->getName()][$key] = $paramComment->parseMeta($meta);
+                    }
 
-                foreach ($rfClass->getMethods(\ReflectionMethod::IS_PUBLIC) as $method) {
-                    foreach ($paramComment->parse($method->getdoccomment()) as $meta) {
-                        $route = new ZRoute($class, $method->getName(), $meta['method'], $meta['path']);
-                        $route->etag = isset($meta['etag']) ? $meta['etag'] : false;
-                        $route->fileDefine = $method->getStartLine();
-                        $classAnnotation->routes[] = $route;
+                    $methodAnnotation = $this->createMethodAnnotation($rfMethod->class, $rfMethod->getName());
+                    
+                    foreach ($methodMeta as $method) {
+                        foreach ($method as $key => $value) {
+                            $temp = array();
+                            foreach ($value as $k => $v) {
+                                $temp[$k] = $v;
+                                $methodAnnotation->{$k} = $v;
+                            }
+                        }
+                        $methodAnnotation->methodName = $rfMethod->getName();
 
-                        $classAnnotation->methodUrls[$method->getName()] = $meta['path'];
+                        $methodAnnotation->params = $rfMethod->getParameters();
+                        $classAnnotation->setMethod($methodAnnotation);
                     }
                 }
-                $collection->add($classAnnotation->root, $classAnnotation);
+                $collection->add($classAnnotation->getName(), $classAnnotation);
             }
         }
 
@@ -136,10 +139,21 @@ class AnnotationManager extends ZAppComponent implements AnnotationInterface
      * get Annotation object
      * @return \Z\Core\Annotation\ZClassAnnotation
      */
-    public function getClassAnnotation($name)
+    public function createClassAnnotation($name)
     {
         $className = $this->annotationClass;
         return new $className($name);
+    }
+
+    /**
+     * create a methodAnnotation instance
+     * @param  string $className method's class name
+     * @param  string $name      method name
+     * @return \Z\Core\Annotation\ZMethodAnnotation
+     */
+    public function createMethodAnnotation($className, $name)
+    {
+        return new ZMethodAnnotation($className, $name);
     }
 
     /**
@@ -189,7 +203,6 @@ class AnnotationManager extends ZAppComponent implements AnnotationInterface
     protected function getParseComment()
     {
         $parse = Z::app()->getParseComment();
-        $parse->exectorActionAnnotation = $this->exectorActionAnnotation;
         return $parse;
     }
 

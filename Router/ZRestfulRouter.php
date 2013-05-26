@@ -18,15 +18,16 @@ use Z\Z,
     Z\Exceptions\ZException,
     Z\Collections\Zmap,
     Z\Router\ZRouteNode,
-    \AnnotationInterface;
+    \AnnotationInterface,
+    \ZExecutorInterface;
 
 class ZRestfulRouter extends ZRouterAbstract
 {
     const ROUTES_CACHE_KEY = 'z.restful.restfulRouter.cache.key';
 
-    public $_urlFormat = 'path';
-
     public $routeVar = 'r';
+
+    public $routingPrefix = '/';
     /**
      * 初始化
      */
@@ -48,13 +49,19 @@ class ZRestfulRouter extends ZRouterAbstract
 
     }
 
+    /**
+     * add routes to routeNode
+     * @param \Z\Router\ZRouteNode $routeNode [description]
+     * @param AnnotationInterface  $am        [description]
+     */
     public function addRoutesToRouteNode(ZRouteNode $routeNode, AnnotationInterface $am)
     {
         $anntations = $am->collect();
-echo "<pre>";
+
         foreach ($anntations as $anntation) {
-            
-            print_r($anntation);
+            foreach ($anntation->getMethods() as $action) {
+                $routeNode->addRoute($this, $action, $this->routingPrefix);
+            }
         }
     }
 

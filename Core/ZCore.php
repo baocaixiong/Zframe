@@ -380,4 +380,26 @@ class ZCore implements \ZCoreInterface
             }
         }
     }
+
+    /**
+     * get own methods
+     * @param  \ReflectionClass $rfClass reflection class
+     * @param  int              $filter  reflectionMethod type
+     * @return array
+     */
+    public function getOwnMethods(\ReflectionClass $rfClass, $filter = \ReflectionMethod::IS_PUBLIC)
+    {
+        $result = array();
+        foreach ($rfClass->getMethods($filter) as $reflectionMethod) {
+            try {
+                $reflectionMethod->getPrototype();
+            } catch (\Exception $ex) {
+                if ($reflectionMethod->class === $rfClass->getName()) {
+                    $result[] = $reflectionMethod;
+                }
+            }
+        }
+
+        return $result;
+    }
 }

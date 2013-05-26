@@ -17,8 +17,22 @@ namespace Z\Core\Annotation;
 
 class ZClassAnnotation
 {
-    public $className;
+    /**
+     * class name
+     * @var string
+     */
+    protected $className;
     
+    /**
+     * the class methods
+     * @var array [\Z\Core\Annotations\ZMethodAnnotation, ...]
+     */
+    protected $methods;
+
+
+    protected $methodUrls = array();
+
+    protected $httpMethods = array();
     /**
      * comments of __construct
      * 
@@ -29,5 +43,57 @@ class ZClassAnnotation
     public function __construct($className)
     {
         $this->className = $className;
+    }
+
+    /**
+     * class name 
+     *
+     * @return string
+     */
+    public function getName()
+    {
+        return $this->className;
+    }
+
+    /**
+     * get the class methods
+     * @return array
+     */
+    public function getMethods()
+    {
+        return $this->methods;
+    }
+
+    /**
+     * set methods
+     * @param array $methods the class methods
+     * @return void|null
+     */
+    public function setMethods($methods)
+    {
+        if (empty($methods) || !is_array($methods)) {
+            return;
+        }
+        $this->methods = $methods;
+
+        foreach ($methods as $method) {
+            $this->methodUrls[$method->methodName] = $method->path;
+            $this->httpMethods[$method->method] = true;
+        }
+    }
+
+    /**
+     * set method 
+     * @param \Z\Core\Annotations\ZMethodAnnotation $method ZMethodAnnotation instance
+     */
+    public function setMethod($method)
+    {
+        if (empty($method) || !($method instanceof ZMethodAnnotation)) {
+            return;
+        }
+
+        $this->methods[] = $method;
+        $this->methodUrls[$method->methodName] = $method->path;
+        $this->httpMethods[$method->method] = true;
     }
 }

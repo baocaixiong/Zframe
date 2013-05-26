@@ -21,91 +21,65 @@ use Z\Z,
 
 class ZParseComment extends ZAppComponent implements ZParseCommentInterface
 {
-    public $exectorActionAnnotation = 'http';
-
-    public $routeKey = array(
-        'method', 'path', 'cache', 'etag'
-    );
-    /**
-     * 丢掉的annotation
-     * @var array
-     */
-    public $ignoredAnnotations = array('access', 'author', 'copyright', 'see', 'package', 
-            'id', 'param', 'return', 'version', 'throws');
+    const SEPARATOR = '|';
 
     /**
      * parse comment
-     * @param  string $comment comment string
-     * @return array []
+     * @param  string $docString class or method comment
+     * @return array
      */
-    public function parse($comment)
+    public function parse($docString)
     {
         $result = array();
 
-        if (empty($comment)) {
+        if (empty($docString)) {
             return $result;
         }
 
-        if (preg_match_all('#\* @([^@\n\r\t]*)#', $comment, $matches, PREG_PATTERN_ORDER) > 0) {
-            foreach ($matches[1] as $matche) {
-                if (!preg_match('#([0-9a-zA-Z]+)#', $matche, $subMatch)) {
-                    continue;
-                }
+        preg_match_all('#!(\S+)[^\n\r\S]*(.*)#', $docString, $matches, PREG_PATTERN_ORDER);
 
-                $name = $subMatch[1];
-                if (empty($name) || in_array($name, $this->ignoredAnnotations)) {
-                    continue;
-                }
-                $matche = preg_replace('/\ +/', ' ', $matche); //将多个空格转为一个空格
-                $arguments = explode(' ', $matche);
+        $annotations = $matches[1]; //类似 * !Root /test   => $annotations = ['Root']
 
-                if (count($arguments) > 0) {
-                    array_shift($arguments);
-                } else {
-                    $arguments = [];
-                }
+        $values = $matches[2]; //类似* !Root /test  => $values = ['/test'];
+        //annotations 和 values 的值是一一对应的
+        
+        if (empty($annotations)) {
+            return $result;
+        }
 
-                $result[] = array($name, $arguments);
+        foreach ($annotations as $key => $annotation) {
+            $values[$key] = preg_replace('/\ +/', ' ', $values[$key]); //将多个空格转为一个空格
+            
+            if (isset($result[$annotation])) {
+                $result[$annotation] = $values[$key] . ' ' . $result[$annotation];
+            } else {
+                $result[$annotation] = $values[$key];
             }
         }
 
-        return $this->_parseHttpRoute($result);
+        return $result;
     }
 
     /**
-     * parse http route
-     * 
-     * @param  array $annotations annotations
+     * 分析comment的每一行
+     * @param  string $meta comment meta
      * @return array
      */
-    protected function _parseHttpRoute($annotations)
+    public function parseMeta($meta)
     {
-        $httpResult = [];
-        foreach ($annotations as $key => $annotation) {
-            if ($annotation[0] === $this->exectorActionAnnotation) {
-                foreach ($annotation[1] as $value) {
-                    $temp = explode('|', $value);
-                    if (!in_array($temp[0], $this->routeKey)) {
-                        var_dump($temp[0]);
-                        throw new ZAnnotationException(
-                            Z::t("route key error, {key}", array('{key}' => $temp[0]))
-                        );
-                    }
-                    if (isset($temp[1])) {
-                        if (strtolower($temp[1]) === 'false') {
-                            $httpResult[$temp[0]] = false;
-                        } else {
-                            $httpResult[$temp[0]] = $temp[1];
-                        }
-                    } else {
-                        $httpResult[$temp[0]] = true;
-                    }
-                }
+        $metas = explode(' ', $meta);
 
-                $annotations[$key] = $httpResult;
+        $result = array();
+        foreach ($metas as $value) {
+            if (strpos($value, self::SEPARATOR)) {
+                $values = explode(self::SEPARATOR, $value);
+                $result[$values[0]] = $values[1];
+            } else {
+                $result[$value] = false;
             }
         }
-        return $annotations;
+        
+        return $result;
     }
 }
 

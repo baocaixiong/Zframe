@@ -1,6 +1,6 @@
 <?php
 /**
- * Annotation collection 
+ * ZAnnotation collection 
  *
  * PHP Version 5.4
  *
@@ -16,6 +16,6 @@ namespace Z\Core\Annotation;
 
 use Z\Collections\ZMap;
 
-class AnnotationCollection extends ZMap 
+class ZAnnotationCollection extends ZMap 
 {
 }
