@@ -27,8 +27,6 @@ class ZRoute
 
     public $path;
 
-    public $fileDefine;
-
     public $etag;
 
     /**

@@ -15,13 +15,24 @@ use Z\Executors\ZResource;
  */
 class TestResource extends ZResource
 {
+    // *
+    //  * get method 
+    //  *
+    //  * !method=POST! !path=/haha/$xxxx! !cache=300! !etag!
+    //  * @return [type] [description]
+     
+    // public function get111()
+    // {
+
+    // }
+
     /**
      * get method 
      *
-     * !method=GET! !path=/haha/$xxxx! !cache=300! !etag!
+     * !method=GET! !path=/haha/<$xxx:string>! !cache=300! !etag!
      * @return [type] [description]
      */
-    public function get111()
+    public function get()
     {
 
     }

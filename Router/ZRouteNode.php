@@ -1,6 +1,6 @@
 <?php
 /**
- * ZRestfulRouter class
+ * ZRoute class
  *
  * PHP Version 5.4
  *
@@ -28,6 +28,7 @@ class ZRouteNode extends ZAppComponent
     protected $staticChildren;
     protected $dynamicChildren;
 
+    public $paramFormat;
     /**
      * 初始化组件
      * 
@@ -74,13 +75,18 @@ class ZRouteNode extends ZAppComponent
 
         $nextPart = $pathParts[$index];
         
-        if($nextPart[0] != '$') {
+        $matchs = array();
+
+        if(!preg_match('%<\$(.*:.*)>%', $nextPart, $matchs)) {
             $childrenArray = &$this->staticChildren;
             $nextKey = $nextPart;
             $isParam = false;
+            $paramFormat = false;
         } else {
             $childrenArray = &$this->dynamicChildren;
-            $nextKey = substr($nextPart, 1);
+            $temp = explode(':', $matchs[1]);
+            $nextKey = $temp[0];
+            $paramFormat = $temp[1];
             $isParam = true;
         }
         
@@ -93,7 +99,8 @@ class ZRouteNode extends ZAppComponent
         } else {
             $child = $childrenArray[$nextKey];
         }
-        
+        $child->paramFormat = $paramFormat;
+
         $child->_addRouteRecursively($pathParts, $index - 1, $route);
     }
 
@@ -104,11 +111,11 @@ class ZRouteNode extends ZAppComponent
     }
     
     /**
-     * The recursive method powering findRouteFor(Request).
+     * 查找resource
      * 
-     * @param array Part of a path in reverse order.
-     * @param int Current index of path part array - decrements with each step.
-     * @param string The HTTP METHOD desired for this route.
+     * @param array  $pathParts Part of a path in reverse order.
+     * @param int    $index     Current index of path part array - decrements with each step.
+     * @param string $method    HTTP METHOD
      * 
      * @return RoutingResult
      */
@@ -116,7 +123,7 @@ class ZRouteNode extends ZAppComponent
     {
         if($index < 0) {
             $result = new ZRoutingResult();
-            if(!empty($this->methods)) { // Leaf, now check HTTP Method Match
+            if(!empty($this->methods)) {
                 if(isset($this->methods[$method])) {
                     $result->routeExists = true;
                     $result->methodIsSupported = true;
@@ -125,11 +132,11 @@ class ZRouteNode extends ZAppComponent
                     $result->routeExists = true;
                     $routes = array_values($this->methods);
                     $result->route = $routes[0]->toRoute();
-                    $result->route->methods = array_values($this->methods);
                     $result->methodIsSupported = false;
-                    $result->acceptableMethods = array_keys($this->methods);
                 }
-            } else { // Non-leaf, no match
+                $result->route->methods = array_values($this->methods);
+                $result->acceptableMethods = array_keys($this->methods);
+            } else {
                 $result->routeExists = false;
             }
             return $result;
@@ -146,13 +153,14 @@ class ZRouteNode extends ZAppComponent
             $result = $child->_findRouteRecursively($pathParts, $index - 1, $method);
         }
 
+        //Check for a dynamic match
         if(!$result->routeExists && !empty($this->dynamicChildren)) {
             foreach($this->dynamicChildren as $child) {
                 if($child->matches($nextPart)) {
                     $result = $child->_findRouteRecursively($pathParts, $index - 1, $method);
                     if($result->routeExists) {
                         if($child->condition != '') {
-                            $result->arguments[$child->condition] = urldecode($nextPart);
+                            $result->arguments[$child->condition] = $child->paramFormat(urldecode($nextPart));
                         }
                         return $result;
                     }
@@ -179,5 +187,19 @@ class ZRouteNode extends ZAppComponent
             }
         }
         return $return;
+    }
+
+    public function paramFormat($data)
+    {
+        switch ($this->paramFormat) {
+        case 'int':
+            return (int)$data;
+        case 'bool':
+            return (bool)$data;
+        case 'array':
+        case 'string':
+        default:
+            return $data;
+        }
     }
 }

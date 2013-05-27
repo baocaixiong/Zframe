@@ -36,7 +36,7 @@ class ZParseComment extends ZAppComponent implements ZParseCommentInterface
             return $result;
         }
         
-        preg_match_all('%!([a-z0-9/\.\\\#@$& =]*)!%is', $docString, $matches, PREG_PATTERN_ORDER);
+        preg_match_all('%!([a-z0-9/\.\\\#@$& =\<\>\:]*)!%is', $docString, $matches, PREG_PATTERN_ORDER);
 
         $matches = $matches[1];
         foreach ($matches as $key => $matche) {

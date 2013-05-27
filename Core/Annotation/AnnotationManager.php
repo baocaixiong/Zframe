@@ -167,7 +167,7 @@ class AnnotationManager extends ZAppComponent implements AnnotationInterface
 
         $newClasses = array_diff(get_declared_classes(), $declaredClasses);
 
-        $result = [];
+        $result = array();
 
         if ($filtrateZ) {
             foreach ($newClasses as $class) {
