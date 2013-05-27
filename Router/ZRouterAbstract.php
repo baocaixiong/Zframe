@@ -60,7 +60,7 @@ abstract class ZRouterAbstract extends ZAppComponent implements \ZRouterInterfac
             $route = '';
         }
 
-        return $this->matchRule($route);
+        return $route;
     }
 
     /**

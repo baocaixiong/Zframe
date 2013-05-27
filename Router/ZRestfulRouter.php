@@ -28,6 +28,8 @@ class ZRestfulRouter extends ZRouterAbstract
     public $routeVar = 'r';
 
     public $routingPrefix = '/';
+
+    protected $rootRouteNode;
     /**
      * 初始化
      */
@@ -51,22 +53,25 @@ class ZRestfulRouter extends ZRouterAbstract
 
     /**
      * add routes to routeNode
-     * @param \Z\Router\ZRouteNode $routeNode [description]
-     * @param AnnotationInterface  $am        [description]
      */
-    public function addRoutesToRouteNode(ZRouteNode $routeNode, AnnotationInterface $am)
+    public function addRoutesToRouteNode()
     {
-        $anntations = $am->getAnnotations();
-
+        $anntations = Z::app()->getAnnotation()->getAnnotations();
+        $routeNode = Z::app()->getRouteNode();
         foreach ($anntations as $anntation) {
             if (isset($anntation->root)) {
                 foreach ($anntation->getMethods() as $action) {
-                    $routeNode->addRoute($this, $action, $this->routingPrefix);
+                    $routeNode->addRoute($action, $this->routingPrefix);
                 }
             }
         }
-var_dump($routeNode->findRouteFor(Z::app()->getRequest()));
 
+        $this->rootRouteNode = $routeNode;
+    }
+
+    public function getRootRouteNode()
+    {
+        return $this->rootRouteNode;
     }
 
     /**

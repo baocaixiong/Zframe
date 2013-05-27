@@ -36,7 +36,7 @@ class ZParseComment extends ZAppComponent implements ZParseCommentInterface
             return $result;
         }
         
-        preg_match_all('%!([a-z0-9/\.\\\#@$& =\<\>\:]*)!%is', $docString, $matches, PREG_PATTERN_ORDER);
+        preg_match_all('%!([a-z0-9/\.\\\#@$& =\<\>\:|]*)!%is', $docString, $matches, PREG_PATTERN_ORDER);
 
         $matches = $matches[1];
         foreach ($matches as $key => $matche) {
@@ -47,11 +47,16 @@ class ZParseComment extends ZAppComponent implements ZParseCommentInterface
         foreach ($matches as $key => $matche) {
             $temp = explode('=', $matche);
             if (isset($temp[1])) {
-                if (strtolower($temp[1]) === 'false') {
-                    $annotations[$temp[0]] = false;
-                } else  {
-                    $annotations[$temp[0]] = $temp[1];
+                if (strpos($temp[1], '|')) {
+                    $annotations[$temp[0]] = explode('|', $temp[1]);
+                } else {
+                    if (strtolower($temp[1]) === 'false') {
+                        $annotations[$temp[0]] = false;
+                    } else  {
+                        $annotations[$temp[0]] = $temp[1];
+                    }
                 }
+                
             } else {
                 $annotations[$temp[0]] = true;
             }

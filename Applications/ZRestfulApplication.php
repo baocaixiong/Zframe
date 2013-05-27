@@ -40,18 +40,6 @@ class ZRestfulApplication extends ZApplication
     }
 
     /**
-     * 增加routes到routeNode中
-     *
-     * @return void
-     */
-    public function addRoutesToRouteNode()
-    {
-        $this->getRouter()->addRoutesToRouteNode(
-            $this->getRouteNode(), $this->getAnnotation()
-        );
-    }
-
-    /**
      * create resource callback
      * 
      * @param  string $route route string
@@ -59,7 +47,10 @@ class ZRestfulApplication extends ZApplication
      */
     public function getResource($route)
     {
-
+        $rootRouteNode = $this->getRouter()->getRootRouteNode();
+        $resource = $rootRouteNode->findRouteFor($route);
+        var_dump($this->getRequest()->getGet()->getArrayCopy());
+        var_dump($resource);
     }
 
     protected function createResourceRecursively()
@@ -116,10 +107,9 @@ class ZRestfulApplication extends ZApplication
         //$router = $this->getCahce()->get($this->getRouter()->getCacheKey());
         $router = null;
         if ($router === null) {
-            $router = $this->addRoutesToRouteNode();
+            $this->getRouter()->addRoutesToRouteNode();
             //$this->getCache()->set($this->getRouter()->getCacheKey(), $router);
         }
-        $this->_routerResult = $router;
     }
 
 

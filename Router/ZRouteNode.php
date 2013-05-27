@@ -29,17 +29,13 @@ class ZRouteNode extends ZAppComponent
     protected $dynamicChildren;
 
     public $paramFormat;
-    /**
-     * 初始化组件
-     * 
-     * @return void
-     */
-    public function initialize()
-    {
-        parent::initialize();
-    }
 
-    public function addRoute($app, $route, $prefix)
+    /**
+     * add route
+     * @param \Z\Core\Annotation\ZMethodAnnotation $route  [description]
+     * @param string                               $prefix [description]
+     */
+    public function addRoute($route, $prefix)
     {
         if (!isset($route->path) || empty($route->path)) {
            return;
@@ -56,6 +52,12 @@ class ZRouteNode extends ZAppComponent
         $this->_addRouteRecursively($pathParts, count($pathParts) - 1, $route);
     }
 
+    /**
+     * recursively add route 
+     * @param array                                $pathParts pathinfo array
+     * @param int                                  $index     Current index of path part array
+     * @param \Z\Core\Annotation\ZMethodAnnotation $route     method annotation
+     */
     private function _addRouteRecursively(&$pathParts, $index, $route)
     {
         if($index < 0) {
@@ -64,11 +66,12 @@ class ZRouteNode extends ZAppComponent
             } else {
                 $methods = (array)$route->method;
             }
+
             foreach($methods as $method) {
                 if(isset($this->methods[$method])) {
                     throw new ZException($method . ' ' . str_replace('//','/',$route->path));
                 }
-                $this->methods[$method] = new ZRt($route);
+                $this->methods[$method] = $route;
             }
             return;
         }
@@ -104,17 +107,24 @@ class ZRouteNode extends ZAppComponent
         $child->_addRouteRecursively($pathParts, $index - 1, $route);
     }
 
-    public function findRouteFor($request) {
-        $pathParts = array_reverse(explode('/', $request->getPathInfo()));
+    /**
+     * find route 
+     * @param  string $pathinfo path info
+     * @return \Z\Router\ZRoutingResult
+     */
+    public function findRouteFor($pathinfo) {
+        $pathParts = array_reverse(explode('/', $pathinfo));
 
-        return $this->_findRouteRecursively($pathParts, count($pathParts) - 1, $request->getMethod());
+        return $this->_findRouteRecursively(
+            $pathParts, count($pathParts) - 1, Z::app()->getRequest()->getMethod()
+        );
     }
     
     /**
      * 查找resource
      * 
-     * @param array  $pathParts Part of a path in reverse order.
-     * @param int    $index     Current index of path part array - decrements with each step.
+     * @param array  $pathParts path parts
+     * @param int    $index     Current index of path part array
      * @param string $method    HTTP METHOD
      * 
      * @return RoutingResult
@@ -127,14 +137,14 @@ class ZRouteNode extends ZAppComponent
                 if(isset($this->methods[$method])) {
                     $result->routeExists = true;
                     $result->methodIsSupported = true;
-                    $result->route = $this->methods[$method]->toRoute();
+                    $result->route = $this->methods[$method];
                 } else {
                     $result->routeExists = true;
                     $routes = array_values($this->methods);
-                    $result->route = $routes[0]->toRoute();
+                    $result->route = $routes[0];
                     $result->methodIsSupported = false;
                 }
-                $result->route->methods = array_values($this->methods);
+                //$result->route->methods = array_values($this->methods);
                 $result->acceptableMethods = array_keys($this->methods);
             } else {
                 $result->routeExists = false;
@@ -147,16 +157,16 @@ class ZRouteNode extends ZAppComponent
 
         $result = new ZRoutingResult();
         
-        // Check for a static match
+        // 检查静态的路由
         if(isset($this->staticChildren[$nextPart])) {
             $child = $this->staticChildren[$nextPart];
             $result = $child->_findRouteRecursively($pathParts, $index - 1, $method);
         }
 
-        //Check for a dynamic match
+        //检查动态路由
         if(!$result->routeExists && !empty($this->dynamicChildren)) {
             foreach($this->dynamicChildren as $child) {
-                if($child->matches($nextPart)) {
+                if($nextPart !== '') {
                     $result = $child->_findRouteRecursively($pathParts, $index - 1, $method);
                     if($result->routeExists) {
                         if($child->condition != '') {
@@ -171,10 +181,11 @@ class ZRouteNode extends ZAppComponent
         return $result;
     }
 
-    public function matches($path) {
-        return $path != '';
-    }
-
+    /**
+     * getRevesedPathParts
+     * @param  string $path path info
+     * @return array
+     */
     private function _getRevesedPathParts($path)
     {
         $parts = explode('/', $path);
@@ -189,17 +200,24 @@ class ZRouteNode extends ZAppComponent
         return $return;
     }
 
-    public function paramFormat($data)
+    /**
+     * parameter format 
+     * !path=/test/<$xxx:int>! => 将匹配到的路由做int化
+     * 
+     * @param  string $pathPart 路由的一部分
+     * @return mixed
+     */
+    public function paramFormat($pathPart)
     {
         switch ($this->paramFormat) {
         case 'int':
-            return (int)$data;
+            return (int)$pathPart;
         case 'bool':
-            return (bool)$data;
+            return (bool)$pathPart;
         case 'array':
         case 'string':
         default:
-            return $data;
+            return $pathPart;
         }
     }
 }
