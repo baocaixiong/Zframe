@@ -108,8 +108,7 @@ class ZWebApplication extends ZApplication
                 if (!class_exists($className, false)) {
                     Z::loadFile($classFile);
                 }
-
-                if (class_exists($className)
+                if (class_exists($className, false)
                     && is_subclass_of($className, 'Z\Executors\ZController')) {
                     return array(
                         new $className($this),

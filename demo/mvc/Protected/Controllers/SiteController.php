@@ -1,7 +1,7 @@
 <?php
 
 
-namespace WebRoot\Controllers;
+namespace Project\Controllers;
 
 use Z\Z,
     Z\Executors\ZController;

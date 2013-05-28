@@ -46,14 +46,13 @@ class ZExecutorBehavior extends ZBehavior
      */
     protected function bindParams(\ZDispatchContextInterface $dispatch)
     {
-        $params = $dispatch->request->getParams();
+        $params = $dispatch->routeResult->arguments;
+
         if (empty($params)) {
             return;
         }
 
-        $rfMethod = new \ReflectionMethod(get_class($this->getOwner()), $dispatch->actionId);
-
-        $methodParams = $rfMethod->getParameters();
+        $methodParams = $dispatch->rfParams;
 
         $retParams = array();
         foreach ($methodParams as $methodParam) {

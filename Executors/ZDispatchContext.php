@@ -34,17 +34,14 @@ class ZDispatchContext implements ZDispatchContextInterface
     public $executor;
 
     /**
-     * exector action name
-     * @var string
-     */
-    public $actionId;
-
-    /**
      * will band inject parameters
      * @var array
      */
-    public $params = array();
+    public $routeResult = array();
 
+    public $rfParams;
+
+    public $methodName;
     /**
      * response object
      * @var \Z\Response\ZResponseAbstract
@@ -59,13 +56,13 @@ class ZDispatchContext implements ZDispatchContextInterface
      * @param array                       $params   will band inject parameters
      */
     public function assignment(
-        \ZRequestInterfase $request, \ZExecutorInterface $executor, $actionId
+        \ZRequestInterfase $request, \ZExecutorInterface $executor, $routeResult
     ) {
         $this->request = $request;
         $this->executor = $executor;
-        $this->actionId = $actionId;
-        $this->params = $request->getParams();
-
+        $this->rfParams = $routeResult->route->params;
+        $this->routeResult = $routeResult;
+        $this->methodName = $routeResult->route->methodName;
         return $this;
     }
 
@@ -76,6 +73,6 @@ class ZDispatchContext implements ZDispatchContextInterface
      */
     public function initialize()
     {
-
+        
     }
 }

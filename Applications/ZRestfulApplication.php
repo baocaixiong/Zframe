@@ -15,15 +15,11 @@
 namespace Z\Applications;
 
 use Z\Core\ZApplication,
-    Z\Z;
+    Z\Z,
+    Z\Exceptions\ZHttpException;
 
 class ZRestfulApplication extends ZApplication
 {
-    /**
-     * route node 
-     * @var \Z\Router\ZRouteNode
-     */
-    private $_routerResult;
     /**
      * 处理request
      * @return void
@@ -36,7 +32,23 @@ class ZRestfulApplication extends ZApplication
             $route = $this->getRouter()->parseUrl($this->getRequest());
         }
 
-        $resource = $this->getResource($route);
+        $resource = $this->runResource($route);
+    }
+
+    public function runResource($route)
+    {
+        try {
+            $rr = $this->getResource($route);
+            list($routeResult, $executor) = $rr;
+
+            $dispatch = $this->getDispatch()
+                ->assignment($this->getRequest(), $executor, $routeResult);
+
+            $executor->init($dispatch);
+            $executor->executor();
+        } catch (ZHttpException $e) {
+            echo '404 NOT FOUND';
+        }
     }
 
     /**
@@ -48,9 +60,21 @@ class ZRestfulApplication extends ZApplication
     public function getResource($route)
     {
         $rootRouteNode = $this->getRouter()->getRootRouteNode();
-        $resource = $rootRouteNode->findRouteFor($route);
-        var_dump($this->getRequest()->getGet()->getArrayCopy());
-        var_dump($resource);
+        $routeResult = $rootRouteNode->findRouteFor($route);
+
+        if (is_null($routeResult->route)) {
+            throw new ZHttpException(
+                Z::t(
+                    'Unable to resolve the request "{route}".',
+                    array('{route}' => $route === '' ? '' : $route)
+                )
+            );
+
+        } else {
+            $resource = new $routeResult->route->className($this);
+        }
+        
+        return array($routeResult, $resource);
     }
 
     protected function createResourceRecursively()

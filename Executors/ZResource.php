@@ -21,6 +21,40 @@ class ZResource extends ZExecutor
 {
     public function execute(\ZDispatchContextInterface $dispatch)
     {
+        $callable = array($this, $dispatch->methodName);
+
+        if (is_callable($callable)) {
+            /**
+             * http cache
+             */
+            // if ($request->checkClientCacheIsValid()) {
+            //     Z::app()->getHttpResponse()->notModified();
+            //     $this->responed(Z::app()->getHttpResponse());
+            //     return ;
+            // }
+            $response = call_user_func_array($callable, $dispatch->routeResult->arguments);
+
+            $this->responed($response);
+        } else {
+            throw new ZException(Z::t("This controller has not action \"{action}\".", array('{action}' => $actionId)));
+        }   
+    }
+
+    /**
+     * Respond to client
+     * @param  \Z\Resposne\ZReponseAbstract $resposne response instance
+     * @return void
+     */
+    protected function responed (\ZResponseInterface $resposne)
+    {
+        if (null == $resposne) {
+            return;
+        }
         
+        foreach ($resposne->getAllheaders() as $str => $replace) {
+            header($str, $replace);
+        }
+
+        echo $resposne->getBody();
     }
 }

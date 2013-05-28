@@ -1,6 +1,6 @@
 <?php
 
-namespace TestRestful\Test\Resources;
+namespace Project\Test\Resources;
 
 use Z\Z;
 use Z\Executors\ZResource;
@@ -33,8 +33,22 @@ class TestResource extends ZResource
      * !cache=300! !etag!
      * @return [type] [description]
      */
-    public function get($xxx, $yyy)
+    public function get($yyy, $xxx)
     {
+        var_dump($xxx, $yyy);
 
+        exit;
+    }
+
+    /**
+     * get method 
+     *
+     * !method=GET|POST|DELETE! !path=/123123!
+     * !cache=300! !etag!
+     * @return [type] [description]
+     */
+    public function get11($xxx=345, $yyy=123)
+    {
+var_dump($xxx, $yyy);exit;
     }
 }
