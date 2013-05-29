@@ -19,9 +19,9 @@ use Z\Z,
 
 class ZResource extends ZExecutor
 {
-    public function execute(\ZDispatchContextInterface $dispatch)
+    public function execute(\ZDispatchContextInterface $context)
     {
-        $callable = array($this, $dispatch->methodName);
+        $callable = array($this, $context->methodName);
 
         if (is_callable($callable)) {
             /**
@@ -32,9 +32,9 @@ class ZResource extends ZExecutor
             //     $this->responed(Z::app()->getHttpResponse());
             //     return ;
             // }
-            $response = call_user_func_array($callable, $dispatch->routeResult->arguments);
+            $response = call_user_func_array($callable, $context->routeResult->arguments);
 
-            $this->responed($response);
+            $context->response = $response;
         } else {
             throw new ZException(Z::t("This controller has not action \"{action}\".", array('{action}' => $actionId)));
         }   

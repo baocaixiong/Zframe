@@ -37,7 +37,6 @@ class TestResource extends ZResource
     {
         var_dump($xxx, $yyy);
 
-        exit;
     }
 
     /**
@@ -49,6 +48,6 @@ class TestResource extends ZResource
      */
     public function get11($xxx=345, $yyy=123)
     {
-var_dump($xxx, $yyy);exit;
+var_dump($xxx, $yyy);
     }
 }
