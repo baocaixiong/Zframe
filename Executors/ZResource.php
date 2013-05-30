@@ -34,7 +34,6 @@ class ZResource extends ZExecutor
             // }
 
             $response = call_user_func_array($callable, $context->params);
-
             $context->response = $response;
         } else {
             throw new ZException(Z::t("This controller has not action \"{action}\".", array('{action}' => $actionId)));

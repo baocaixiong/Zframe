@@ -27,6 +27,7 @@ class ZExecutorBehavior extends ZBehavior
     {
         return array_merge(parent::events(), array(
             'onBeforeDispatch'=>'beforeDispatch',
+            'onAfterDispatch' => 'afterDispatch',
         ));
     }
 
@@ -37,6 +38,17 @@ class ZExecutorBehavior extends ZBehavior
     public function beforeDispatch($event)
     {
         $this->bindParams($this->getOwner()->context);
+    }
+
+    /**
+     * 在调用resource中的action之后要调用的方法
+     * 
+     * @return void
+     */
+    public function afterDispatch()
+    {
+        $response = $this->getOwner()->context->response;
+
     }
 
     /**
