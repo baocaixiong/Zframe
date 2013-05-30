@@ -51,7 +51,7 @@ class ZCore implements \ZCoreInterface
             }
             return $this->_events[$name];
         } elseif (isset($this->_behavior[$name])) {
-            return $this->_m[$name];
+            return $this->_behavior[$name];
         } elseif (is_array($this->_behavior)) {
             foreach ($this->_behavior as $behavior) {
                 if($object->behavior() && 

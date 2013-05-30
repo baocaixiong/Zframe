@@ -69,6 +69,10 @@ class ZRestfulRouter extends ZRouterAbstract
         $this->rootRouteNode = $routeNode;
     }
 
+    /**
+     * get root route node
+     * @return \Z\Router\RouteNode
+     */
     public function getRootRouteNode()
     {
         return $this->rootRouteNode;

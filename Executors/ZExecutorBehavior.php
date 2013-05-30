@@ -36,7 +36,7 @@ class ZExecutorBehavior extends ZBehavior
      */
     public function beforeDispatch($event)
     {
-        $this->bindParams($this->getOwner()->dispatch);
+        $this->bindParams($this->getOwner()->context);
     }
 
     /**
@@ -44,15 +44,15 @@ class ZExecutorBehavior extends ZBehavior
      * @param  \Z\Executors\ZDispatchContext $dispatch dispatch
      * @return void
      */
-    protected function bindParams(\ZDispatchContextInterface $dispatch)
+    protected function bindParams(\ZDispatchContextInterface $context)
     {
-        $params = $dispatch->routeResult->arguments;
+        $params = $context->routeResult->arguments;
 
         if (empty($params)) {
             return;
         }
 
-        $methodParams = $dispatch->rfParams;
+        $methodParams = $context->rfParams;
 
         $retParams = array();
         foreach ($methodParams as $methodParam) {
@@ -63,12 +63,17 @@ class ZExecutorBehavior extends ZBehavior
                     $retParams[$name] = $paramsValue;
                 }
 
-                if (!isset($params[$name]) && $methodParam->isOptional()) {
-                    $retParams[$name] = $methodParam->getDefaultValue();
+                if (!isset($params[$name])) {
+                    if ($methodParam->isOptional()) {
+                        $retParams[$name] = $methodParam->getDefaultValue();
+                    } else {
+                        $retParams[$name] = null;
+                    }
+                    
                 }
             }
         }
 
-        $dispatch->params = $retParams;
+        $context->params = $retParams;
     }
 }

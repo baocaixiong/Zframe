@@ -34,7 +34,7 @@ abstract class ZExecutor extends ZCore implements \ZExecutorInterface
      */
     public $application;
 
-    public $dispatch;
+    public $context;
 
     /**
      * 构造方法，初始化整个executer
@@ -50,10 +50,10 @@ abstract class ZExecutor extends ZCore implements \ZExecutorInterface
      * 
      * @return void
      */
-    public function init(\ZDispatchContextInterface $dispatch)
+    public function init(\ZDispatchContextInterface $context)
     {
-        $this->dispatch = $dispatch;
-        $this->request = $dispatch->request;
+        $this->context = $context;
+        $this->request = $context->request;
         $this->attachBehaviors($this->behaviors());
     }
 
@@ -65,7 +65,8 @@ abstract class ZExecutor extends ZCore implements \ZExecutorInterface
     public function executor()
     {
         $this->onBeforeDispatch(new ZEvent($this));
-        $response = $this->execute($this->dispatch);
+        $this->execute($this->context);
+        $this->onAfterDispatch(new ZEvent($this));
     }
 
     /**
@@ -88,6 +89,16 @@ abstract class ZExecutor extends ZCore implements \ZExecutorInterface
      */
     public function onBeforeDispatch($event)
     {
-        $this->raiseEvent('onBeforeDispatch',   $event);
+        $this->raiseEvent('onBeforeDispatch', $event);
+    }
+
+    /**
+     * after dispatch 
+     * @param  [type] $event [description]
+     * @return [type]        [description]
+     */
+    public function onAfterDispatch($event)
+    {
+        $this->raiseEvent('onAfterDispatch', $event);
     }
 }

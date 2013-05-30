@@ -29,15 +29,14 @@ class TestResource extends ZResource
     /**
      * get method 
      *
-     * !method=GET|POST|DELETE! !path=/haha/<$xxx:string>/<$yyy:string>!
+     * !method=GET|POST|DELETE! !path=/haha/<$i:string>/<$j:string>!
      * !cache=300! !etag!
      * @return [type] [description]
      */
-    public function get($yyy, $xxx)
+    public function get($j = null, $i)
     {
-        var_dump($xxx, $yyy);
+        var_dump($i, $j);
 
-        exit;
     }
 
     /**
@@ -49,6 +48,6 @@ class TestResource extends ZResource
      */
     public function get11($xxx=345, $yyy=123)
     {
-var_dump($xxx, $yyy);exit;
+var_dump($xxx, $yyy);
     }
 }

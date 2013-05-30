@@ -41,10 +41,10 @@ class ZRestfulApplication extends ZApplication
             $rr = $this->getResource($route);
             list($routeResult, $executor) = $rr;
 
-            $dispatch = $this->getDispatch()
+            $context = $this->getDispatch()
                 ->assignment($this->getRequest(), $executor, $routeResult);
 
-            $executor->init($dispatch);
+            $executor->init($context);
             $executor->executor();
         } catch (ZHttpException $e) {
             echo '404 NOT FOUND';
