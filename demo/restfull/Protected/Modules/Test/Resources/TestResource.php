@@ -33,10 +33,10 @@ class TestResource extends ZResource
      * !cache=300! !etag!
      * @return [type] [description]
      */
-    public function get($j = null, $i)
+    public function get($i, $j = 123)
     {
-        var_dump($i, $j);
-
+        echo '当前resource: TestResource<br/>';
+        echo 'route参数: '. $i . '<====>' . $j;
     }
 
     /**
@@ -49,5 +49,17 @@ class TestResource extends ZResource
     public function get11($xxx=345, $yyy=123)
     {
 var_dump($xxx, $yyy);
+    }
+
+    /**
+     * get method 
+     *
+     * !method=GET|POST|DELETE! !path=/<$s:string>!
+     * !cache=300! !etag!
+     * @return [type] [description]
+     */
+    public function get1111($s)
+    {
+        echo $s;
     }
 }

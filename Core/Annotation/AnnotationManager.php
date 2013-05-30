@@ -33,7 +33,7 @@ class AnnotationManager extends ZAppComponent implements AnnotationInterface
      * 要忽略扫描的目录
      * @var array
      */
-    public $blacklist = ['.DS_Store', '.git', '.svn'];
+    public $blacklist = array('.DS_Store', '.git', '.svn');
 
     /**
      * 要扫描的目录

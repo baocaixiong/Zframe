@@ -21,6 +21,8 @@ class ZRoutingResult {
 	public $routeExists = false;
 	public $methodIsSupported = false;
 	public $acceptableMethods = array();
+    public $cacheTime = 0;
+    public $etag = false;
 }
 
 ?>

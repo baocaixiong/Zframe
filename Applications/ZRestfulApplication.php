@@ -35,6 +35,12 @@ class ZRestfulApplication extends ZApplication
         $resource = $this->runResource($route);
     }
 
+    /**
+     * 运行resource
+     * @param string $route request path
+     * 
+     * @return void
+     */
     public function runResource($route)
     {
         try {
@@ -75,11 +81,6 @@ class ZRestfulApplication extends ZApplication
         }
         
         return array($routeResult, $resource);
-    }
-
-    protected function createResourceRecursively()
-    {
-        
     }
 
     /**

@@ -19,8 +19,17 @@ use Z\Z,
 
 class ZResource extends ZExecutor
 {
+    /**
+     * execut this action
+     * 
+     * @param  \ZDispatchContextInterface $context Dispatch context
+     * @return null|void
+     */
     public function execute(\ZDispatchContextInterface $context)
     {
+        if ($context->isDispatched) {
+            return null;
+        }
         $callable = array($this, $context->methodName);
 
         if (is_callable($callable)) {
@@ -36,25 +45,7 @@ class ZResource extends ZExecutor
             $response = call_user_func_array($callable, $context->params);
             $context->response = $response;
         } else {
-            throw new ZException(Z::t("This controller has not action \"{action}\".", array('{action}' => $actionId)));
+            throw new ZException(Z::t("This resource has not action \"{action}\".", array('{action}' => $actionId)));
         }   
-    }
-
-    /**
-     * Respond to client
-     * @param  \Z\Resposne\ZReponseAbstract $resposne response instance
-     * @return void
-     */
-    protected function responed (\ZResponseInterface $resposne)
-    {
-        if (null == $resposne) {
-            return;
-        }
-        
-        foreach ($resposne->getAllheaders() as $str => $replace) {
-            header($str, $replace);
-        }
-
-        echo $resposne->getBody();
     }
 }

@@ -145,6 +145,10 @@ class ZRouteNode extends ZAppComponent
                     $result->methodIsSupported = false;
                 }
                 //$result->route->methods = array_values($this->methods);
+                $result->cacheTime = isset($this->methods[$method]->cache)
+                    ? $this->methods[$method]->cache : 0;
+                $result->cacheTime = isset($this->methods[$method]->etag)
+                    ? $this->methods[$method]->etag : false;
                 $result->acceptableMethods = array_keys($this->methods);
             } else {
                 $result->routeExists = false;

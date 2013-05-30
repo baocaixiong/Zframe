@@ -37,7 +37,8 @@ class ZExecutorBehavior extends ZBehavior
      */
     public function beforeDispatch($event)
     {
-        $this->bindParams($this->getOwner()->context);
+        $context = $this->getOwner()->context;
+        !$context->isDispatched && $this->bindParams($context);
     }
 
     /**
@@ -47,8 +48,12 @@ class ZExecutorBehavior extends ZBehavior
      */
     public function afterDispatch()
     {
-        $response = $this->getOwner()->context->response;
+        $context = $this->getOwner()->context;
 
+        if (isset($context->cacheTime) && $context->cacheTime > 0) {
+            $context->response->setExpires($context->cacheTime);
+        }
+        
     }
 
     /**
@@ -71,7 +76,7 @@ class ZExecutorBehavior extends ZBehavior
             $name = $methodParam->name;
 
             foreach ($params as $paramsKey => $paramsValue) {
-                if ($paramsKey == $name) {
+                if ($paramsKey === $name) {
                     $retParams[$name] = $paramsValue;
                 }
 

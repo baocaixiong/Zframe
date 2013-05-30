@@ -67,6 +67,7 @@ abstract class ZExecutor extends ZCore implements \ZExecutorInterface
         $this->onBeforeDispatch(new ZEvent($this));
         $this->execute($this->context);
         $this->onAfterDispatch(new ZEvent($this));
+        var_dump($this->context);
     }
 
     /**
@@ -82,6 +83,24 @@ abstract class ZExecutor extends ZCore implements \ZExecutorInterface
         );
     }
     
+    /**
+     * Respond to client
+     * @param  \Z\Resposne\ZReponseAbstract $resposne response instance
+     * @return void
+     */
+    protected function responed (\ZResponseInterface $resposne)
+    {
+        if (null == $resposne) {
+            return;
+        }
+        
+        foreach ($resposne->getAllheaders() as $str => $replace) {
+            header($str, $replace);
+        }
+
+        echo $resposne->getBody();
+    }
+
     /**
      * before dispatch event
      * @param  \Z\Core\ZEvent $event event instance

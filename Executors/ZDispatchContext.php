@@ -48,6 +48,12 @@ class ZDispatchContext implements ZDispatchContextInterface
      */
     public $response;
 
+    public $isDispatched = false;
+
+    public $cacheTime = 0;
+
+    public $etag = false;
+
     /**
      * 赋值操作
      * @param \Z\Request\ZRequestAbstract $request  request object
@@ -63,6 +69,8 @@ class ZDispatchContext implements ZDispatchContextInterface
         $this->rfParams = $routeResult->route->params;
         $this->routeResult = $routeResult;
         $this->methodName = $routeResult->route->methodName;
+        $this->cacheTime = $routeResult->cacheTime;
+        $this->etag = $routeResult->etag;
         return $this;
     }
 
