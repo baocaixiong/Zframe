@@ -16,35 +16,51 @@ namespace Z\Router;
 
 use Z\Z;
 use \Z\Core\ZAppComponent;
-use Z\Exceptions\ZException;
+use Z\Exceptions\ZRouterException;
+use Z\Core\Annotation\ZMethodAnnotation;
 /**
  * route node class 
  */
 class ZRouteNode extends ZAppComponent
 {
+    /**
+     * Route http method
+     * @var array
+     */
     protected $methods = array();
 
+    /**
+     * 动态route的key
+     * @var string
+     */
     protected $condition = '';
+
+    /**
+     * route的静态子route
+     * @var [type]
+     */
     protected $staticChildren;
+
+    /**
+     * route的动态子route
+     * @var [type]
+     */
     protected $dynamicChildren;
 
-    public $paramFormat;
+    /**
+     * route的格式化方式 int string 
+     * @var [type]
+     */
+    protected $paramFormat;
 
     /**
      * add route
      * @param \Z\Core\Annotation\ZMethodAnnotation $route  [description]
      * @param string                               $prefix [description]
      */
-    public function addRoute($route, $prefix)
+    public function addRoute(ZMethodAnnotation $route, $prefix)
     {
-        if (!isset($route->path) || empty($route->path)) {
-           return;
-        } 
-
-        if (!isset($route->method) || empty($route->method)) {
-            return;
-        }
-
+        $this->checkResourceMethod($route);
         $route->path = $prefix . trim($route->path, '/');
 
         $pathParts = $this->_getRevesedPathParts($route->path);
@@ -58,29 +74,25 @@ class ZRouteNode extends ZAppComponent
      * @param int                                  $index     Current index of path part array
      * @param \Z\Core\Annotation\ZMethodAnnotation $route     method annotation
      */
-    private function _addRouteRecursively(&$pathParts, $index, $route)
+    private function _addRouteRecursively(&$pathParts, $index, ZMethodAnnotation $route)
     {
-        if($index < 0) {
+        if ($index < 0) {
             if (is_array($route->method)) {
                 $methods = $route->method;
             } else {
                 $methods = (array)$route->method;
             }
 
-            foreach($methods as $method) {
-                if(isset($this->methods[$method])) {
-                    throw new ZException($method . ' ' . str_replace('//','/',$route->path));
-                }
+            foreach ($methods as $method) {
                 $this->methods[$method] = $route;
             }
             return;
         }
 
         $nextPart = $pathParts[$index];
-        
         $matchs = array();
 
-        if(!preg_match('%<\$(.*:.*)>%', $nextPart, $matchs)) {
+        if (!preg_match('%<\$(.*:.*)>%', $nextPart, $matchs)) {
             $childrenArray = &$this->staticChildren;
             $nextKey = $nextPart;
             $isParam = false;
@@ -93,9 +105,9 @@ class ZRouteNode extends ZAppComponent
             $isParam = true;
         }
         
-        if(!isset($childrenArray[$nextKey])) {
-            $child = new ZRouteNode();
-            if($isParam) {
+        if (!isset($childrenArray[$nextKey])) {
+            $child = new self();
+            if ($isParam) {
                 $child->condition = $nextKey;
             }
             $childrenArray[$nextKey] = $child;
@@ -112,7 +124,8 @@ class ZRouteNode extends ZAppComponent
      * @param  string $pathinfo path info
      * @return \Z\Router\ZRoutingResult
      */
-    public function findRouteFor($pathinfo) {
+    public function findRouteFor($pathinfo)
+    {
         $pathParts = array_reverse(explode('/', $pathinfo));
 
         return $this->_findRouteRecursively(
@@ -129,12 +142,13 @@ class ZRouteNode extends ZAppComponent
      * 
      * @return RoutingResult
      */
-    private function _findRouteRecursively(&$pathParts, $index, &$method)
+    private function _findRouteRecursively(
+        &$pathParts, $index, &$method, ZRoutingResult $result = null
+    )
     {
-        if($index < 0) {
-            $result = new ZRoutingResult();
-            if(!empty($this->methods)) {
-                if(isset($this->methods[$method])) {
+        if ($index < 0) {
+            if (!empty($this->methods)) {
+                if (isset($this->methods[$method])) {
                     $result->routeExists = true;
                     $result->methodIsSupported = true;
                     $result->route = $this->methods[$method];
@@ -145,10 +159,9 @@ class ZRouteNode extends ZAppComponent
                     $result->methodIsSupported = false;
                 }
                 //$result->route->methods = array_values($this->methods);
-                $result->cacheTime = isset($this->methods[$method]->cache)
-                    ? $this->methods[$method]->cache : 0;
-                $result->cacheTime = isset($this->methods[$method]->etag)
-                    ? $this->methods[$method]->etag : false;
+                $result->cacheTime = $this->methods[$method]->cacheTime;
+                $result->etag = $this->methods[$method]->etag;
+                $result->response = $this->methods[$method]->response;
                 $result->acceptableMethods = array_keys($this->methods);
             } else {
                 $result->routeExists = false;
@@ -159,22 +172,27 @@ class ZRouteNode extends ZAppComponent
         // Find a child for the next part of the path.
         $nextPart = &$pathParts[$index];
 
-        $result = new ZRoutingResult();
+        if (is_null($result)) {
+            $result = new ZRoutingResult();
+        }
         
         // 检查静态的路由
-        if(isset($this->staticChildren[$nextPart])) {
+        if (isset($this->staticChildren[$nextPart])) {
             $child = $this->staticChildren[$nextPart];
-            $result = $child->_findRouteRecursively($pathParts, $index - 1, $method);
+            $result = $child->_findRouteRecursively($pathParts, $index - 1, $method, $result);
         }
 
         //检查动态路由
-        if(!$result->routeExists && !empty($this->dynamicChildren)) {
-            foreach($this->dynamicChildren as $child) {
-                if($nextPart !== '') {
-                    $result = $child->_findRouteRecursively($pathParts, $index - 1, $method);
-                    if($result->routeExists) {
-                        if($child->condition != '') {
-                            $result->arguments[$child->condition] = $child->paramFormat(urldecode($nextPart));
+        if (!$result->routeExists && !empty($this->dynamicChildren)) {
+            foreach ($this->dynamicChildren as $child) {
+                if ($nextPart !== '') {
+                    $result = $child->_findRouteRecursively(
+                        $pathParts, $index - 1, $method, $result
+                    );
+                    if ($result->routeExists) {
+                        if ($child->condition != '') {
+                            $result->arguments[$child->condition] =
+                            $child->paramFormat(urldecode($nextPart));
                         }
                         return $result;
                     }
@@ -211,7 +229,7 @@ class ZRouteNode extends ZAppComponent
      * @param  string $pathPart 路由的一部分
      * @return mixed
      */
-    public function paramFormat($pathPart)
+    protected function paramFormat($pathPart)
     {
         switch ($this->paramFormat) {
         case 'int':
@@ -222,6 +240,32 @@ class ZRouteNode extends ZAppComponent
         case 'string':
         default:
             return $pathPart;
+        }
+    }
+
+    /**
+     * 检查resource的action是否都有正确的annotation
+     * @param  ZMethodAnnotation $route [description]
+     * @return [type]                   [description]
+     */
+    protected function checkResourceMethod(ZMethodAnnotation $route)
+    {
+        if (!isset($route->path) || empty($route->path)) {
+            throw new ZRouterException(
+                Z::t(
+                    'Resource PUBLIC method `{methodName}` must has !path! annotation.',
+                    array('{methodName}' => $route->methodName)
+                )
+            );
+        } 
+
+        if (!isset($route->method) || empty($route->method)) {
+            throw new ZRouterException(
+                Z::t(
+                    'Resource PUBLIC method `{methodName}` must has !method! annotation.',
+                    array('{methodName}' => $route->methodName)
+                )
+            );
         }
     }
 }

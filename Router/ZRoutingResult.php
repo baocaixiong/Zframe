@@ -14,15 +14,18 @@
  */
 namespace Z\Router;
 
+use Z\Exceptions\ZRouterException;
+use Z\Z;
 
 class ZRoutingResult {
-	public $route = null;
-	public $arguments = array();
-	public $routeExists = false;
-	public $methodIsSupported = false;
-	public $acceptableMethods = array();
+    public $route = null;
+    public $arguments = array();
+    public $routeExists = false;
+    public $methodIsSupported = false;
+    public $acceptableMethods = array();
     public $cacheTime = 0;
     public $etag = false;
+    public $response = 'http';
 }
 
 ?>

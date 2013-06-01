@@ -38,7 +38,10 @@ class ZExecutorBehavior extends ZBehavior
     public function beforeDispatch($event)
     {
         $context = $this->getOwner()->context;
-        !$context->isDispatched && $this->bindParams($context);
+        if (!$context->isDispatched) {
+            $this->bindParams($context);
+            $this->createResponse($context);
+        }
     }
 
     /**
@@ -54,6 +57,7 @@ class ZExecutorBehavior extends ZBehavior
             $context->response->setExpires($context->cacheTime);
         }
         
+        
     }
 
     /**
@@ -63,15 +67,17 @@ class ZExecutorBehavior extends ZBehavior
      */
     protected function bindParams(\ZDispatchContextInterface $context)
     {
+        $retParams = array();
+
         $params = $context->routeResult->arguments;
 
         if (empty($params)) {
+            $context->params = $retParams;
             return;
         }
 
         $methodParams = $context->rfParams;
 
-        $retParams = array();
         foreach ($methodParams as $methodParam) {
             $name = $methodParam->name;
 
@@ -92,5 +98,16 @@ class ZExecutorBehavior extends ZBehavior
         }
 
         $context->params = $retParams;
+    }
+    /**
+     * create response
+     * @param  \ZDispatchContextInterface $context dispatch context
+     * @return \Z\Response\ZHttpResponse
+     */
+    protected function createResponse(\ZDispatchContextInterface $context)
+    {
+        $responseCode = $context->routeResult->response;
+
+        $context->response = Z::app()->createResponse($responseCode);
     }
 }

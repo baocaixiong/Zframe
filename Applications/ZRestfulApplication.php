@@ -84,6 +84,16 @@ class ZRestfulApplication extends ZApplication
     }
 
     /**
+     * create response
+     * @param  string $responseCode response code e.g: http, json, download
+     * @return \Z\Response\ZHttpResponse
+     */
+    public function createResponse($responseCode)
+    {
+        return \Z\Response\ZResponseFactory::create($responseCode);
+    }
+
+    /**
      * 获得router node list
      * 
      * @return \Z\Router\RouterNode

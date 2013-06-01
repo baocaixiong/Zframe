@@ -32,20 +32,15 @@ class ZResource extends ZExecutor
         }
         $callable = array($this, $context->methodName);
 
-        if (is_callable($callable)) {
-            /**
-             * http cache
-             */
-            // if ($request->checkClientCacheIsValid()) {
-            //     Z::app()->getHttpResponse()->notModified();
-            //     $this->responed(Z::app()->getHttpResponse());
-            //     return ;
-            // }
+        /**
+         * http cache
+         */
+        // if ($request->checkClientCacheIsValid()) {
+        //     Z::app()->getHttpResponse()->notModified();
+        //     $this->responed(Z::app()->getHttpResponse());
+        //     return ;
+        // }
 
-            $response = call_user_func_array($callable, $context->params);
-            $context->response = $response;
-        } else {
-            throw new ZException(Z::t("This resource has not action \"{action}\".", array('{action}' => $actionId)));
-        }   
+        call_user_func_array($callable, $context->params);
     }
 }

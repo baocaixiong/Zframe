@@ -1,6 +1,6 @@
 <?php
 /**
- * Z HttpException class
+ * Z RouterException class
  *
  * PHP Version 5.4
  *
@@ -19,7 +19,7 @@ namespace Z\Exceptions;
  * @author  baocaixiong <baocaixiong@gmail.com>
  * @since   v0.1
  */
-class ZHttpException extends ZException
+class ZRouterException extends ZException
 {
-	
+    
 }

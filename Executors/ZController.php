@@ -74,19 +74,19 @@ class ZController extends ZExecutor
 
     /**
      * Respond to client
-     * @param  \Z\Resposne\ZReponseAbstract $resposne response instance
+     * @param  \Z\Resposne\ZReponseAbstract $response response instance
      * @return void
      */
-    protected function responed (\ZResponseInterface $resposne)
+    protected function responed (\ZResponseInterface $response)
     {
-        if (null == $resposne) {
+        if (null == $response) {
             return;
         }
         
-        foreach ($resposne->getAllheaders() as $str => $replace) {
+        foreach ($response->getAllheaders() as $str => $replace) {
             header($str, $replace);
         }
 
-        echo $resposne->getBody();
+        echo $response->getBody();
     }
 }

@@ -34,7 +34,17 @@ abstract class ZExecutor extends ZCore implements \ZExecutorInterface
      */
     public $application;
 
+    /**
+     * http request context
+     * @var \Z\Executors\ZDispatchContext
+     */
     public $context;
+
+    /**
+     * web response 
+     * @var \Z\Response\ZHttpResponse
+     */
+    public $response;
 
     /**
      * 构造方法，初始化整个executer
@@ -65,9 +75,11 @@ abstract class ZExecutor extends ZCore implements \ZExecutorInterface
     public function executor()
     {
         $this->onBeforeDispatch(new ZEvent($this));
+        $this->response = $this->context->response;
         $this->execute($this->context);
         $this->onAfterDispatch(new ZEvent($this));
-        var_dump($this->context);
+        
+        $this->responed($this->response);
     }
 
     /**
@@ -88,17 +100,19 @@ abstract class ZExecutor extends ZCore implements \ZExecutorInterface
      * @param  \Z\Resposne\ZReponseAbstract $resposne response instance
      * @return void
      */
-    protected function responed (\ZResponseInterface $resposne)
+    protected function responed (\ZResponseInterface $response)
     {
-        if (null == $resposne) {
+        $content = ob_get_clean();
+
+        if (null == $response) {
             return;
         }
         
-        foreach ($resposne->getAllheaders() as $str => $replace) {
+        foreach ($response->getAllheaders() as $str => $replace) {
             header($str, $replace);
         }
-
-        echo $resposne->getBody();
+        echo $content;
+        echo $response->getBody();
     }
 
     /**

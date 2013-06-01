@@ -27,6 +27,14 @@ class ZMethodAnnotation
 
     public $className;
 
+    /***************Route Need parameter***********************/
+    public $method = '';
+    public $path = '';
+    public $cacheTime = 0;
+    public $etag = false;
+    public $response = 'http';
+    /***************Route Need parameter***********************/
+
     public function __construct($className, $methodName)
     {
         $this->className = $className;
