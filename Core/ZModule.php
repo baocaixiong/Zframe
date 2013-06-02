@@ -25,8 +25,6 @@ class ZModule extends ZCore
     private $_components = array();
     private $_componentConfig = array();
 
-    private $_moduleConfig = array();
-
     public function __construct($id, $parent, $config=null)
     {
         $this->_id=$id;
@@ -61,6 +59,12 @@ class ZModule extends ZCore
             return parent::__isset($name);
         }
     }
+
+    /**
+     * 是否存在这个组件
+     * @param  string  $id 组件ID
+     * @return boolean 存在返回true，否则返回false
+     */
     public function hasComponent($id)
     {
         return isset($this->_components[$id]) || isset($this->_componentConfig[$id]);
@@ -71,7 +75,6 @@ class ZModule extends ZCore
      */
     public function setConfig($config)
     {
-        //$class = new \ReflectionClass($this);
         if (is_array($config)) {
             foreach ($config as $key => $value) {
                 $this->$key = $value;
@@ -152,20 +155,5 @@ class ZModule extends ZCore
                 return $this->_components[$id] = $component;
             }
         }
-    }
-
-    public function getModule($moduleName)
-    {
-        return null;
-    }
-
-    public function getModules()
-    {
-        return $this->_moduleConfig;
-    }
-
-    public function setModules($modules)
-    {
-        //do something
     }
 }

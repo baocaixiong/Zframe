@@ -20,16 +20,7 @@ use Z\Z,
 class ZController extends ZExecutor
 {
     public $defaultAction = 'index';
-
-    public function __get ($name)
-    {
-        if ($name = 'httpResponse') {
-            return $this->application->getHttpResponse();
-        } else {
-            return parent::__get($name);
-        }
-    }
-
+    
     /**
      * 预处理方法
      * @return [type] [description]

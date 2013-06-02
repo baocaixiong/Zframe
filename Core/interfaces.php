@@ -87,9 +87,7 @@ interface ZBehaviorInterface
 }
 interface ZRouterInterface
 {
-    public function createRule($pattern, $route);
-
-    public function matchRule($route);
+    
 }
 interface ZRequestInterfase
 {
@@ -114,12 +112,6 @@ interface ZResponseInterface
     public function setStatusCode($code);
 }
 
-interface AnnotationUrlPathCollectionInterface
-{
-    public function get($name = null, $default = null);
-
-    public function set($option, $optionValue = null);
-}
 
 interface AnnotationInterface
 {

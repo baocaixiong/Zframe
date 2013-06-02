@@ -5,7 +5,7 @@ return array(
     'basePath' => dirname(__FILE__) . '/..',
     'components' => array(
         'router' => array(
-                'class'     => 'Z\Router\ZRestfulRouter',
+                'class'     => 'Z\Router\ZRouter',
                 'urlFormat' => 'path'
             ),
         'annotation' => array(

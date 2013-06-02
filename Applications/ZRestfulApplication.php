@@ -121,7 +121,7 @@ class ZRestfulApplication extends ZApplication
         $coreComponents = $this->coreComponents();
         $components = array(
             'router' => array(
-                'class'     => 'Z\Router\ZRestfulRouter',
+                'class'     => 'Z\Router\ZRouter',
             ),
             'routeNode' => array(
                 'class' => 'Z\Router\ZRouteNode',

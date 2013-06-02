@@ -14,29 +14,57 @@
  */
 namespace Z\Router;
 
-use \Z\Z,
-    \Z\Core\ZAppComponent;
+use Z\Z,
+    Z\Exceptions\ZException,
+    Z\Collections\Zmap,
+    Z\Router\ZRouteNode,
+    AnnotationInterface,
+    ZExecutorInterface,
+    Z\Core\ZAppComponent;
 
-abstract class ZRouterAbstract extends ZAppComponent implements \ZRouterInterface
+class ZRouter extends ZAppComponent implements \ZRouterInterface
 {
+    const ROUTES_CACHE_KEY = 'z.restful.restfulRouter.cache.key';
     const GET_FORMAT = 'get';
     const PATH_FORMAT = 'path';
+    
     public $urlSuffix = '';
 
     private $_urlFormat = self::PATH_FORMAT;
-    
+
+    public $routeVar = 'r';
+
+    public $routingPrefix = '/';
+
+    protected $rootRouteNode;
+
     /**
-     * 增加路由规则
-     * 这个方法来自接口 ZRouterInterface
-     * @return void
+     * add routes to routeNode
      */
-    abstract public function createRule ($pattern, $route);
+    public function addRoutesToRouteNode()
+    {
+        $anntations = Z::app()->getAnnotation()->getAnnotations();
+
+        $routeNode = Z::app()->getRouteNode();
+        foreach ($anntations as $anntation) {
+            if (isset($anntation->root) && $anntation->root) {
+                foreach ($anntation->getMethods() as $action) {
+                    $routeNode->addRoute($action, $this->routingPrefix);
+                }
+            }
+        }
+
+        $this->rootRouteNode = $routeNode;
+    }
+
     /**
-     * 匹配路由规则
-     * 这个方法来自接口 ZRouterInterface
-     * @return void
+     * get root route node
+     * @return \Z\Router\RouteNode
      */
-    abstract public function matchRule ($route);
+    public function getRootRouteNode()
+    {
+        return $this->rootRouteNode;
+    }
 
     /**
      * 处理request 获得url
@@ -98,5 +126,15 @@ abstract class ZRouterAbstract extends ZAppComponent implements \ZRouterInterfac
         } else {
             throw new ZException(Z::t('urlFormat must be "get" or "path"'));
         }
+    }
+
+    /**
+     * get router cache key
+     * 
+     * @return string
+     */
+    public function getCacheKey()
+    {
+        return self::ROUTES_CACHE_KEY;
     }
 }

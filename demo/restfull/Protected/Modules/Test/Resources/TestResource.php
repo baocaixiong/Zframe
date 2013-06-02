@@ -30,7 +30,7 @@ class TestResource extends ZResource
      * get method 
      *
      * !method=GET|POST|DELETE! !path=/haha/<$i:string>/<$j:string>!
-     * !cacheTime=300! !etag!
+     * !cacheTime=300! !etag! !response=http!
      * @return [type] [description]
      */
     public function get($i, $j = 123)

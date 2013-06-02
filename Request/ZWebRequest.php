@@ -629,6 +629,7 @@ class ZWebRequest extends ZRequestAbstract
     {
         $this->_hostInfo = $value;
     }
+    
     /**
      * 防范处理跨站攻击
      * 
