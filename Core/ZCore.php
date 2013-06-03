@@ -30,7 +30,7 @@ class ZCore implements \ZCoreInterface
      * 行为
      * @var Array
      */
-    private $_behavior = array();
+    private $_behaviors = array();
     /**
      * __get
      * 
@@ -44,16 +44,10 @@ class ZCore implements \ZCoreInterface
         $getter = 'get' . $name;
         if (method_exists($this, $getter)) {
             return $this->$getter();
-        } elseif (strncasecmp($name, 'on', 2) === 0 && method_exists($this, $name)) {
-            $name=strtolower($name);
-            if (!isset($this->_events[$name])) {
-                $this->_events[$name] = new ZList();
-            }
-            return $this->_events[$name];
-        } elseif (isset($this->_behavior[$name])) {
-            return $this->_behavior[$name];
-        } elseif (is_array($this->_behavior)) {
-            foreach ($this->_behavior as $behavior) {
+        } elseif (isset($this->_behaviors[$name])) {
+            return $this->_behaviors[$name];
+        } elseif (is_array($this->_behaviors)) {
+            foreach ($this->_behaviors as $behavior) {
                 if($object->behavior() && 
                     (property_exists($behavior, $name) || $object->isReadProperty($name)))
                     return $behavior->$name;
@@ -76,17 +70,11 @@ class ZCore implements \ZCoreInterface
         $setter = 'set' . $name;
         if (method_exists($this, $setter)) {
             return $this->$setter($value);
-        } elseif (strncasecmp($name, 'on', 2)===0 && method_exists($this, $name)) {
-            $name=strtolower($name);
-            if (!isset($this->_events[$name])) {
-                $this->_events[$name]=new ZList;
-            }
-            return $this->_events[$name]->add($value);
-        } elseif (is_array($this->_behavior)) {
-            foreach ($this->_behavior as $behavior) {
+        } elseif (is_array($this->_behaviors)) {
+            foreach ($this->_behaviors as $behavior) {
                 if($behavior->getEnabled() &&
                 (property_exists($behavior, $name) || $behavior->isReadProperty($name)))
-                    return $behavior->$name=$value;
+                    return $behavior->$name = $value;
             }
         }
         if (method_exists($this, 'get' . $name)) {
@@ -104,6 +92,90 @@ class ZCore implements \ZCoreInterface
                 array('{class}' => get_class($this), '{property}' => $name)
             )
         );
+    }
+
+    /**
+     * 添加一个事件句柄
+     * 
+     * @param string   $name    事件名称
+     * @param callback $handler 事件句柄
+     * @param array    $data    事件句柄方法或函数所需要的参数
+     * 
+     * @return void
+     */
+    public function on($name, $handler, $data = array())
+    {
+        $this->ensureBehaviors();
+        if (!isset($this->_events[$name][0]) || is_null($this->_events[$name][0])) {
+            $this->_events[$name][0] = method_exists($this, $name) ? array(array($this, $name), $data) : null;
+        }
+        $this->_events[$name][] = array($handler, $data);
+    }
+
+    /**
+     * 移除事件句柄
+     * 
+     * @param string   $name    事件名称
+     * @param callback $handler 事件句柄
+     * 果如$handler为null将删除该事件的所有句柄,即，该事件不会相应。
+     * 否则只删除对应句柄
+     *
+     * notice: from YII2
+     * @return boolean
+     */
+    public function off($name, $handler = null)
+    {
+        $this->ensureBehaviors();
+        if (isset($this->_events[$name])) {
+            if (is_null($handler)) {
+                $this->_events[$name] = array();
+            } else {
+                $removed = false;
+                foreach ($this->_events[$name] as $i => $event) {//@see {{on}}
+                    if ($event[0] === $handler) {
+                        unset($this->_events[$name][$i]);
+                        $removed = true;
+                    }
+                }
+                if ($removed) {
+                    $this->_events[$name] = array_values($this->_events[$name]);
+                }
+                return $removed;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * 触发一个事件
+     * @param  string $name  事件名称
+     * @param  mixed  $event 事件对象
+     * @return void       
+     */
+    public function fire($name, $event = null)
+    {
+        $this->ensureBehaviors();
+        if (!empty($this->_events[$name]) || !$this->hasEventHandler($name)) {
+            if (is_null($event)) {
+                $event = new ZEvent();
+            }
+            if ($event->sender === null) {
+                $event->sender = $this;
+            }
+            $event->handled = false;
+            $event->name = $name;
+
+            foreach ($this->_events[$name] as $handler) {
+                if (!is_null($handler)) {
+                    $event->data = $handler[1];
+                    call_user_func($handler[0], $event);
+                    if ($event instanceof ZEvent && $event->handled) {
+                        return;
+                    }
+                }
+                
+            }
+        }
     }
 
     /**
@@ -143,13 +215,15 @@ class ZCore implements \ZCoreInterface
     }
     
     /**
-     * 是否存在一个事件
+     * 事件是否定义
      * @param String $name 事件名称
      * @return boolean      
      */
     public function hasEvent($name)
     {
-        return !strncasecmp($name, 'on', 2) && method_exists($this, $name);
+        $rfClass = new \ReflectionClass($this);
+
+        return in_array($name, $rfClass->getConstants());
     }
 
     /**
@@ -158,8 +232,10 @@ class ZCore implements \ZCoreInterface
      */
     public function hasEventHandler($name)
     {
-        $name=strtolower($name);
-        return isset($this->_events[$name]) && $this->_events[$name]->getCount() > 0;
+        if ($this->hasEvent($name)) {
+            $name=strtolower($name);
+            return isset($this->_events[$name]) && count($this->_events[$name]) > 0;
+        }
     }
 
     /**
@@ -173,7 +249,7 @@ class ZCore implements \ZCoreInterface
         if ($this->hasEvent($name)) {
             $name=strtolower($name);
             if (!isset($this->_events[$name])) {
-                $this->_events[$name]=new ZList;
+                $this->_events[$name] = array();
             }
             return $this->_events[$name];
         } else {
@@ -187,94 +263,6 @@ class ZCore implements \ZCoreInterface
     }
 
     /**
-     * 给事件添加一个事件句柄
-     * @param String   $name    事件名称
-     * @param callback $handler 事件句柄
-     * @return void
-     * @throws \Z\Exceptions\ZException
-     */
-    public function attachEventHandler($name, $handler)
-    {
-        $this->getEventHandlers($name)->add($handler);
-    }
-
-    /**
-     * 删除一个事件的事件句柄
-     * @param String $name 事件名称
-     * @return boolean 
-     */
-    public function detachEventHandler($name)
-    {
-        if ($this->hasEventHandler($name)) {
-            $this->getEventHandlers($name)->remove($handler) !== false;
-        } else {
-            return false;
-        }
-    }
-
-    /**
-     * 运行一个事件句柄
-     * @param String $name 事件名称
-     * @return void
-     */
-    public function raiseEvent($name, $event)
-    {
-        $name = strtolower($name);
-        if (isset($this->_events[$name])) {
-            foreach ($this->_events[$name] as $handler) {
-                if (is_string($handler)) {
-                    call_user_func($handler, $evnet);
-                } elseif (is_callable($handler, true)) {
-                    if (is_array($handler)) {
-                        list($object, $method) = $handler;
-                        if (is_string($object)) {
-                            call_user_func($handler, $event);
-                        } elseif (method_exists($object, $method)) {
-                            $object->$method($event);
-                        } else {
-                            throw new ZException(
-                                Z::t(
-                                    'Event "{class}.{event}" is 
-                                    attached with an invalid handler "{handler}".',
-                                    array(
-                                        '{class}' => get_class($this),
-                                        '{event}' => $name,
-                                        '{handler}' => $handler[1]
-                                    )
-                                )
-                            );
-                        }
-                    } else {
-                        call_user_func($handler, $evnet);
-                    }
-                } else {
-                    throw new ZException(
-                        Z::t(
-                            'Event "{class}.{event}" is 
-                            attached with an invalid handler "{handler}".',
-                            array(
-                                '{class}' => get_class($this),
-                                '{event}' => $name,
-                                '{handler}' => $handler[1]
-                            )
-                        )
-                    );
-                }
-                if (($event instanceof ZEvent) && $event->handled) {
-                    return;
-                }
-            }
-        } elseif (Z_DEBUG && !$this->hasEvent($name)) {
-            throw new ZException(
-                Z::t(
-                    'Event "{class}.{event}" is not defined.',
-                    array('{class}' => get_class($this), '{event}' => $name)
-                )
-            );
-        }
-    }
-
-    /**
      * 批量增加行为
      * @param Array $behaviors 要增加的行为列表
      * @return void
@@ -282,7 +270,7 @@ class ZCore implements \ZCoreInterface
     public function attachBehaviors($behaviors)
     {
         foreach ($behaviors as $name=>$behavior) {
-            $this->attachBehavior($name, $behavior);
+            $this->_attachBehaviorInternal($name, $behavior);
         }
     }
 
@@ -292,11 +280,11 @@ class ZCore implements \ZCoreInterface
      */
     public function detachBehaviors()
     {
-        if (!empty($this->_behavior)) {
-            foreach ($this->_behavior as $behavior) {
+        if (!empty($this->_behaviors)) {
+            foreach ($this->_behaviors as $name => $behavior) {
                 $this->detachBehavior($name);
             }
-            $this->_behavior = array();
+            $this->_behaviors = array();
         }
     }
     /**
@@ -306,11 +294,27 @@ class ZCore implements \ZCoreInterface
      */
     public function detachBehavior($name)
     {
-        if (isset($this->_behavior[$name])) {
-            $this->_behavior[$name]->detach($this);
-            $behavior=$this->_behavior[$name];
-            unset($this->_behavior[$name]);
+        if (isset($this->_behaviors[$name])) {
+            $this->_behaviors[$name]->detach($this);
+            $behavior=$this->_behaviors[$name];
+            unset($this->_behaviors[$name]);
             return $behavior;
+        }
+    }
+
+    /**
+     * 确保behavior是安全的
+     *
+     * from YII2
+     * @return void
+     */
+    public function ensureBehaviors()
+    {
+        if (is_null($this->_behaviors)) {
+            $this->_behaviors = array();
+            foreach ($this->behaviors() as $name => $behavior) {
+                $this->_attachBehaviorInternal($name, $behavior);
+            }
         }
     }
 
@@ -320,15 +324,19 @@ class ZCore implements \ZCoreInterface
      * @param \Z\Core\ZBehavior $behavior 行为对象
      * @return \Z\Core\ZBehavior
      */
-    public function attachBehavior($name, $behavior)
+    private function _attachBehaviorInternal($name, $behavior)
     {
         if (!($behavior instanceof ZBehaviorInterface)) {
             $behavior = Z::createComponent($behavior);
         }
 
+        if (isset($this->_behaviors[$name])) {
+            $this->_behaviors[$name]->detach();
+        }
+
         $behavior->setEnabled(true);
         $behavior->attach($this);
-        return $this->_behavior[$name] = $behavior;
+        return $this->_behaviors[$name] = $behavior;
     }
 
     /**
@@ -338,8 +346,8 @@ class ZCore implements \ZCoreInterface
      */
     public function setBehaviorEnable($name)
     {
-        if (isset($this->_behavior[$name])) {
-            $this->_behavior[$name]->setEnabled(true);
+        if (isset($this->_behaviors[$name])) {
+            $this->_behaviors[$name]->setEnabled(true);
         }
     }
 
@@ -349,8 +357,8 @@ class ZCore implements \ZCoreInterface
      */
     public function setBehaviorsEnable()
     {
-        if (!empty($this->_behavior)) {
-            foreach ($this->_behavior as $behavior) {
+        if (!empty($this->_behaviors)) {
+            foreach ($this->_behaviors as $behavior) {
                 $behavior->setEnabled(true);
             }
         }
@@ -363,8 +371,8 @@ class ZCore implements \ZCoreInterface
      */
     public function setBehaviorDisable($name)
     {
-        if (isset($this->_behavior[$name])) {
-            $this->_behavior[$name]->setEnabled(false);
+        if (isset($this->_behaviors[$name])) {
+            $this->_behaviors[$name]->setEnabled(false);
         }
     }
 
@@ -374,8 +382,8 @@ class ZCore implements \ZCoreInterface
      */
     public function setBehaviorsDisable()
     {
-        if (!empty($this->_behavior)) {
-            foreach ($this->_behavior as $behavior) {
+        if (!empty($this->_behaviors)) {
+            foreach ($this->_behaviors as $behavior) {
                 $behavior->setEnabled(false);
             }
         }

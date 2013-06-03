@@ -47,8 +47,8 @@ class ZBehavior extends Zcore implements \ZBehaviorInterface
      */
     public function attach(\ZCoreInterface $owner)
     {
-        $this->_enabled=true;
-        $this->_owner=$owner;
+        $this->_enabled = true;
+        $this->_owner = $owner;
         $this->_attachEventHandlers();
     }
 
@@ -59,8 +59,8 @@ class ZBehavior extends Zcore implements \ZBehaviorInterface
      */
     public function detach(\ZCoreInterface $owner)
     {
-        foreach($this->events() as $event=>$handler){
-            $owner->detachEventHandler($event,array($this,$handler));
+        foreach ($this->events() as $name => $handler) {
+            $owner->off($name,array($this,$handler));
         }
         $this->_owner=null;
         $this->_enabled=false;
@@ -76,12 +76,12 @@ class ZBehavior extends Zcore implements \ZBehaviorInterface
     {
         $value = (bool)$value;
         if ($this->_enabled !== $value && $this->_owner) {
-            if($value)
+            if ($value) {
                 $this->_attachEventHandlers();
-            else
-            {
-                foreach($this->events() as $event=>$handler)
-                    $this->_owner->detachEventHandler($event,array($this,$handler));
+            } else {
+                foreach ($this->events() as $event => $handler) {
+                    $this->_owner->on($event, array($this,$handler));
+                }
             }
         }
         $this->_enabled = $value;
@@ -112,9 +112,9 @@ class ZBehavior extends Zcore implements \ZBehaviorInterface
     private function _attachEventHandlers()
     {
         $class = new \ReflectionClass($this);
-        foreach ($this->events() as $event => $handler) {
-            if($class->getMethod($handler)->isPublic()) {
-                $this->_owner->attachEventHandler($event,array($this, $handler));
+        foreach ($this->events() as $name => $handler) {
+            if ($class->getMethod($handler)->isPublic()) {
+                $this->_owner->on($name, array($this, $handler));
             }
         }
     }

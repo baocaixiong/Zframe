@@ -21,6 +21,8 @@ use Z\Z,
 
 abstract class ZExecutor extends ZCore implements \ZExecutorInterface
 {
+    const EVENT_BEFORE_DISPATCH = 'onBeforeDispatch';
+    const EVENT_AFTER_DISPATCH = 'onAfterDispatch';
     /**
      * Current Request
      * 
@@ -74,14 +76,12 @@ abstract class ZExecutor extends ZCore implements \ZExecutorInterface
      */
     public function executor()
     {
-        $this->onBeforeDispatch(new ZEvent($this));
+        $this->beforeDispatch(new ZEvent($this));
         $this->response = $this->context->response;
         $this->execute($this->context);
-        $this->onAfterDispatch(new ZEvent($this));
-        
+        $this->afterDispatch(new ZEvent($this));
         $this->responed($this->response);
     }
-
     /**
      * 行为列表
      * @return array
@@ -120,9 +120,9 @@ abstract class ZExecutor extends ZCore implements \ZExecutorInterface
      * @param  \Z\Core\ZEvent $event event instance
      * @return void
      */
-    public function onBeforeDispatch($event)
+    public function beforeDispatch($event)
     {
-        $this->raiseEvent('onBeforeDispatch', $event);
+        $this->fire(self::EVENT_BEFORE_DISPATCH, $event);
     }
 
     /**
@@ -130,8 +130,8 @@ abstract class ZExecutor extends ZCore implements \ZExecutorInterface
      * @param  [type] $event [description]
      * @return [type]        [description]
      */
-    public function onAfterDispatch($event)
+    public function afterDispatch($event)
     {
-        $this->raiseEvent('onAfterDispatch', $event);
+        $this->fire(self::EVENT_AFTER_DISPATCH, $event);
     }
 }

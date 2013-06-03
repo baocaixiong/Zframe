@@ -26,8 +26,8 @@ class ZExecutorBehavior extends ZBehavior
     public function events()
     {
         return array_merge(parent::events(), array(
-            'onBeforeDispatch'=>'beforeDispatch',
-            'onAfterDispatch' => 'afterDispatch',
+            ZExecutor::EVENT_BEFORE_DISPATCH => 'beforeDispatch',
+            ZExecutor::EVENT_AFTER_DISPATCH  => 'afterDispatch',
         ));
     }
 
@@ -56,8 +56,6 @@ class ZExecutorBehavior extends ZBehavior
         if (isset($context->cacheTime) && $context->cacheTime > 0) {
             $context->response->setExpires($context->cacheTime);
         }
-        
-        
     }
 
     /**

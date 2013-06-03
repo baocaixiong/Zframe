@@ -49,8 +49,13 @@ class TestResource extends ZResource
      */
     public function get11($xxx=345, $yyy=123)
     {
-var_dump($xxx, $yyy);
-        $this->response->setHeader('xxx', 'xxx');
+        // $pdo = new \PDO("mysql:dbname=tbl;host=127.0.0.1", 'root', '123123');
+        // include Z_PATH.'/NotORM/NotORM.php';
+        // $db = new \NotORM($pdo);
+        // $row = $db->tbl_user()->limit(1);
+        // foreach ($row as $key => $value) {
+        //     var_dump($value);
+        // }
     }
 
     /**

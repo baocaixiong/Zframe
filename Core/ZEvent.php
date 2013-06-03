@@ -33,6 +33,8 @@ class ZEvent implements \ZEventInterface
      */
     public $params;
 
+    public $data;
+
     /**
      * construct method
      * @param \Z\Core\ZCore $sender 事件的触发者

@@ -54,6 +54,8 @@ class ZDispatchContext implements ZDispatchContextInterface
 
     public $etag = false;
 
+    public $params = array();
+
     /**
      * 赋值操作
      * @param \Z\Request\ZRequestAbstract $request  request object
