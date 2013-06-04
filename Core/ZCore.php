@@ -14,11 +14,13 @@
  */
 namespace Z\Core;
 
-use \Z\Z,
-    \Z\Collections\ZList,
-    \Z\Exceptions\ZException;
+use Z\Z;
+use Z\Collections\ZList;
+use Z\Exceptions\ZUnknownMethodException;
+use Z\Exceptions\ZUnknowPropertyException;
+use Z\Exceptions\ZInvalidCallException;
 
-class ZCore implements \ZCoreInterface
+class ZCore extends ZObject implements \ZCoreInterface
 {
     /**
      * list of events
@@ -47,17 +49,15 @@ class ZCore implements \ZCoreInterface
         } elseif (isset($this->_behaviors[$name])) {
             return $this->_behaviors[$name];
         } elseif (is_array($this->_behaviors)) {
+            $this->ensureBehaviors();
             foreach ($this->_behaviors as $behavior) {
-                if($object->behavior() && 
-                    (property_exists($behavior, $name) || $object->isReadProperty($name)))
+                if ($behavior->canGetProperty($name)) {
                     return $behavior->$name;
+                }
             }
         }
-        throw new ZException(
-            Z::t(
-                'Property "{class}.{property}" is not defined.',
-                array('{class}' => get_class($this), '{property}' => $name)
-            )
+        throw new ZUnknowPropertyException(
+            Z::t('属性不存在: {class}::{property}', array('{class}' => get_class($this), '{property}' => $name))
         );
     }
     /**
@@ -78,19 +78,13 @@ class ZCore implements \ZCoreInterface
             }
         }
         if (method_exists($this, 'get' . $name)) {
-            throw new ZException(
-                Z::t(
-                    'Property {class}.{property} is read only.',
-                    array('{class}' => get_class($this), '{property}' => $name)
-                )
+            throw new ZInvalidCallException(
+                Z::t('属性不可写: {class}::{property}', array('{class}' => get_class($this), '{property}' => $name))
             );
         }
 
-        throw new ZException(
-            Z::t(
-                'Property "{class}.{property}" is not defined.',
-                array('{class}' => get_class($this), '{property}' => $name)
-            )
+        throw new ZUnknowPropertyException(
+            Z::t('属性不存在: {class}::{property}', array('{class}' => get_class($this), '{property}' => $name))
         );
     }
 
@@ -327,7 +321,7 @@ class ZCore implements \ZCoreInterface
     private function _attachBehaviorInternal($name, $behavior)
     {
         if (!($behavior instanceof ZBehaviorInterface)) {
-            $behavior = Z::createComponent($behavior);
+            $behavior = Z::createObject($behavior);
         }
 
         if (isset($this->_behaviors[$name])) {
@@ -387,27 +381,5 @@ class ZCore implements \ZCoreInterface
                 $behavior->setEnabled(false);
             }
         }
-    }
-
-    /**
-     * get own methods
-     * @param  \ReflectionClass $rfClass reflection class
-     * @param  int              $filter  reflectionMethod type
-     * @return array
-     */
-    public function getOwnMethods(\ReflectionClass $rfClass, $filter = \ReflectionMethod::IS_PUBLIC)
-    {
-        $result = array();
-        foreach ($rfClass->getMethods($filter) as $reflectionMethod) {
-            try {
-                $reflectionMethod->getPrototype();
-            } catch (\Exception $ex) {
-                if ($reflectionMethod->class === $rfClass->getName()) {
-                    $result[] = $reflectionMethod;
-                }
-            }
-        }
-
-        return $result;
     }
 }

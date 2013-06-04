@@ -15,13 +15,13 @@
 namespace Z\Core\Annotation;
 
 use Z\Z,
-    Z\Core\ZAppComponent,
+    Z\Core\ZObject,
     AnnotationInterface,
     Z\Exceptions\ZAnnotationException,
     Z\Collections\ZMap,
     Z\Router\ZRoute;
 
-class AnnotationManager extends ZAppComponent implements AnnotationInterface
+class AnnotationManager extends ZObject implements AnnotationInterface
 {
     /**
      * 收集器分隔符
@@ -59,10 +59,8 @@ class AnnotationManager extends ZAppComponent implements AnnotationInterface
      * 初始化方法
      * @return void
      */
-    public function initialize()
+    public function init()
     {
-        parent::initialize();
-
         if (empty($this->scanDir)) {
             $this->scanDir = Z::app()->getBasePath();
         }

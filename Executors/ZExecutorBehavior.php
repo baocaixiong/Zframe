@@ -56,6 +56,10 @@ class ZExecutorBehavior extends ZBehavior
         if (isset($context->cacheTime) && $context->cacheTime > 0) {
             $context->response->setExpires($context->cacheTime);
         }
+
+        if ($context->etag) {
+            $context->response->setEtag();
+        }
     }
 
     /**

@@ -105,8 +105,6 @@ interface ZResponseInterface
 {
     public function getAllHeaders();
 
-    public function output($content = '');
-
     public function setHeader($headerName, $replace=false);
 
     public function setStatusCode($code);

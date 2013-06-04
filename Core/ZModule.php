@@ -150,8 +150,7 @@ class ZModule extends ZCore
             if (!isset($config['enabled']) || $config['enabled']) {
                 //Z::trace("Loading \"$id\" application component",'system.CModule');
                 unset($config['enabled']);
-                $component = Z::createComponent($config);
-                $component->initialize();
+                $component = Z::createObject($config);
                 return $this->_components[$id] = $component;
             }
         }

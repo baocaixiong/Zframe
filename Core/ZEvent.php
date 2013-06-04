@@ -14,7 +14,7 @@
  */
 namespace Z\Core;
 
-class ZEvent implements \ZEventInterface
+class ZEvent extends ZObject implements \ZEventInterface
 {
     /**
      * 事件是否已经触发
@@ -33,8 +33,17 @@ class ZEvent implements \ZEventInterface
      */
     public $params;
 
+    /**
+     * 要传递的数据
+     * @var [type]
+     */
     public $data;
 
+    /**
+     * 事件名称
+     * @var [type]
+     */
+    public $name;
     /**
      * construct method
      * @param \Z\Core\ZCore $sender 事件的触发者

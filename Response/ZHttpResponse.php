@@ -40,17 +40,6 @@ class ZHttpResponse extends ZResponseAbstract
     }
 
     /**
-     * 将要返回的内容填充，直接respond
-     * @param  string $content body content
-     * @return void
-     */
-    public function output ($content = '')
-    {
-        $this->body = $content;
-        $this->respond();
-    }
-
-    /**
      * set expire 
      * default 1000m
      * @param integer $expires expire time 

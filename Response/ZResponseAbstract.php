@@ -47,7 +47,7 @@ abstract class ZResponseAbstract extends ZAppComponent implements \ZResponseInte
      * whether enable eTag
      * @var boolean
      */
-    public $enableEtag = false;
+    public $enableEtag = true;
 
     /**
      * will set header
@@ -284,14 +284,6 @@ abstract class ZResponseAbstract extends ZAppComponent implements \ZResponseInte
      * @return array
      */
     abstract public function getAllHeaders();
-
-    /**
-     * 将要返回的内容填充，直接respond
-     *
-     * @param string $content 返回值
-     * @return void
-     */
-    abstract public function output($content = '');
 
     /**
      * 设置头

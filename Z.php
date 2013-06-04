@@ -120,7 +120,6 @@ class Z
         } elseif (($pos = strpos($className, NS_SEPARATOR)) !== FALSE) {
             $rootAliasName = substr($className, 0, $pos);
             $rootaliasPath = self::getPathOfNamespace($rootAliasName);
-            
             require (
                 $rootaliasPath . DIRECTORY_SEPARATOR . str_replace(
                     NS_SEPARATOR, DIRECTORY_SEPARATOR, substr($className, $pos + 1)
@@ -196,8 +195,9 @@ class Z
      * 创建一个组建对象
      * @return \Z\Core\ZCore 刚刚创建的组件对象
      */
-    public static function createComponent($config)
+    public static function createObject($config)
     {
+        static $reflections = array();
         if (is_string($config)) {
             $type = $config;
             $config = array();
@@ -214,18 +214,18 @@ class Z
         }
 
         if (($num = func_num_args()) > 1) {
-            $args=func_get_args();
-            if (2 === $n) {
-                $object = new $type($args[1]);
-            } elseif(3 === $n) {
-                $object = new $type($args[1], $args[2]);
-            } elseif(4 === $n) {
-                $object = new $type($args[1], $args[2], $args[3]);
+            $args = func_get_args();
+            array_shift($args);
+
+            if (isset($reflections[$class])) {
+                $class = $reflections[$class];
             } else {
-                unset($args[0]);
-                $class = new ReflectionClass($type);
-                $object = call_user_func_array(array($class, 'newInstance'), $args);
+                $class = $reflections[$class] = new \ReflectionClass($class);
             }
+            if (!empty($config)) {
+                $args[] = $config;
+            }
+            $object = $reflection->newInstanceArgs($args);
         } else {
             $object = new $type();
         }
@@ -304,12 +304,22 @@ class Z
         'Z\Core\ZApplication' => '/Core/ZApplication.php',
         'Z\Applications\ZWebApplication' => '/Applications/ZWebApplication.php',
         'Z\Applications\ZRestfulApplication' => '/Applications/ZRestfulApplication.php',
+        //exceptions
         'Z\Exceptions\ZException' => '/Exceptions/ZException.php',
-        'Z\Core\ZCore' => '/Core/Zcore.php',
-        'Z\Core\ZModule' => '/Core/ZModule.php',
+        'Z\Exceptions\ZAnnotationException' => '/Exceptions/ZAnnotationException.php',
+        'Z\Exceptions\ZHttpException' => '/Exceptions/ZHttpException.php',
+        'Z\Exceptions\ZInvalidCallException' => '/Exceptions/ZInvalidCallException.php',
+        'Z\Exceptions\ZResponseException' => '/Exceptions/ZResponseException.php',
+        'Z\Exceptions\ZRouterException' => '/Exceptions/ZRouterException.php',
+        'Z\Exceptions\ZUnknownMethodException' => '/Exceptions/ZUnknownMethodException.php',
+        'Z\Exceptions\ZUnknowPropertyException' => '/Exceptions/ZUnknowPropertyException.php',
+        //core
         'Z\Core\ZCore' => '/Core/ZCore.php',
+        'Z\Core\ZModule' => '/Core/ZModule.php',
+        'Z\Core\ZBehavior' => '/Core/ZBehavior.php',
         'Z\Core\ZEvent' => '/Core/ZEvent.php',
-        'Z\Helpers\ZSingleton' => '/Helpers/ZSingleton.php',
+        'Z\Core\ZObject' => '/Core/ZObject.php',
+
     );
 }//end of Z class 
 

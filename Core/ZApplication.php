@@ -207,6 +207,7 @@ abstract class ZApplication extends ZModule
         }
         if (Z_ERROR_HANDLER_DEBUG) {
             set_error_handler(array($this, 'handleError'), error_reporting());
+            register_shutdown_function(array($this, 'catchFatalError'));
         }
     }
 
@@ -221,6 +222,23 @@ abstract class ZApplication extends ZModule
         restore_exception_handler();
         if (Z_DEBUG) {
             ShowSystemPage::showErrorandException($exception);
+        }
+    }
+
+    /**
+     * catchFatalError
+     * @return void
+     */
+    public function catchFatalError()
+    {
+        $error = error_get_last();
+        $ignore = E_WARNING | E_NOTICE | E_USER_WARNING | E_USER_NOTICE | E_STRICT | E_DEPRECATED | E_USER_DEPRECATED;
+        if (($error['type'] & $ignore) === 0) {
+            ob_clean();
+            $e = new \ErrorException(
+                'Fatal Error: ' . $error['message'], 0, $error['type'], $error['file'], $error['line']
+            );
+            $this->handleException($e);
         }
     }
 
