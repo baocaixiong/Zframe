@@ -22,10 +22,22 @@ class ZAppComponent extends ZCore implements \ZApplicationComponentInterface
      * 初始化组件，将行为添加到组件
      * @return void
      */
-    public function initialize()
+    public function init()
     {
+        parent::init();
+
         $this->attachBehaviors($this->behaviors());
         $this->_isInited = true;
+        /**
+         * 初始化事件
+         * @var [type]
+         */
+        $rfClass = new \ReflectionClass($this);
+        foreach ($rfClass->getConstants() as $key => $value) {
+            if (strncasecmp($key, 'event', 5) === 0) {
+                $this->on($value);
+            }
+        }
     }
 
     /**

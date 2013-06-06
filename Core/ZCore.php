@@ -97,13 +97,15 @@ class ZCore extends ZObject implements \ZCoreInterface
      * 
      * @return void
      */
-    public function on($name, $handler, $data = array())
+    public function on($name, $handler = null, $data = array())
     {
         $this->ensureBehaviors();
         if (!isset($this->_events[$name][0]) || is_null($this->_events[$name][0])) {
             $this->_events[$name][0] = method_exists($this, $name) ? array(array($this, $name), $data) : null;
         }
-        $this->_events[$name][] = array($handler, $data);
+        if (!is_null($handler)) {
+            $this->_events[$name][] = array($handler, $data);
+        }
     }
 
     /**

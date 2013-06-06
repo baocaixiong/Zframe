@@ -227,7 +227,7 @@ class Z
             }
             $object = $reflection->newInstanceArgs($args);
         } else {
-            $object = new $type();
+            $object = new $type($config);
         }
         foreach ($config as $key => $value) {
             $object->$key = $value;

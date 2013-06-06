@@ -25,7 +25,7 @@ interface ZApplicationComponentInterface
     /**
      * interface method init this application
      */
-    public function initialize();
+    public function init();
 
     /**
      * @return boolean whether the {@link init()} method has been invoked.

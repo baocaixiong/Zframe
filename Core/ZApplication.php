@@ -100,6 +100,15 @@ abstract class ZApplication extends ZModule
     }
 
     /**
+     * 获得数据库连接信息
+     * @return \Z\Core\Orm\ZDbConnection
+     */
+    public function getDb()
+    {
+        return $this->getComponent('db');
+    }
+
+    /**
      * 获得 annotation 组件
      * 
      * @return \Z\Core\Annotation\Annotation
@@ -292,6 +301,9 @@ abstract class ZApplication extends ZModule
                 'class'     => 'Z\Request\ZWebRequest',
                 'enableCsrf' => true,
             ),
+            'db' => array(
+                'class' => 'Z\Core\Orm\ZDbConnection',
+            )
         );
     }
     /**

@@ -140,10 +140,20 @@ class ZObject
     public function __call($name, $params)
     {
         $getter = 'get' . $name;
+
         if (method_exists($this, $name)) {
+            $rfClass = new \ReflectionMethod($this, $name);
+            if ($rfClass->isProtected() || $rfClass->isPrivate()) {
+                throw new ZUnknownMethodException(
+                    Z::t('受保护的方法 {class}::{method}', array('{class}' => get_class($this), '{method}' => $name))
+                );
+            }
+        }
+
+        if (method_exists($this, $getter)) {
             $fn = $this->$getter();
-            if ($func instanceof \Closure) {
-                return call_user_func_array($func, $params);
+            if ($fn instanceof \Closure) {
+                return call_user_func_array($fn, $params);
             }
         }
         throw new ZUnknownMethodException(
