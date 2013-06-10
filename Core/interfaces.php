@@ -129,3 +129,31 @@ interface ZDispatchContextInterface
         \ZRequestInterfase $request, \ZExecutorInterface $executor, $actionId
     );
 }
+
+/**
+ * ZCaching interface 
+ */
+interface ZCachingInterface
+{
+    /**
+     * get cache value
+     * @param string $key     cache key
+     * @param mixed  $default if $key is not exist return $default
+     * @return mixed cache value
+     */
+    public function get($key, $default);
+
+    /**
+     * add a cache value
+     * @param  string $key     cache key
+     * @param  mixed  $value   cache value
+     * @param  int    $expires expires time seconds
+     */
+    public function add($key, $value, $expires = 0);
+
+    /**
+     * remove a cache 
+     * @return void
+     */
+    public function remvoe($key);
+}

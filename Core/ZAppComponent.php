@@ -28,16 +28,7 @@ class ZAppComponent extends ZCore implements \ZApplicationComponentInterface
 
         $this->attachBehaviors($this->behaviors());
         $this->_isInited = true;
-        /**
-         * 初始化事件
-         * @var [type]
-         */
-        $rfClass = new \ReflectionClass($this);
-        foreach ($rfClass->getConstants() as $key => $value) {
-            if (strncasecmp($key, 'event', 5) === 0) {
-                $this->on($value);
-            }
-        }
+        $this->addDefaultEvent();
     }
 
     /**

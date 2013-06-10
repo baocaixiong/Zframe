@@ -19,46 +19,9 @@ use \Z\Z,
 
 class ZModule extends ZCore
 {
-    public $behaviors=array();
-    private $_id;
-    private $_parentModule;
+    public $behaviors = array();
     private $_components = array();
     private $_componentConfig = array();
-
-    public function __construct($id, $parent, $config=null)
-    {
-        $this->_id=$id;
-        $this->_parentModule=$parent;
-
-    }
-    /**
-     * 魔术方法__get 
-     * 用来给组建获取配置项
-     * @return [type] [description]
-     */
-    public function __get($name)
-    {
-        if ($this->hasComponent($name)) {
-            return $this->getComponent($name);
-        } else {
-            parent::__get($name);
-        }
-    }
-
-    /**
-     * 魔术方法__isset
-     * @param  [type]  $name  [description]
-     * @param  [type]  $value [description]
-     * @return boolean        [description]
-     */
-    public function __isset($name)
-    {
-        if($this->hasComponent($name)) {
-            return $this->getComponent($name)!==null;
-        } else {
-            return parent::__isset($name);
-        }
-    }
 
     /**
      * 是否存在这个组件
@@ -69,6 +32,7 @@ class ZModule extends ZCore
     {
         return isset($this->_components[$id]) || isset($this->_componentConfig[$id]);
     }
+    
     /**
      * set configure
      * @param Array $config config array

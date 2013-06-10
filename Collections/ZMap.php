@@ -14,11 +14,11 @@
  */
 namespace Z\Collections;
 
-use Z\Core\ZCore,
+use Z\Core\ZObject,
     Z\Exceptions\ZException,
     Z\Z;
 
-class ZMap extends ZCore implements \IteratorAggregate, \ArrayAccess, \Countable
+class ZMap extends ZObject implements \IteratorAggregate, \ArrayAccess, \Countable
 {
 
     private $_readOnly = false;

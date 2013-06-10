@@ -48,7 +48,25 @@ class ZObject
      */
     public function init() 
     {
+        
+    }
 
+    /**
+     * 添加默认事件
+     * @return void
+     */
+    protected function addDefaultEvent()
+    {
+        /**
+         * 初始化事件
+         * @var [type]
+         */
+        $rfClass = new \ReflectionClass($this);
+        foreach ($rfClass->getConstants() as $key => $value) {
+            if (strncasecmp($key, 'event', 5) === 0) {
+                $this->on($value);
+            }
+        }
     }
 
     /**

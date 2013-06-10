@@ -15,11 +15,16 @@
  */
 namespace Z\Core;
 
-use \Z\Z,
-    \Z\Helpers\ShowSystemPage;
+use Z\Z;
+use Z\Helpers\ShowSystemPage;
+use Z\Exceptions\ZInvalidConfigException;
 
 abstract class ZApplication extends ZModule
 {
+    const EVENT_BEFORE_REQUEST =  'beforeRequest';
+
+    const EVENT_AFTER_REQUEST = 'afterRequest';
+
     private $_config; //config array
 
     public $appName = 'My Application';
@@ -28,9 +33,15 @@ abstract class ZApplication extends ZModule
 
     public $language = 'zh_cn';
 
-    public $protectedNamespace = 'Protected';
+    public $protectedNamespace = 'Project';
 
-    public $projectNamespace = 'Project';
+    public $modulesNamespace = 'Modules';
+
+    /**
+     * 应用ID
+     * @var string
+     */
+    private $_id;
 
     private $_basePath;//应用目录
     private $_runtimePath; //程序运行目录
@@ -61,16 +72,18 @@ abstract class ZApplication extends ZModule
         if (is_string($config)) {
             require($config);
         }
-        
         if ($config['basePath']) {
             $this->setBasePath($config['basePath']);
             unset($config['basePath']);
         } else {
             $this->setBasePath('Protected');
         }
+        
         Z::setPathOfNamespace($this->protectedNamespace, $this->getBasePath());
-        Z::setPathOfNamespace($this->projectNamespace, $this->getBasePath() . '/Modules');
+        Z::setPathOfNamespace($this->modulesNamespace, $this->getBasePath() . '/Modules');
         Z::setPathOfNamespace('Z', Z_PATH);
+
+        $this->addDefaultEvent();
         $this->preinit();
         $this->initSystemHandlers();
         $this->registerCoreComponents(); //注册系统核心组件
@@ -88,15 +101,50 @@ abstract class ZApplication extends ZModule
      */
     public function run()
     {
-        if ($this->hasEventHandler('onBeginRequest')) {
+        if ($this->hasEventHandler(self::EVENT_BEFORE_REQUEST)) {
             $this->onBeginRequest(new ZEvent($this));
         }
         register_shutdown_function(array($this, 'end'), 0, false);
         $this->processRequest();
         
-        if ($this->hasEventHandler('onEndRequest')) {
+        if ($this->hasEventHandler(self::EVENT_AFTER_REQUEST)) {
             $this->onEndRequest(new ZEvent($this));
         }
+    }
+
+    /**
+     * 应用ID
+     * @return string
+     */
+    public function getId()
+    {
+        if ($this->_id!==null) {
+            return $this->_id;
+        } else {
+            return $this->_id=sprintf('%x',crc32($this->getBasePath().$this->appName));
+        }
+    }
+
+    /**
+     * 设置应用ID
+     * @param string $value 应用ID
+     */
+    public function setId($value)
+    {
+        if (!is_string($value)) {
+            throw new ZInvalidConfigException(Z::t('不正确的应用ID {id}', array('{id}' => $value)));
+        }
+
+        $this->_id = $value;
+    }
+
+    /**
+     * 获得文件缓存组件
+     * @return \Z\Caching\ZFileCache
+     */
+    public function getFileCache()
+    {
+        return $this->getComponent('fileCache');
     }
 
     /**
@@ -154,7 +202,7 @@ abstract class ZApplication extends ZModule
      */
     public function onBeginRequest($event)
     {
-        $this->raiseEvent('onBeginRequest', $event);
+        $this->fire(self::EVENT_BEFORE_REQUEST, $event);
     }
 
     /**
@@ -164,7 +212,7 @@ abstract class ZApplication extends ZModule
      */
     public function onEndRequest($event)
     {
-        $this->raiseEvent('onEndRequest', $event);
+        $this->fire(self::EVENT_AFTER_REQUEST, $event);
     }
 
     /**
@@ -242,8 +290,8 @@ abstract class ZApplication extends ZModule
     {
         $error = error_get_last();
         $ignore = E_WARNING | E_NOTICE | E_USER_WARNING | E_USER_NOTICE | E_STRICT | E_DEPRECATED | E_USER_DEPRECATED;
+
         if (($error['type'] & $ignore) === 0) {
-            ob_clean();
             $e = new \ErrorException(
                 'Fatal Error: ' . $error['message'], 0, $error['type'], $error['file'], $error['line']
             );
@@ -303,7 +351,10 @@ abstract class ZApplication extends ZModule
             ),
             'db' => array(
                 'class' => 'Z\Core\Orm\ZDbConnection',
-            )
+            ),
+            'fileCache' => array(
+                'class' => 'Z\Caching\ZFileCache',
+            ),
         );
     }
     /**

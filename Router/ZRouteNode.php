@@ -128,8 +128,9 @@ class ZRouteNode extends ZAppComponent
     {
         $pathParts = array_reverse(explode('/', $pathinfo));
 
+        $method = Z::app()->getRequest()->getMethod();
         return $this->_findRouteRecursively(
-            $pathParts, count($pathParts) - 1, Z::app()->getRequest()->getMethod()
+            $pathParts, count($pathParts) - 1, $method
         );
     }
     

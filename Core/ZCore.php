@@ -169,7 +169,6 @@ class ZCore extends ZObject implements \ZCoreInterface
                         return;
                     }
                 }
-                
             }
         }
     }
@@ -229,7 +228,6 @@ class ZCore extends ZObject implements \ZCoreInterface
     public function hasEventHandler($name)
     {
         if ($this->hasEvent($name)) {
-            $name=strtolower($name);
             return isset($this->_events[$name]) && count($this->_events[$name]) > 0;
         }
     }
@@ -256,6 +254,15 @@ class ZCore extends ZObject implements \ZCoreInterface
                 )
             );
         }
+    }
+
+    /**
+     * 查看当前类有的所有的事件
+     * @return array
+     */
+    public function getEvents()
+    {
+        return $this->_events;        
     }
 
     /**

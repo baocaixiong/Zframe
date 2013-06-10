@@ -3,3 +3,4 @@
 !.gitignore
 tags
 Tests/build/*
+*.cache

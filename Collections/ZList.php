@@ -14,10 +14,10 @@
  */
 namespace Z\Collections;
 
-use Z\Core\ZCore,
+use Z\Core\ZObject,
     Z\Exceptions\ZException;
 
-class ZList extends ZCore implements \IteratorAggregate,\ArrayAccess,\Countable
+class ZList extends ZObject implements \IteratorAggregate,\ArrayAccess,\Countable
 {
     //IteratorAggregate 创建外部迭代器的接口 => getIterator() 返回一个外部的迭代器 
     //ArrayAccess       提供像访问数组一样访问对象的能力的接口。

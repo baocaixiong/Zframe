@@ -63,6 +63,12 @@ class ZRouter extends ZAppComponent implements \ZRouterInterface
      */
     public function getRootRouteNode()
     {
+        
+        
+        if (is_null($this->rootRouteNode)) {
+            $this->addRoutesToRouteNode();
+        }
+
         return $this->rootRouteNode;
     }
 

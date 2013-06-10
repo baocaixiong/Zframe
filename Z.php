@@ -93,7 +93,7 @@ class Z
      * Returns the application singleton or null if the singleton has not been created yet.
      * @return \Z\Core\ZApplication 
      */
-    public function app ()
+    public static function app ()
     {
         return self::$_app;
     }
