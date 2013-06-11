@@ -15,11 +15,11 @@
 namespace Z\Core\CoreComponents;
 
 use Z\Z,
-    Z\Core\ZAppComponent,
+    Z\Core\ZObject,
     ZParseCommentInterface,
     Z\Exceptions\ZAnnotationException;
 
-class ZParseComment extends ZAppComponent implements ZParseCommentInterface
+class ZParseComment extends ZObject implements ZParseCommentInterface
 {
     const SEPARATOR = '|';
 

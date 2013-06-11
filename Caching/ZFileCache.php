@@ -31,7 +31,7 @@ class ZFileCache extends ZCacheAbstract
      * 删除缓存的几率
      * @var int
      */
-    public $gcProbability = 10;
+    public $gcProbability = 1000000;
 
     /**
      * 初始化FileCache
@@ -95,7 +95,7 @@ class ZFileCache extends ZCacheAbstract
     {
         $cacheFileName = $this->getCacheFile($key);
 
-        if (@filemtime($cacheFileName) > time()) {
+        if (is_file($cacheFileName) && @filemtime($cacheFileName) > time()) {
             return @file_get_contents($cacheFileName);
         } elseif (!is_null($default)) {
             return $default;
@@ -147,22 +147,23 @@ class ZFileCache extends ZCacheAbstract
      */
     protected function gcRecursive($path, $expiredOnly)
     {
-        if (($handle = opendir($path)) !== false) {
-            while (($file = readdir($handle)) !== false) {
-                if ($file[0] === '.') {
-                    continue;
-                }
-                $fullPath = $path . DIRECTORY_SEPARATOR . $file;
-                if (is_dir($fullPath)) {
-                    $this->gcRecursive($fullPath, $expiredOnly);
-                    if (!$expiredOnly) {
-                        @rmdir($fullPath);
-                    }
-                } elseif (!$expiredOnly || $expiredOnly && @filemtime($fullPath) < time()) {
-                    @unlink($fullPath);
-                }
+        $dirIterator = new \DirectoryIterator($path);
+
+        foreach ($dirIterator as $file) {
+            if ($file->isDot()) {
+                continue;
             }
-            closedir($handle);
+
+            $filePath = $file->getRealPath();
+
+            if ($file->isDir()) {
+                $this->gcRecursive($filePath, $expiredOnly);
+                if (!$expiredOnly) {
+                    @rmdir($fullPath);
+                }
+            } elseif (!$expiredOnly || $expiredOnly && @filemtime($filePath) < time()) {
+                @unlink($filePath);
+            }
         }
     }
 

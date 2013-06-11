@@ -4,3 +4,6 @@
 tags
 Tests/build/*
 *.cache
+composer.lock
+vendor/
+NotORM

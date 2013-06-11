@@ -290,7 +290,7 @@ abstract class ZApplication extends ZModule
     {
         $error = error_get_last();
         $ignore = E_WARNING | E_NOTICE | E_USER_WARNING | E_USER_NOTICE | E_STRICT | E_DEPRECATED | E_USER_DEPRECATED;
-
+        
         if (($error['type'] & $ignore) === 0) {
             $e = new \ErrorException(
                 'Fatal Error: ' . $error['message'], 0, $error['type'], $error['file'], $error['line']
@@ -323,9 +323,10 @@ abstract class ZApplication extends ZModule
                E_RECOVERABLE_ERROR => 'RECOVERABLE ERROR'
         );
         $prefix = isset($arrPrefix[$errno]) ? $arrPrefix[$errno] : 'ERROR';
-        throw new \ErrorException(
+        $e = new \ErrorException(
             $prefix . ' : ' . $errstr, 0, $errno, $errfile, $errline
         );
+        $this->handleException($e);
     }
     
     /**

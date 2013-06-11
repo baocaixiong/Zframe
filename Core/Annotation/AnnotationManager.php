@@ -29,6 +29,7 @@ class AnnotationManager extends ZObject implements AnnotationInterface
      */
     public $separator = '.';
 
+    public $expire = 3600;
     /**
      * 要忽略扫描的目录
      * @var array
@@ -109,7 +110,7 @@ class AnnotationManager extends ZObject implements AnnotationInterface
                         $methodAnnotation->{$key} = $meta;
                     }
 
-                    $methodAnnotation->params = $rfMethod->getParameters();
+                    //$methodAnnotation->params = $rfMethod->getParameters();//序列化后恢复失败
                     $classAnnotation->setMethod($methodAnnotation);
                 }
 
@@ -126,7 +127,12 @@ class AnnotationManager extends ZObject implements AnnotationInterface
     public function getAnnotations()
     {
         if (is_null($this->_collection)) {
-            $this->_collect();
+            $cacheObject = Z::app()->getCache();
+            $this->_collection = $cacheObject->get($this->cacheName);
+            if (!$this->_collection) {
+                $this->_collect();
+                $cacheObject->set($this->cacheName, $this->_collection, $this->expire);
+            }
         }
 
         return $this->_collection;

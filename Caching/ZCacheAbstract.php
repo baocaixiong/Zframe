@@ -105,6 +105,14 @@ abstract class ZCacheAbstract extends ZObject implements ZCachingInterface, \Arr
     }
     
     /**
+     * 清空所有缓存
+     * @return void
+     */
+    public function flush()
+    {
+        return $this->flushValues();
+    }
+    /**
      * build a cache key
      * @param  string $key cache key
      * @return string

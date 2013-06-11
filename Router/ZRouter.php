@@ -36,6 +36,8 @@ class ZRouter extends ZAppComponent implements \ZRouterInterface
 
     public $routingPrefix = '/';
 
+    public $expire = 3600;
+
     protected $rootRouteNode;
 
     /**
@@ -63,10 +65,14 @@ class ZRouter extends ZAppComponent implements \ZRouterInterface
      */
     public function getRootRouteNode()
     {
-        
-        
+        $cacheObject = Z::app()->getCache();
+
         if (is_null($this->rootRouteNode)) {
-            $this->addRoutesToRouteNode();
+            $this->rootRouteNode = $cacheObject->get(self::ROUTES_CACHE_KEY);
+            if (!$this->rootRouteNode) {
+                $this->addRoutesToRouteNode();
+                $cacheObject->set(self::ROUTES_CACHE_KEY, $this->rootRouteNode, $this->expire);
+            }
         }
 
         return $this->rootRouteNode;

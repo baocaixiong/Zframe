@@ -4,7 +4,7 @@ namespace Modules\Test\Resources;
 
 use Z\Z;
 use Z\Executors\ZResource;
-use Protecte\Tables\TblUserTable;
+use Project\Tables\TblUserTable;
 
 
 /**
@@ -50,7 +50,8 @@ class TestResource extends ZResource
      */
     public function get11($xxx=345, $yyy=123)
     {   
-        var_dump(new TblUserTable);
+
+        //var_dump(new TblUserTable);
         // $pdo = new \PDO("mysql:dbname=tbl;host=127.0.0.1", 'root', '123123');
         // include Z_PATH.'/NotORM/NotORM.php';
         // $db = new \NotORM($pdo);
@@ -69,6 +70,6 @@ class TestResource extends ZResource
      */
     public function get1111($s)
     {
-        echo $s;
+        var_dump($s);
     }
 }

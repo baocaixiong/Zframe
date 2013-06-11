@@ -77,8 +77,9 @@ class ZExecutorBehavior extends ZBehavior
             $context->params = $retParams;
             return;
         }
-
-        $methodParams = $context->rfParams;
+        // $methodParams = $context->rfParams; //A序列化后反序列化失败
+        $rfMethod = new \ReflectionMethod(get_class($this->getOwner()), $context->routeResult->route->methodName);
+        $methodParams = $rfMethod->getParameters();
 
         foreach ($methodParams as $methodParam) {
             $name = $methodParam->name;

@@ -113,6 +113,15 @@ class ZRestfulApplication extends ZApplication
     }
 
     /**
+     * 返回cache组件
+     * @return \Z\Caching\ZFileCache
+     */
+    public function getCache()
+    {
+        return $this->getComponent('cache');
+    }
+
+    /**
      * 注册系统核心组建
      * @return void
      */
@@ -126,6 +135,9 @@ class ZRestfulApplication extends ZApplication
             'routeNode' => array(
                 'class' => 'Z\Router\ZRouteNode',
             ),
+            'cache' => array(
+                'class' => 'Z\Caching\ZFileCache',
+            ),
         );
         $this->setComponents(array_merge($coreComponents, $components));
     }
@@ -138,14 +150,14 @@ class ZRestfulApplication extends ZApplication
     public function init()
     {
         $this->getRequest();
-
-        //$router = $this->getCahce()->get($this->getRouter()->getCacheKey());
-        $router = null;
-        if ($router === null) {
-            $this->getRouter()->addRoutesToRouteNode();
-            //$this->getCache()->set($this->getRouter()->getCacheKey(), $router);
-        }
     }
 
-
+    /**
+     * EVENT after request
+     * @return void
+     */
+    public function afterRequest($event)
+    {
+        $this->getCache()->gc();
+    }
 }
