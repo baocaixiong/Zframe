@@ -60,7 +60,7 @@ class ZDbConnection extends ZAppComponent
      * database default charset
      * @var string
      */
-    public $charset;
+    public $charset = 'UTF-8';
 
     /**
      * pdo drive attributes [name => value]
@@ -147,6 +147,7 @@ class ZDbConnection extends ZAppComponent
         if ($this->emulatePrepare !== null && constant('PDO::ATTR_EMULATE_PREPARES')) {
             $this->pdo->setAttribute(PDO::ATTR_EMULATE_PREPARES, $this->emulatePrepare);
         }
+
         //设置字符集
         if ($this->charset !== null && in_array($this->getDriverName(), array('pgsql', 'mysql', 'mysqli'))) {
             $this->pdo->exec('SET NAMES ' . $this->pdo->quote($this->charset));
@@ -215,7 +216,7 @@ class ZDbConnection extends ZAppComponent
      * from YII2
      * @return string 
      */
-    protected function getDriverName()
+    public function getDriverName()
     {
         if ($this->_driveName === null) {
             if (($pos = strpos($this->dsn, ':')) !== false) {

@@ -323,10 +323,10 @@ abstract class ZApplication extends ZModule
                E_RECOVERABLE_ERROR => 'RECOVERABLE ERROR'
         );
         $prefix = isset($arrPrefix[$errno]) ? $arrPrefix[$errno] : 'ERROR';
-        $e = new \ErrorException(
+        throw new \ErrorException(
             $prefix . ' : ' . $errstr, 0, $errno, $errfile, $errline
         );
-        $this->handleException($e);
+        //$this->handleException($e);
     }
     
     /**
