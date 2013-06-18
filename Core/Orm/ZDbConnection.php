@@ -20,6 +20,8 @@ use Z\Exceptions\ZInvalidConfigException;
 use Z\Exceptions\ZException;
 use PDO;
 use PDOException;
+use Z\Core\Orm\Structures\ZStructureConvention;
+use Z\Core\Orm\Structures\ZStructureInterface;
 
 class ZDbConnection extends ZAppComponent
 {
@@ -68,17 +70,13 @@ class ZDbConnection extends ZAppComponent
      */
     public $pdoAttributes = array();
 
+    public $debug;
+
     /**
      * 缓存对象
      * @var string
      */
     public $cache = 'cache';
-
-    /**
-     * 数据库表前缀
-     * @var string
-     */
-    public $tablePrefix = '';
 
     /**
      * PDO instance
@@ -104,6 +102,11 @@ class ZDbConnection extends ZAppComponent
      */
     private $_transaction;
 
+    /**
+     * 数据库表前缀
+     * @var string
+     */
+    private $_tablePrefix = '';
 
     private $_schema;
 
@@ -211,6 +214,43 @@ class ZDbConnection extends ZAppComponent
         return $this->pdo->getAttribute($code);
     }
 
+    /**
+     * db structure
+     * @return \Z\Core\Orm\Structures\ZStructureInterface
+     */
+    public function getStructure()
+    {
+        $structure = Z::app()->getStructure();
+        
+        if (!is_null($this->_tablePrefix)) {
+            $structure->tablePrefix = $this->_tablePrefix;
+        }
+
+        return $structure;
+    }
+
+    /**
+     * set table prefix
+     * @param  string $value table prefix
+     * @return void
+     */
+    public function setTablePrefix($value)
+    {
+        if (!is_string($value)) {
+            throw new ZInvalidConfigException("tablePrefix 配置必须是string");
+        }
+
+        $this->_tablePrefix = $value;
+    }
+
+    /**
+     * get table prefix
+     * @return string
+     */
+    public function getTablePrefix()
+    {
+        return $this->_tablePrefix;
+    }
     /**
      * 获得数据库驱动名称
      * from YII2

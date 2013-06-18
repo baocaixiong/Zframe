@@ -14,7 +14,9 @@
  */
 namespace Z\Core\Orm;
 
-class ZTable
+
+
+class ZTable extends ZOrmAbstract implements \Iterator, \ArrayAccess, \Countable
 {
     protected $single;
 
@@ -41,6 +43,8 @@ class ZTable
     protected $access;
     protected $keys = array();
     
+
+    protected $modelClass;
     /**
     * Create table result
     * 
@@ -50,27 +54,34 @@ class ZTable
     * 
     * @return \Z\Core\Orm\ZTable
     */
-    function __construct($tableName, ZDbConnection $db, $single = false) {
+    public function __construct($tableName, ZDbConnection $db,$modelClass, $single = false) {
         $this->tableName = $tableName;
         $this->connection = $db;
         $this->single = $single;
+        $this->modelClass = $modelClass;
         $this->primaryKey = $db->structure->getPrimary($tableName);
     }
     
     /** Save data to cache and empty result
     */
-    function __destruct() {
-        if ($this->notORM->cache && !$this->select && isset($this->rows)) {
+    public function __destruct() {
+        if ($this->connection->cache && !$this->select && isset($this->rows)) {
             $access = $this->access;
             if (is_array($access)) {
                 $access = array_filter($access);
             }
-            $this->notORM->cache->save("$this->table;" . implode(",", $this->conditions), $access);
+            $this->connection->cache->save("$this->tableName;" . implode(",", $this->conditions), $access);
         }
         $this->rows = null;
         $this->data = null;
     }
     
+    /**
+     * 创建limit statement
+     * @param  string $limit  limit like (0, 10)
+     * @param  string $offset offset statement
+     * @return string
+     */
     protected function limitString($limit, $offset) {
         $return = "";
         if (isset($limit)) {
@@ -100,14 +111,14 @@ class ZTable
         $return = $this->removeExtraDots($return);
         
         $where = $this->where;
-        if (isset($this->limit) && $this->notORM->driver == "oci") {
+        if (isset($this->limit) && $this->connection->driverName == "oci") {
             $where[] = ($this->offset ? "rownum > $this->offset AND " : "") . "rownum <= " . ($this->limit + $this->offset); //! rownum > doesn't work - requires subselect (see adminer/drivers/oracle.inc.php)
         }
         if ($where) {
             $return = " WHERE (" . implode(") AND (", $where) . ")$return";
         }
         
-        if ($this->notORM->driver != "oci" && $this->notORM->driver != "dblib") {
+        if ($this->connection->driverName != "oci" && $this->connection->driverName != "dblib") {
             $return .= $this->limitString($this->limit, $this->offset);
         }
         if (isset($this->lock)) {
@@ -117,7 +128,7 @@ class ZTable
     }
     
     protected function topString() {
-        if (isset($this->limit) && $this->notORM->driver == "dblib") {
+        if (isset($this->limit) && $this->connection->driverName == "dblib") {
             return " TOP ($this->limit)"; //! offset is not supported
         }
         return "";
@@ -127,14 +138,14 @@ class ZTable
         $return = array();
         preg_match_all('~\\b([a-z_][a-z0-9_.:]*[.:])[a-z_*]~i', $val, $matches);
         foreach ($matches[1] as $names) {
-            $parent = $this->table;
+            $parent = $this->tableName;
             if ($names != "$parent.") { // case-sensitive
                 preg_match_all('~\\b([a-z_][a-z0-9_]*)([.:])~i', $names, $matches, PREG_SET_ORDER);
                 foreach ($matches as $match) {
                     list(, $name, $delimiter) = $match;
-                    $table = $this->notORM->structure->getReferencedTable($name, $parent);
-                    $column = ($delimiter == ':' ? $this->notORM->structure->getPrimary($parent) : $this->notORM->structure->getReferencedColumn($name, $parent));
-                    $primary = ($delimiter == ':' ? $this->notORM->structure->getReferencedColumn($parent, $table) : $this->notORM->structure->getPrimary($table));
+                    $table = $this->connection->structure->getReferencedTable($name, $parent);
+                    $column = ($delimiter == ':' ? $this->connection->structure->getPrimary($parent) : $this->connection->structure->getReferencedColumn($name, $parent));
+                    $primary = ($delimiter == ':' ? $this->connection->structure->getReferencedColumn($parent, $table) : $this->connection->structure->getPrimary($table));
                     $return[$name] = " LEFT JOIN $table" . ($table != $name ? " AS $name" : "") . " ON $parent.$column = $name.$primary"; // should use alias if the table is used on more places
                     $parent = $name;
                 }
@@ -146,11 +157,11 @@ class ZTable
     /** Get SQL query
     * @return string
     */
-    function __toString() {
+    public function __toString() {
         $return = "SELECT" . $this->topString() . " ";
         $join = $this->createJoins(implode(",", $this->conditions) . "," . implode(",", $this->select) . ",$this->group,$this->having," . implode(",", $this->order));
-        if (!isset($this->rows) && $this->notORM->cache && !is_string($this->accessed)) {
-            $this->accessed = $this->notORM->cache->load("$this->table;" . implode(",", $this->conditions));
+        if (!isset($this->rows) && !empty($this->connection->cache) && !is_string($this->accessed)) {
+            $this->accessed = $this->connection->cache->load("$this->table;" . implode(",", $this->conditions));
             $this->access = $this->accessed;
         }
 
@@ -162,9 +173,9 @@ class ZTable
             $return .= ($join ? "$this->table." : "") . "*";
         }
 
-        $return .= " FROM $this->table" . implode($join) . $this->whereString();
+        $return .= " FROM $this->tableName" . implode($join) . $this->whereString();
         if ($this->union) {
-            $return = ($this->notORM->driver == "sqlite" || $this->notORM->driver == "oci" ? $return : "($return)") . implode($this->union);
+            $return = ($this->connection->driverName == "sqlite" || $this->connection->driverName == "oci" ? $return : "($return)") . implode($this->union);
             if ($this->unionOrder) {
                 $return .= " ORDER BY " . implode(", ", $this->unionOrder);
             }
@@ -174,8 +185,8 @@ class ZTable
     }
     
     protected function query($query, $parameters) {
-        if ($this->notORM->debug) {
-            if (!is_callable($this->notORM->debug)) {
+        if ($this->connection->debug) {
+            if (!is_callable($this->connection->debug)) {
                 $debug = "$query;";
                 if ($parameters) {
                     $debug .= " -- " . implode(", ", array_map(array($this, 'quote'), $parameters));
@@ -187,11 +198,11 @@ class ZTable
                     }
                 }
                 fwrite(STDERR, "$backtrace[file]:$backtrace[line]:$debug\n");
-            } elseif (call_user_func($this->notORM->debug, $query, $parameters) === false) {
+            } elseif (call_user_func($this->connection->debug, $query, $parameters) === false) {
                 return false;
             }
         }
-        $return = $this->notORM->connection->prepare($query);
+        $return = $this->connection->pdo->prepare($query);
         if (!$return || !$return->execute(array_map(array($this, 'formatValue'), $parameters))) {
             return false;
         }
@@ -219,10 +230,10 @@ class ZTable
         if ($val === false) {
             return "0";
         }
-        if (is_int($val) || $val instanceof NotORM_Literal) { // number or SQL code - for example "NOW()"
+        if (is_int($val) || $val instanceof ZDbExpression) { // number or SQL code - for example "NOW()"
             return (string) $val;
         }
-        return $this->notORM->connection->quote($val);
+        return $this->connection->pdo->quote($val);
     }
     
     /** Insert row in a table
@@ -230,8 +241,8 @@ class ZTable
     * @param ... used for extended insert
     * @return NotORM_Row inserted row or false in case of an error or number of affected rows for INSERT ... SELECT
     */
-    function insert($data) {
-        if ($this->notORM->freeze) {
+    public function insert($data) {
+        if ($this->connection->freeze) {
             return false;
         }
         $parameters = array();
@@ -250,7 +261,7 @@ class ZTable
                 }
                 $values[] = $this->quote($value);
                 foreach ($value as $val) {
-                    if ($val instanceof NotORM_Literal && $val->parameters) {
+                    if ($val instanceof ZDbExpression && $val->parameters) {
                         $parameters = array_merge($parameters, $val->parameters);
                     }
                 }
@@ -267,18 +278,18 @@ class ZTable
         if (!is_array($data)) {
             return $return->rowCount();
         }
-        if (!isset($data[$this->primary]) && ($id = $this->notORM->connection->lastInsertId($this->notORM->structure->getSequence($this->table)))) {
+        if (!isset($data[$this->primary]) && ($id = $this->connection->pdo->lastInsertId($this->connection->structure->getSequence($this->table)))) {
             $data[$this->primary] = $id;
         }
-        return new $this->notORM->rowClass($data, $this);
+        return new $this->modelClass($data, $this);
     }
     
     /** Update all rows in result set
     * @param array ($column => $value)
     * @return int number of affected rows or false in case of an error
     */
-    function update(array $data) {
-        if ($this->notORM->freeze) {
+    public function update(array $data) {
+        if ($this->connection->freeze) {
             return false;
         }
         if (!$data) {
@@ -289,7 +300,7 @@ class ZTable
         foreach ($data as $key => $val) {
             // doesn't use binding because $this->parameters can be filled by ? or :name
             $values[] = "$key = " . $this->quote($val);
-            if ($val instanceof NotORM_Literal && $val->parameters) {
+            if ($val instanceof ZDbExpression && $val->parameters) {
                 $parameters = array_merge($parameters, $val->parameters);
             }
         }
@@ -310,14 +321,14 @@ class ZTable
     * @param array ($column => $value), empty array means use $insert
     * @return int number of affected rows or false in case of an error
     */
-    function insert_update(array $unique, array $insert, array $update = array()) {
+    public function insert_update(array $unique, array $insert, array $update = array()) {
         if (!$update) {
             $update = $insert;
         }
         $insert = $unique + $insert;
         $values = "(" . implode(", ", array_keys($insert)) . ") VALUES " . $this->quote($insert);
         //! parameters
-        if ($this->notORM->driver == "mysql") {
+        if ($this->connection->driverName == "mysql") {
             $set = array();
             if (!$update) {
                 $update = $unique;
@@ -328,7 +339,7 @@ class ZTable
             }
             return $this->insert("$values ON DUPLICATE KEY UPDATE " . implode(", ", $set));
         } else {
-            $connection = $this->notORM->connection;
+            $connection = $this->connection->pdo;
             $errorMode = $connection->getAttribute(PDO::ATTR_ERRMODE);
             $connection->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
             try {
@@ -357,8 +368,8 @@ class ZTable
     /** Delete all rows in result set
     * @return int number of affected rows or false in case of an error
     */
-    function delete() {
-        if ($this->notORM->freeze) {
+    public function delete() {
+        if ($this->connection->freeze) {
             return false;
         }
         $return = $this->query("DELETE" . $this->topString() . " FROM $this->table" . $this->whereString(), $this->parameters);
@@ -373,7 +384,7 @@ class ZTable
     * @param string ...
     * @return NotORM_Result fluent interface
     */
-    function select($columns) {
+    public function select($columns) {
         $this->__destruct();
         foreach (func_get_args() as $columns) {
             $this->select[] = $columns;
@@ -387,7 +398,7 @@ class ZTable
     * @param mixed ...
     * @return NotORM_Result fluent interface
     */
-    function where($condition, $parameters = array()) {
+    public function where($condition, $parameters = array()) {
         if (is_array($condition)) { // where(array("column1" => 1, "column2 > ?" => 2))
             foreach ($condition as $key => $val) {
                 $this->where($key, $val);
@@ -409,9 +420,9 @@ class ZTable
         } elseif ($parameters instanceof NotORM_Result) { // where("column", $db->$table())
             $clone = clone $parameters;
             if (!$clone->select) {
-                $clone->select($this->notORM->structure->getPrimary($clone->table));
+                $clone->select($this->connection->structure->getPrimary($clone->table));
             }
-            if ($this->notORM->driver != "mysql") {
+            if ($this->connection->driverName != "mysql") {
                 if ($clone instanceof NotORM_MultiResult) {
                     array_shift($clone->select);
                     $clone->single();
@@ -442,7 +453,7 @@ class ZTable
         } else { // where("column", array(1, 2))
             if (!$parameters) {
                 $condition = "($condition) IS NOT NULL AND $condition IS NULL";
-            } elseif ($this->notORM->driver != "oci") {
+            } elseif ($this->connection->driverName != "oci") {
                 $condition .= " IN " . $this->quote($parameters);
             } else { // http://download.oracle.com/docs/cd/B19306_01/server.102/b14200/expressions014.htm
                 $or = array();
@@ -462,7 +473,7 @@ class ZTable
     * @param mixed ...
     * @return NotORM_Result fluent interface
     */
-    function __invoke($where, $parameters = array()) {
+    public function __invoke($where, $parameters = array()) {
         $args = func_get_args();
         return call_user_func_array(array($this, 'where'), $args);
     }
@@ -472,7 +483,7 @@ class ZTable
     * @param string ...
     * @return NotORM_Result fluent interface
     */
-    function order($columns) {
+    public function order($columns) {
         $this->rows = null;
         foreach (func_get_args() as $columns) {
             if ($this->union) {
@@ -489,7 +500,7 @@ class ZTable
     * @param int
     * @return NotORM_Result fluent interface
     */
-    function limit($limit, $offset = null) {
+    public function limit($limit, $offset = null) {
         $this->rows = null;
         if ($this->union) {
             $this->unionLimit = +$limit;
@@ -506,7 +517,7 @@ class ZTable
     * @param string
     * @return NotORM_Result fluent interface
     */
-    function group($columns, $having = "") {
+    public function group($columns, $having = "") {
         $this->__destruct();
         $this->group = $columns;
         $this->having = $having;
@@ -517,7 +528,7 @@ class ZTable
     * @param bool
     * @return NotORM_Result fluent interface
     */
-    function lock($exclusive = true) {
+    public function lock($exclusive = true) {
         $this->lock = $exclusive;
         return $this;
     }
@@ -527,8 +538,8 @@ class ZTable
     * @param bool
     * @return NotORM_Result fluent interface
     */
-    function union(NotORM_Result $result, $all = false) {
-        $this->union[] = " UNION " . ($all ? "ALL " : "") . ($this->notORM->driver == "sqlite" || $this->notORM->driver == "oci" ? $result : "($result)");
+    public function union(NotORM_Result $result, $all = false) {
+        $this->union[] = " UNION " . ($all ? "ALL " : "") . ($this->connection->driverName == "sqlite" || $this->connection->driverName == "oci" ? $result : "($result)");
         $this->parameters = array_merge($this->parameters, $result->parameters);
         return $this;
     }
@@ -537,7 +548,7 @@ class ZTable
     * @param string
     * @return string
     */
-    function aggregation($function) {
+    public function aggregation($function) {
         $join = $this->createJoins(implode(",", $this->conditions) . ",$function");
         $query = "SELECT $function FROM $this->table" . implode($join);
         if ($this->where) {
@@ -552,7 +563,7 @@ class ZTable
     * @param string
     * @return int
     */
-    function count($column = "") {
+    public function count($column = "") {
         if (!$column) {
             $this->execute();
             return count($this->data);
@@ -564,7 +575,7 @@ class ZTable
     * @param string
     * @return int
     */
-    function min($column) {
+    public function min($column) {
         return $this->aggregation("MIN($column)");
     }
     
@@ -572,7 +583,7 @@ class ZTable
     * @param string
     * @return int
     */
-    function max($column) {
+    public function max($column) {
         return $this->aggregation("MAX($column)");
     }
     
@@ -580,7 +591,7 @@ class ZTable
     * @param string
     * @return int
     */
-    function sum($column) {
+    public function sum($column) {
         return $this->aggregation("SUM($column)");
     }
     
@@ -593,13 +604,13 @@ class ZTable
             $exception = null;
             $parameters = array();
             foreach (array_merge($this->select, array($this, $this->group, $this->having), $this->order, $this->unionOrder) as $val) {
-                if (($val instanceof NotORM_Literal || $val instanceof self) && $val->parameters) {
+                if (($val instanceof ZDbExpression || $val instanceof self) && $val->parameters) {
                     $parameters = array_merge($parameters, $val->parameters);
                 }
             }
             try {
                 $result = $this->query($this->__toString(), $parameters);
-            } catch (PDOException $exception) {
+            } catch (\PDOException $exception) {
                 // handled later
             }
             if (!$result) {
@@ -613,15 +624,17 @@ class ZTable
             }
             $this->rows = array();
             if ($result) {
-                $result->setFetchMode(PDO::FETCH_ASSOC);
+                $result->setFetchMode(\PDO::FETCH_ASSOC);
                 foreach ($result as $key => $row) {
-                    if (isset($row[$this->primary])) {
-                        $key = $row[$this->primary];
+                    if (isset($row[$this->primaryKey])) {
+                        $key = $row[$this->primaryKey];
                         if (!is_string($this->access)) {
-                            $this->access[$this->primary] = true;
+                            $this->access[$this->primaryKey] = true;
                         }
                     }
-                    $this->rows[$key] = new $this->notORM->rowClass($row, $this);
+
+                    $className = $this->modelClass;
+                    $this->rows[$key] = new $className($row, $this);
                 }
             }
             $this->data = $this->rows;
@@ -631,7 +644,7 @@ class ZTable
     /** Fetch next row of result
     * @return NotORM_Row or false if there is no row
     */
-    function fetch() {
+    public function fetch() {
         $this->execute();
         $return = current($this->data);
         next($this->data);
@@ -643,7 +656,7 @@ class ZTable
     * @param string column name used for an array value or an empty string for the whole row
     * @return array
     */
-    function fetchPairs($key, $value = '') {
+    public function fetchPairs($key, $value = '') {
         $return = array();
         $clone = clone $this;
         if ($value != "") {
@@ -686,27 +699,27 @@ class ZTable
     
     // Iterator implementation (not IteratorAggregate because $this->data can be changed during iteration)
     
-    function rewind() {
+    public function rewind() {
         $this->execute();
         $this->keys = array_keys($this->data);
         reset($this->keys);
     }
     
     /** @return NotORM_Row */
-    function current() {
+    public function current() {
         return $this->data[current($this->keys)];
     }
     
     /** @return string row ID */
-    function key() {
+    public function key() {
         return current($this->keys);
     }
     
-    function next() {
+    public function next() {
         next($this->keys);
     }
     
-    function valid() {
+    public function valid() {
         return current($this->keys) !== false;
     }
     
@@ -716,7 +729,7 @@ class ZTable
     * @param string row ID or array for where conditions
     * @return bool
     */
-    function offsetExists($key) {
+    public function offsetExists($key) {
         $row = $this->offsetGet($key);
         return isset($row);
     }
@@ -725,7 +738,7 @@ class ZTable
     * @param string row ID or array for where conditions
     * @return NotORM_Row or null if there is no such row
     */
-    function offsetGet($key) {
+    public function offsetGet($key) {
         if ($this->single && !isset($this->data)) {
             $clone = clone $this;
             if (is_array($key)) {
@@ -760,7 +773,7 @@ class ZTable
     * @param NotORM_Row
     * @return null
     */
-    function offsetSet($key, $value) {
+    public function offsetSet($key, $value) {
         $this->execute();
         $this->data[$key] = $value;
     }
@@ -769,7 +782,7 @@ class ZTable
     * @param string row ID
     * @return null
     */
-    function offsetUnset($key) {
+    public function offsetUnset($key) {
         $this->execute();
         unset($this->data[$key]);
     }

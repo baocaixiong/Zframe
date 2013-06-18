@@ -20,47 +20,42 @@ class ZStructureConvention implements ZStructureInterface
      * table primary key
      * @var string
      */
-    protected $primaryKey;
+    public $primaryKey = 'id';
 
     /**
      * table foreign key
      * @var string
      */
-    protected $foreignKey;
+    public $foreignKey = '%s_id';
 
     /**
      * table name
      * @var string
      */
-    protected $tableName;
+    public $tableName = '%s';
 
     /**
      * table prefix e.g: like 'tbl_'
      * @var string
      */
-    protected $tablePrefix;
+    public $tablePrefix = '';
 
     /**
-     * CONSTRUCT METHOD
-     * @param string $primaryKey  table primary key
-     * @param string $foreignKey  table foreign key
-     * @param string $tableName   table name
-     * @param string $tablePrefix table prefix
+     * 获得表主键
+     * @param  string $tableName table name
+     * @return string
      */
-    public function __construct($primaryKey = 'id', $foreignKey = '%s_id', $tableName = '%s', $tablePrefix = '')
-    {
-        $this->primaryKey = $primaryKey;
-        $this->foreignKey = $foreignKey;
-        $this->tableName = $tableName;
-        $this->tablePrefix = $tablePrefix;
-    }
-
-
     public function getPrimary($tableName)
     {
         return sprintf($this->primaryKey, $this->getColumnFromTable($tableName));
     }
     
+    /**
+     * 获得该table引用的子table
+     * @param  string $name      
+     * @param  string $tableName [description]
+     * @return string
+     */
     public function getReferencingColumn($name, $tableName)
     {
         return $this->getReferencedColumn(substr($tableName, strlen($this->tablePrefix)), $this->tablePrefix . $name);
