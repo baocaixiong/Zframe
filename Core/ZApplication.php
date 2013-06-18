@@ -121,7 +121,7 @@ abstract class ZApplication extends ZModule
         if ($this->_id!==null) {
             return $this->_id;
         } else {
-            return $this->_id=sprintf('%x',crc32($this->getBasePath().$this->appName));
+            return $this->_id = sprintf('%x', crc32($this->getBasePath() . $this->appName));
         }
     }
 
@@ -193,6 +193,15 @@ abstract class ZApplication extends ZModule
     public function getRequest()
     {
         return $this->getComponent('request');
+    }
+
+    /**
+     * db structure
+     * @return \Z\Core\Orm\Structures\ZStructureInterface
+     */
+    public function getStructure()
+    {
+        return $this->getComponent('structure');
     }
 
     /**
@@ -355,6 +364,9 @@ abstract class ZApplication extends ZModule
             ),
             'fileCache' => array(
                 'class' => 'Z\Caching\ZFileCache',
+            ),
+            'structure' => array(
+                'class' => 'Z\Core\Orm\Structures\ZStructureConvention',
             ),
         );
     }

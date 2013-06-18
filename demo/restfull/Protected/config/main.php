@@ -19,6 +19,7 @@ return array(
             'userName' => 'root',
             'password' => '123123',
             'charset' => 'utf8',
+            'cache' => ''
         ),
         'cache' => array(
             'class' => 'Z\Caching\ZFileCache'

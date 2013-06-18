@@ -29,21 +29,19 @@ class ZMapper extends ZOrmAbstract
      */
     protected static $tableInstances;
 
-    protected $db;
+    protected $pdo;
     /**
      * CONSTRUCT METHOD
      * @param \Z\Core\Orm\ZDbConnection                  $db        db connection
      * @param \Z\Core\Orm\Structures\ZStructureInterface $structure structure 
      * @param \ZCachingInterface                         $cache     cache
      */
-    public function __construct(ZDbConnection $db, ZStructureInterface $structure = null, ZCachingInterface $cache = null)
+    public function __construct(ZDbConnection $db, ZCachingInterface $cache = null)
     {
-        $this->connection = $db->pdo;
-        $this->db = $db;
+        $this->connection = $db;
+        $this->pdo = $db->pdo;
         $this->cache = $cache;
-        if (is_null($structure)) {
-            $structure = new ZStructureConvention();
-        }
+        $this->structure = $db->getStructure();
 
         $this->driverName = $db->getDriverName();
     }
@@ -55,7 +53,7 @@ class ZMapper extends ZOrmAbstract
      * @param boolean $single    whether single
      * @return \Z\Core\Orm\ZTable
      */
-    public function getTable($tableName = null, $single = false)
+    public function getTableInstance($tableName = null, $single = false)
     {
         if (is_null($tableName)) {
             $tableName = $this->getTableName();
@@ -65,15 +63,24 @@ class ZMapper extends ZOrmAbstract
             return self::$tableInstances;
         }
 
-        return new ZTable($tableName, $this->db, $single);
+        return new ZTable($tableName, $this->connection, $this, $single);
     }
 
+    /**
+     * get table name
+     * @return string
+     */
     protected function getTableName()
     {
-        if (strncasecmp($this->tableName, '{{', 2) !== 0) {
-            return $this->db->tablePrefix . $this->tableName;
-        }
+        return $this->connection->getTablePrefix() . $this->tableName;
+    }
 
-        return $this->tableName;
+    public function getAll()
+    {
+        $table = $this->getTableInstance();
+
+        foreach ($table as $row) {
+            var_dump($row['title']);
+        }
     }
 }
