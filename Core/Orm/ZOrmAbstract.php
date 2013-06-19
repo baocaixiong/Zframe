@@ -56,6 +56,6 @@ abstract class ZOrmAbstract extends ZObject
     protected $primaryKey;
 
     protected $rows;
-
+    
     protected $referenced;
 }

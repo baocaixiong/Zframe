@@ -43,8 +43,8 @@ class ZTable extends ZOrmAbstract implements \Iterator, \ArrayAccess, \Countable
     protected $access;
     protected $keys = array();
     
-
     protected $modelClass;
+
     /**
     * Create table result
     * 
@@ -54,6 +54,7 @@ class ZTable extends ZOrmAbstract implements \Iterator, \ArrayAccess, \Countable
     * 
     * @return \Z\Core\Orm\ZTable
     */
+
     public function __construct($tableName, ZDbConnection $db,$modelClass, $single = false) {
         $this->tableName = $tableName;
         $this->connection = $db;
@@ -176,6 +177,7 @@ class ZTable extends ZOrmAbstract implements \Iterator, \ArrayAccess, \Countable
         $return .= " FROM $this->tableName" . implode($join) . $this->whereString();
         if ($this->union) {
             $return = ($this->connection->driverName == "sqlite" || $this->connection->driverName == "oci" ? $return : "($return)") . implode($this->union);
+
             if ($this->unionOrder) {
                 $return .= " ORDER BY " . implode(", ", $this->unionOrder);
             }
@@ -282,6 +284,7 @@ class ZTable extends ZOrmAbstract implements \Iterator, \ArrayAccess, \Countable
             $data[$this->primary] = $id;
         }
         return new $this->modelClass($data, $this);
+
     }
     
     /** Update all rows in result set
@@ -632,8 +635,8 @@ class ZTable extends ZOrmAbstract implements \Iterator, \ArrayAccess, \Countable
                             $this->access[$this->primaryKey] = true;
                         }
                     }
-
                     $className = $this->modelClass;
+
                     $this->rows[$key] = new $className($row, $this);
                 }
             }

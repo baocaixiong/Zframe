@@ -64,6 +64,7 @@ class ZMapper extends ZOrmAbstract
         }
 
         return new ZTable($tableName, $this->connection, $this->modelClass, $single);
+
     }
 
     /**
@@ -81,6 +82,7 @@ class ZMapper extends ZOrmAbstract
 
         foreach ($table as $row) {
             var_dump($row['title'], $row->author['name']);
+
         }
     }
 }

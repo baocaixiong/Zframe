@@ -21,6 +21,7 @@ use Countable;
 
 class ZModel extends ZOrmAbstract implements IteratorAggregate, ArrayAccess, Countable {
     private $modified = array();
+
     protected $row, $zTable;
     
     /** @access protected must be public because it is called from zTable */
@@ -33,7 +34,9 @@ class ZModel extends ZOrmAbstract implements IteratorAggregate, ArrayAccess, Cou
     * @return string
     */
     public function __toString() {
+
         return (string) $this[$this->zTable->primary]; // (string) - PostgreSQL returns int
+
     }
     
     /** Get referenced row
@@ -41,19 +44,23 @@ class ZModel extends ZOrmAbstract implements IteratorAggregate, ArrayAccess, Cou
     * @return NotORM_Row or null if the row does not exist
     */
     public function __get($name) {
+
         $column = $this->zTable->connection->structure->getReferencedColumn($name, $this->zTable->tableName);
         $referenced = &$this->zTable->referenced[$name];
         if (!isset($referenced)) {
             $keys = array();
             foreach ($this->zTable->rows as $row) {
+
                 if ($row[$column] !== null) {
                     $keys[$row[$column]] = null;
                 }
             }
             if ($keys) {
+
                 $table = $this->zTable->connection->structure->getReferencedTable($name, $this->zTable->tableName);
                 $referenced = new ZTable($table, $this->zTable->connection, $this);
                 $referenced->where("$table." . $this->zTable->connection->structure->getPrimary($table), array_keys($keys));
+
             } else {
                 $referenced = array();
             }
@@ -78,7 +85,9 @@ class ZModel extends ZOrmAbstract implements IteratorAggregate, ArrayAccess, Cou
     * @return null
     */
     public function __set($name, NotORM_Row $value = null) {
+
         $column = $this->zTable->connection->structure->getReferencedColumn($name, $this->zTable->table);
+
         $this[$column] = $value;
     }
     
@@ -87,7 +96,9 @@ class ZModel extends ZOrmAbstract implements IteratorAggregate, ArrayAccess, Cou
     * @return null
     */
     public function __unset($name) {
+
         $column = $this->zTable->connection->structure->getReferencedColumn($name, $this->zTable->table);
+
         unset($this[$column]);
     }
     
@@ -101,6 +112,7 @@ class ZModel extends ZOrmAbstract implements IteratorAggregate, ArrayAccess, Cou
         $column = $this->zTable->connection->structure->getReferencingColumn($table, $this->zTable->table);
         $return = new NotORM_MultiResult($table, $this->zTable, $column, $this[$this->zTable->primary]);
         $return->where("$table.$column", array_keys((array) $this->zTable->rows)); // (array) - is null after insert
+
         if ($args) {
             call_user_func_array(array($return, 'where'), $args);
         }
@@ -130,7 +142,7 @@ class ZModel extends ZOrmAbstract implements IteratorAggregate, ArrayAccess, Cou
     }
     
     protected function access($key, $delete = false) {
-        
+
         if ($this->zTable->connection->cache && !isset($this->modified[$key]) && $this->zTable->access($key, $delete)) {
             $id = (isset($this->row[$this->zTable->primaryKey]) ? $this->row[$this->zTable->primaryKey] : $this->row);
             $this->row = $this->zTable[$id]->row;
