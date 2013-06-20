@@ -142,7 +142,7 @@ class ZModel extends ZOrmAbstract implements IteratorAggregate, ArrayAccess, Cou
     }
     
     protected function access($key, $delete = false) {
-
+        
         if ($this->zTable->connection->cache && !isset($this->modified[$key]) && $this->zTable->access($key, $delete)) {
             $id = (isset($this->row[$this->zTable->primaryKey]) ? $this->row[$this->zTable->primaryKey] : $this->row);
             $this->row = $this->zTable[$id]->row;

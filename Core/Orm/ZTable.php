@@ -63,6 +63,21 @@ class ZTable extends ZOrmAbstract implements \Iterator, \ArrayAccess, \Countable
         $this->primaryKey = $db->structure->getPrimary($tableName);
     }
     
+    /** 
+    * Add select clause, more calls appends to the end
+    * 
+    * @param string for example "column, MD5(column) AS column_md5"
+    * @param string ...
+    * @return NotORM_Result fluent interface
+    */
+    public function select($columns) {
+        $this->__destruct();
+        foreach (func_get_args() as $columns) {
+            $this->select[] = $columns;
+        }
+        return $this;
+    }
+
     /** Save data to cache and empty result
     */
     public function __destruct() {
@@ -71,7 +86,7 @@ class ZTable extends ZOrmAbstract implements \Iterator, \ArrayAccess, \Countable
             if (is_array($access)) {
                 $access = array_filter($access);
             }
-            $this->connection->cache->save("$this->tableName;" . implode(",", $this->conditions), $access);
+            $this->connection->cache->set("$this->tableName;" . implode(",", $this->conditions), $access);
         }
         $this->rows = null;
         $this->data = null;
@@ -380,19 +395,6 @@ class ZTable extends ZOrmAbstract implements \Iterator, \ArrayAccess, \Countable
             return false;
         }
         return $return->rowCount();
-    }
-    
-    /** Add select clause, more calls appends to the end
-    * @param string for example "column, MD5(column) AS column_md5"
-    * @param string ...
-    * @return NotORM_Result fluent interface
-    */
-    public function select($columns) {
-        $this->__destruct();
-        foreach (func_get_args() as $columns) {
-            $this->select[] = $columns;
-        }
-        return $this;
     }
     
     /** Add where condition, more calls appends with AND
