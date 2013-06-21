@@ -17,10 +17,15 @@ namespace Z\Core\Orm\Schema;
 use Z\Core\ZObject;
 use Z\Core\Orm\ZDbConnection;
 
-class ZDbSchema extends ZObject
+abstract class ZDbSchema extends ZObject
 {
+    /**
+     * 
+     * @var array
+     */
+    public $columnTypes = array();
 
-    
+
     /**
      * tables name
      * @var array like array('tableName1', ...)
@@ -33,6 +38,7 @@ class ZDbSchema extends ZObject
      * @var array like array('tableName1' => ZDbTableScheme Instance, ...)
      */
     private $_tableInstances;
+
     /**
      * database connection
      * contain PDO instance, driveName,tablePrefix
@@ -40,6 +46,7 @@ class ZDbSchema extends ZObject
      * @var Z\Core\Orm\ZDbConnection
      */
     private $_connection;
+    
     /**
      * CONSTRUCT METHOD
      *  
@@ -51,5 +58,8 @@ class ZDbSchema extends ZObject
         $this->_connection = $connection;
     }
 
-
+    public getTableInstance()
+    {
+        
+    }
 }

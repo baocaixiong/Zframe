@@ -17,9 +17,9 @@ namespace Z\Core\Orm;
 use IteratorAggregate;
 use ArrayAccess;
 use Countable;
+use Z\Core\ZCore;
 
-
-class ZModel extends ZOrmAbstract implements IteratorAggregate, ArrayAccess, Countable {
+class ZModel implements IteratorAggregate, ArrayAccess, Countable {
     private $modified = array();
 
     protected $row, $zTable;

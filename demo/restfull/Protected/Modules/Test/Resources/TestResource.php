@@ -5,6 +5,7 @@ namespace Modules\Test\Resources;
 use Z\Z;
 use Z\Executors\ZResource;
 use Project\Mappers\BookMapper;
+use Project\Tables\BookTable;
 
 
 /**
@@ -50,9 +51,12 @@ class TestResource extends ZResource
      */
     public function get11($xxx=345, $yyy=123)
     {   
-        $userMapper = new BookMapper(Z::app()->getDb());
+        $bookTable = BookTable::getInstance();
 
-        $userMapper->getAll();
+        var_dump($bookTable);
+        // $userMapper = new BookMapper(Z::app()->getDb());
+
+        // $userMapper->getAll();
 
         // $pdo = new \PDO("mysql:dbname=not_orm;host=127.0.0.1", 'root', '123123');
         // include Z_PATH.'/NotORM/NotORM.php';

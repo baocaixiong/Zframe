@@ -14,10 +14,11 @@
  */
 namespace Z\Executors;
 
-use Z\Z,
-    ZDispatchContextInterface;
+use Z\Z;
+use ZDispatchContextInterface;
+use Z\Core\ZObject;
 
-class ZDispatchContext implements ZDispatchContextInterface
+class ZDispatchContext extends ZObject implements ZDispatchContextInterface
 {
     /**
      * request object
@@ -76,13 +77,4 @@ class ZDispatchContext implements ZDispatchContextInterface
         return $this;
     }
 
-    /**
-     * 初始化方法
-     * 
-     * @return void
-     */
-    public function initialize()
-    {
-        
-    }
 }

@@ -108,6 +108,7 @@ class ZDbConnection extends ZAppComponent
      */
     private $_tablePrefix = '';
 
+    
     private $_schema;
 
     public function init()
@@ -215,21 +216,6 @@ class ZDbConnection extends ZAppComponent
     }
 
     /**
-     * db structure
-     * @return \Z\Core\Orm\Structures\ZStructureInterface
-     */
-    public function getStructure()
-    {
-        $structure = Z::app()->getStructure();
-        
-        if (!is_null($this->_tablePrefix)) {
-            $structure->tablePrefix = $this->_tablePrefix;
-        }
-
-        return $structure;
-    }
-
-    /**
      * set table prefix
      * @param  string $value table prefix
      * @return void
@@ -240,7 +226,7 @@ class ZDbConnection extends ZAppComponent
             throw new ZInvalidConfigException("tablePrefix 配置必须是string");
         }
 
-        $this->_tablePrefix = $value;
+        $this->_tablePrefix = trim($value);
     }
 
     /**

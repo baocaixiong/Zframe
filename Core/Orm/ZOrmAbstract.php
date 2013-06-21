@@ -15,9 +15,9 @@
 namespace Z\Core\Orm;
 
 use Z\Z;
-use Z\Core\ZObject;
+use Z\Core\ZCore;
 
-abstract class ZOrmAbstract extends ZObject
+abstract class ZOrmAbstract extends ZCore
 {
     /**
      * 数据库连接
@@ -32,12 +32,6 @@ abstract class ZOrmAbstract extends ZObject
     protected $driverName;
 
     /**
-     * 相当于数据库 schema
-     * @var \Z\Core\Orm\Strcutures\ZStructureInterface
-     */
-    protected $structure;
-
-    /**
      * 缓存
      * @var \Z\Caching\ZCacheAbstract
      */
@@ -45,17 +39,10 @@ abstract class ZOrmAbstract extends ZObject
 
     /**
      * table name
+     * 如果有tablePrefix的话，此name为不含tablePrefix的table名
      * @var string
      */
     protected $tableName;
 
-    /**
-     * 表主键
-     * @var string primary key
-     */
-    protected $primaryKey;
-
-    protected $rows;
     
-    protected $referenced;
 }

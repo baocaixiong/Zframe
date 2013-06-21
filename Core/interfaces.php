@@ -57,13 +57,6 @@ interface ZEventInterface
     
 }
 
-interface ZConfigureRegisterInterface
-{
-    
-    public function setConfig($option, $optionValue = null);
-
-    public function getConfig($optionName = null, $default = null);
-}
 interface ZBehaviorInterface
 {
     /**

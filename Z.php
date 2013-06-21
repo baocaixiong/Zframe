@@ -227,11 +227,12 @@ class Z
             }
             $object = $reflection->newInstanceArgs($args);
         } else {
-            $object = new $type($config);
+            $object = new $type();
         }
         foreach ($config as $key => $value) {
             $object->$key = $value;
         }
+        $object->init();
         return $object;
     }
 

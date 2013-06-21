@@ -18,30 +18,9 @@ use Z\Z;
 use Z\Exceptions\ZUnknownMethodException;
 use Z\Exceptions\ZUnknowPropertyException;
 use Z\Exceptions\ZInvalidCallException;
+
 class ZObject
 {
-    /**
-     * get class name
-     * @return string 
-     */
-    public function getClassName()
-    {
-        return get_called_class();
-    }
-
-    /**
-     * construct method
-     * @return \Z\Core\ZObject
-     */
-    public function __construct($config = array())
-    {
-        foreach ($config as $name => $value) {
-            $this->$name = $value;
-        }
-
-        $this->init();
-    }
-
     /**
      * 初始化方法
      * @return void
