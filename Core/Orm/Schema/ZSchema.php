@@ -17,7 +17,7 @@ namespace Z\Core\Orm\Schema;
 use Z\Core\ZObject;
 use Z\Core\Orm\ZDbConnection;
 
-abstract class ZDbSchema extends ZObject
+abstract class ZSchema extends ZObject
 {
     /**
      * 
@@ -37,7 +37,7 @@ abstract class ZDbSchema extends ZObject
      * every one is instance of ZTableSchema
      * @var array like array('tableName1' => ZDbTableScheme Instance, ...)
      */
-    private $_tableInstances;
+    private $_tables;
 
     /**
      * database connection
@@ -46,20 +46,42 @@ abstract class ZDbSchema extends ZObject
      * @var Z\Core\Orm\ZDbConnection
      */
     private $_connection;
-    
+
     /**
-     * CONSTRUCT METHOD
-     *  
-     * @param  Z\Core\Orm\ZDbConnection $connection database connection
-     * @return \Z\Core\Orm\Schema\ZDbSchema
+     * 获得链接
+     * @param  \Z\Core\Orm\ZDbConnection $con db connection
+     * @return \Z\Core\Orm\Schema\ZSchema
      */
-    public function __construct(ZDbConnection $connection)
+    public function __construct(ZDbConnection $con)
     {
-        $this->_connection = $connection;
+        $this->_connection = $con;
     }
 
-    public getTableInstance()
+    /**
+     * 获得链接
+     * @return \Z\Core\Orm\ZDbConnection
+     */
+    public function getConnection()
     {
-        
+        return $this->_connection;
+    }
+
+    abstract function loadTable();
+
+
+    public function getTable($name, $refresh = false)
+    {
+        if ($refresh === false && $this->_tableInstances[$name]) {
+            return $this->_tables[$name];
+        } else {
+            $prefx = $this->_connection->getTablePrefix();
+            if (strpos($name, $prefx) === false) {
+                $rawName = $prefx . $name;
+            } else {
+                $rawName = $name;
+            }
+
+            
+        }
     }
 }

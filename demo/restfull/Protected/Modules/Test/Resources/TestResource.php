@@ -53,7 +53,7 @@ class TestResource extends ZResource
     {   
         $bookTable = BookTable::getInstance();
 
-        var_dump($bookTable);
+        var_dump($bookTable->tableSchema->primaryKey);
         // $userMapper = new BookMapper(Z::app()->getDb());
 
         // $userMapper->getAll();

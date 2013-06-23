@@ -9,10 +9,10 @@ use Z\Core\Orm\ZTable;
 class BookTable extends ZTable
 {
 
-    protected $tableName = 'book';
+    protected $tableName = 'tbl_book';
 
-    public function setFields()
+    public function setColumns()
     {
-
+        $this->setColumn('title', 'string', '', array('max' => 100));
     }
 }

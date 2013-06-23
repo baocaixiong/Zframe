@@ -16,7 +16,7 @@ namespace Z\Core\Orm\Schema;
 
 use Z\Core\ZObject;
 
-class ZDbScheme extends ZObject
+class ZTableSchema extends ZObject
 {
     /**
      * table name
@@ -25,22 +25,22 @@ class ZDbScheme extends ZObject
     public $name;
 
     /**
-     * table的真实名字，有时候和$name相同
+     * 能够用来组装SQL 加了反引号
      * @var string
      */
     public $rawName;
-
-    /**
-     * table 的主键
-     * @var string
-     */
-    public $primaryKey;
 
     /**
      * 外键列表
      * @var array
      */
     public $foreignKeys = array();
+
+    /**
+     * 虚拟字段
+     * @var array
+     */
+    public $virtualColumns = array();
 
     /**
      * 本表的所有的列Columns的元数据
@@ -56,6 +56,12 @@ class ZDbScheme extends ZObject
     public $referenced = array();
 
     /**
+     * table 的主键
+     * @var \Z\Core\Orm\Schema\ZColumnSchema
+     */
+    private $_primarykey;
+
+    /**
      * 获得某个列的元数据
      * 如果存在，返回一个ZDbColumnSchema实例，否则返回Null
      * @param  string $column column name
@@ -63,7 +69,7 @@ class ZDbScheme extends ZObject
      */
     public function getColumn($column)
     {
-        return isset($this->columns[$name]) ? $this->columns[$name] : null;
+        return isset($this->columns[$column]) ? $this->columns[$column] : null;
     }
 
     /**
@@ -73,5 +79,31 @@ class ZDbScheme extends ZObject
     public function getColumns()
     {
         return array_keys($this->columns);
+    }
+
+    /**
+     * setPrimaryKey
+     * @param \Z\Core\Orm\Schema\ZColumnSchema $column [description]
+     */
+    public function setPrimaryKey(ZColumnSchema $column)
+    {
+        $this->_primarykey = $column;
+    }
+
+    /**
+     * get table primary key
+     * @return null|\Z\Core\Orm\Schema\ZColumnSchema
+     */
+    public function getPrimaryKey()
+    {
+        if (empty($this->_primarykey)) {
+            foreach ($this->columns as $key => $value) {
+                if ($value->isPrimaryKey) {
+                    $this->_primarykey = $value;
+                }
+            }
+        }
+
+        return $this->_primarykey;
     }
 }

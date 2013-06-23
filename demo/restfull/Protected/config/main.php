@@ -19,7 +19,8 @@ return array(
             'userName' => 'root',
             'password' => '123123',
             'charset' => 'utf8',
-            'cache' => ''
+            'cache' => '',
+            'tablePrefix' => 'tbl_'
         ),
         'cache' => array(
             'class' => 'Z\Caching\ZFileCache'

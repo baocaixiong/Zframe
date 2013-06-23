@@ -76,13 +76,4 @@ class ZMapper extends ZOrmAbstract
         return $this->connection->getTablePrefix() . $this->tableName;
     }
 
-    public function getAll()
-    {
-        $table = $this->getTableInstance();
-
-        foreach ($table as $row) {
-            var_dump($row['title'], $row->author['name']);
-
-        }
-    }
 }

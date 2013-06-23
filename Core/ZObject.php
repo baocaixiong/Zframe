@@ -79,7 +79,7 @@ class ZObject
     {
         $setter = 'set' . $name;
         if (method_exists($this, $setter)) {
-            $this->$setter($name, $value);
+            $this->$setter($value);
         } elseif (method_exists($this, 'get' . $name)) {
             throw new ZInvalidCallException(
                 Z::t('属性不可写 {class}::{property}', array('{class}' => get_class($this), '{property}' => $name))
