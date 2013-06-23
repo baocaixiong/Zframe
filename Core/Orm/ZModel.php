@@ -19,8 +19,13 @@ use ArrayAccess;
 use Countable;
 use Z\Core\ZCore;
 
-class ZModel implements IteratorAggregate, ArrayAccess, Countable {
-    private $modified = array();
+class ZModel implements IteratorAggregate, ArrayAccess, Countable
+{
+    /**
+     * 
+     * @var array
+     */
+    private $_modified = array();
 
     protected $row, $zTable;
     
@@ -120,13 +125,13 @@ class ZModel implements IteratorAggregate, ArrayAccess, Countable {
     }
     
     /** Update row
-    * @param array or null for all modified values
+    * @param array or null for all _modified values
     * @return int number of affected rows or false in case of an error
     */
     public function update($data = null) {
         // update is an SQL keyword
         if (!isset($data)) {
-            $data = $this->modified;
+            $data = $this->_modified;
         }
         $zTable = new ZTable($this->zTable->tableName, $this->zTable->connection);
         return $zTable->where($this->zTable->primaryKey, $this[$this->zTable->primaryKey])->update($data);
@@ -143,7 +148,7 @@ class ZModel implements IteratorAggregate, ArrayAccess, Countable {
     
     protected function access($key, $delete = false) {
         
-        if ($this->zTable->connection->cache && !isset($this->modified[$key]) && $this->zTable->access($key, $delete)) {
+        if ($this->zTable->connection->cache && !isset($this->_modified[$key]) && $this->zTable->access($key, $delete)) {
             $id = (isset($this->row[$this->zTable->primaryKey]) ? $this->row[$this->zTable->primaryKey] : $this->row);
             $this->row = $this->zTable[$id]->row;
         }
@@ -195,7 +200,7 @@ class ZModel implements IteratorAggregate, ArrayAccess, Countable {
     */
     public function offsetSet($key, $value) {
         $this->row[$key] = $value;
-        $this->modified[$key] = $value;
+        $this->_modified[$key] = $value;
     }
     
     /** Remove column from data
@@ -204,7 +209,7 @@ class ZModel implements IteratorAggregate, ArrayAccess, Countable {
     */
     public function offsetUnset($key) {
         unset($this->row[$key]);
-        unset($this->modified[$key]);
+        unset($this->_modified[$key]);
     }
     
 }

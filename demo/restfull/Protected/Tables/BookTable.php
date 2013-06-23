@@ -9,7 +9,7 @@ use Z\Core\Orm\ZTable;
 class BookTable extends ZTable
 {
 
-    protected $tableName = 'tbl_book';
+    protected $tableName = 'book';
 
     public function setColumns()
     {

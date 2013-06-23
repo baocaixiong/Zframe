@@ -57,10 +57,22 @@ abstract class ZTable extends ZOrmAbstract
     private $_schema;
 
     /**
+     * 数据结果
+     * @var array
+     */
+    protected $rows;
+
+    /**
      * 要查询的字段，如果为空，应该是*
      * @var array
      */
     protected $select = array();
+
+    /**
+     * join on conditions
+     * @var array
+     */
+    protected $conditions;
 
     /**
      * where条件
@@ -104,6 +116,7 @@ abstract class ZTable extends ZOrmAbstract
      */
     protected $lock;
 
+    protected $access;
 
     /**
      * CONSTRUCT METHOD
@@ -137,7 +150,7 @@ abstract class ZTable extends ZOrmAbstract
         $driverName = $this->connection->getDriverName();
         $prefx = $this->connection->getTablePrefix();
 
-        if (strpos($prefx, $this->tableName) != false) {
+        if (strpos($this->tableName, $prefx) === false) {
             $realName = $prefx . $this->tableName;
         } else {
             $realName = $this->tableName;
@@ -197,17 +210,17 @@ abstract class ZTable extends ZOrmAbstract
      * 设置外键
      * @param  string             $name          foreign key name
      * @param  string             $selfField     this table field
-     * @param  \Z\Core\Orm\ZTable $relationTable relation table instance
-     * @param  string             $relationField relation table field
+     * @param  \Z\Core\Orm\ZTable $relatedTable  relation table instance
+     * @param  string             $relatedField  relation table field
      * @return \Z\Core\Orm\ZTable
      */
-    public function foreignKey($name, $selfField, $relationTable, $relationField = self::PRIMARY_KEY)
+    public function foreignKey($name, $selfField, $relatedTable, $relatedField = self::PRIMARY_KEY)
     {
         if (!array_key_exists($selfField, $this->getTableSchema()->columns)) {
             throw new ZDbException("Invalid field '{$selfField}' in " . __CLASS__);
         }
 
-        $this->getTableSchema()->foreignKeys[$keyName] = new ZForeignKey($selfField, $relationTable, $relationField);
+        $this->getTableSchema()->foreignKeys[$keyName] = new ZForeignKey($selfField, $relatedTable, $relatedField);
 
         return $this;
     }
@@ -216,20 +229,20 @@ abstract class ZTable extends ZOrmAbstract
      * 创建一个虚拟字段
      * @param  string $virtualFieldName virtual field name
      * @param  string $foreignKeyName   foreign key instance name
-     * @param  string $relationField    relation field
+     * @param  string $relateeField     relation field
      * @return \Z\Core\Orm\ZTable
      */
-    public function virtualField($virtualFieldName, $foreignKeyName, $relationField = '')
+    public function virtualField($virtualFieldName, $foreignKeyName, $relateeField = '')
     {
         if (!array_key_exists($foreignKeyName, $this->getTableSchema()->foreignKeys)) {
             throw new ZDbException("ForeignKey '{$foreignKey} is not exists.");
         }
 
-        empty($relationField) && $relationField = $virtualFieldName;
+        empty($relateeField) && $relateeField = $virtualFieldName;
 
         $this->getTableSchema()->virtualColumns[$virtualFieldName] = new ZVirtualColumn(
             $this->getTableSchema()->foreignKeys[$foreignKeyName],
-            $relationField
+            $relateeField
         );
 
         return $this;
@@ -239,6 +252,41 @@ abstract class ZTable extends ZOrmAbstract
      * 设置Table的字段和外键关系
      */
     abstract function setColumns();
+
+    /**
+     * 要查询的字段
+     * @param  string $columns 要查询的字段，可以是多个
+     * @return \Z\Core\Orm\ZTable
+     */
+    public function select($columns)
+    {
+        $this->__destruct();
+        foreach (func_get_args() as $columns) {
+            $this->select[] = $columns;
+        }
+        return $this;
+    }
+
+    public function 
+
+    /**
+     * DESTRUCT METHOD
+     *
+     * @return void
+     */
+    public function __destruct()
+    {
+        if ($this->connection->cache && !$this->select && !empty($this->rows)) {
+            $access = $this->access;
+            if (is_array($access)) {
+                $access = array_filter($access);
+            }
+            $this->connection->cache->set("$this->tableName;" . implode(",", $this->conditions), $access);
+        }
+
+        $this->select = null;
+        $this->rows = null;
+    }
 
     /**
      * 初始化方法，比如可以再这里on开发者者自己定义的事件句柄
