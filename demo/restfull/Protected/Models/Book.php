@@ -14,4 +14,5 @@ class Book extends ZModel
 
     public $id;
 
+    protected $tableClass = 'Project\Tables\BookTable';
 }

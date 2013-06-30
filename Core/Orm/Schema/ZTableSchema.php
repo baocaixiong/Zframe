@@ -78,7 +78,7 @@ class ZTableSchema extends ZObject
      */
     public function getColumns()
     {
-        return array_keys($this->columns);
+        return $this->columns;
     }
 
     /**

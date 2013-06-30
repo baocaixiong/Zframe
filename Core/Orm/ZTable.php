@@ -317,32 +317,6 @@ abstract class ZTable extends ZOrmAbstract implements \Iterator, \ArrayAccess, \
     }
 
     /**
-     * 加上引号
-     * @param  mixed $val 
-     * @return string
-     */
-    protected function quote($val)
-    {
-        if (!isset($val)) {
-            return "NULL";
-        }
-        if (is_array($val)) { // (a, b) IN ((1, 2), (3, 4))
-            return "(" . implode(", ", array_map(array($this, 'quote'), $val)) . ")";
-        }
-        $val = $this->formatValue($val);
-        if (is_float($val)) {
-            return sprintf("%F", $val); // otherwise depends on setlocale()
-        }
-        if ($val === false) {
-            return "0";
-        }
-        if (is_int($val) || $val instanceof ZDbExpression) { // number or SQL code - for example "NOW()"
-            return (string) $val;
-        }
-        return $this->connection->pdo->quote($val);
-    }
-
-    /**
      * DESTRUCT METHOD
      *
      * @return void
@@ -761,7 +735,7 @@ abstract class ZTable extends ZOrmAbstract implements \Iterator, \ArrayAccess, \
     /** Execute the built query
     * @return null
     */
-    protected function execute() {
+    public function execute() {
         if (empty($this->rows)) {
             $result = false;
             $exception = null;
@@ -797,11 +771,12 @@ abstract class ZTable extends ZOrmAbstract implements \Iterator, \ArrayAccess, \
                             $this->access[$primaryKey] = true;
                         }
                     }
-                    $this->rows[$key] = new $this->modelClass($row, $this);
+                    $this->rows = $row;
                 }
             }
             $this->data = $this->rows;
         }
+        return $this->data;
     }
 
     /** Fetch next row of result
@@ -977,13 +952,14 @@ abstract class ZTable extends ZOrmAbstract implements \Iterator, \ArrayAccess, \
 
     /**
      * 获得本Table的Singleton
+     * @param boolean $force 是否强制获取到一个新的类
      * @return \Z\Core\Orm\ZTable
      */
-    public static function getInstance()
+    public static function getInstance($force = false)
     {
         $class = get_called_class();
 
-        if (!array_key_exists($class, self::$_tableInstances)) {
+        if (!array_key_exists($class, self::$_tableInstances) || $force) {
             self::$_tableInstances[$class] = new $class();
             self::$_tableInstances[$class]->_className = $class;
         }
@@ -1001,7 +977,5 @@ abstract class ZTable extends ZOrmAbstract implements \Iterator, \ArrayAccess, \
         //throw new ZDbException("Clone {$this->_className} is not allowed.");
     }
 
-    protected function removeExtraDots($expression) {
-        return preg_replace('@(?:\\b[a-z_][a-z0-9_.:]*[.:])?([a-z_][a-z0-9_]*)[.:]([a-z_*])@i', '\\1.\\2', $expression); // rewrite tab1.tab2.col
-    }
+    
 }

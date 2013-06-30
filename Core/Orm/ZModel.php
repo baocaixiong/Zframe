@@ -21,7 +21,7 @@ use Z\Core\ZCore;
 use Z\Core\Orm\Exceptions\ZDbException;
 use Z\Z;
 
-class ZModel implements IteratorAggregate, ArrayAccess, Countable
+class ZModel extends ZCore
 {
     /*****EVENT INIT START*****/
     const EVENT_BEFORE_SAVE = 'onBeforeSave';
@@ -57,190 +57,147 @@ class ZModel implements IteratorAggregate, ArrayAccess, Countable
     private $_modified = array();
 
 
-    protected $row, $zTable;
+    private static $_models;
+
+    /**
+     * 该model要保存的数据
+     * @var array
+     */
+    protected $_attributes = array();
+
+    protected $_notAttributes = array();
+
+    /**
+     * 每个Moel对象都拥有的一个对应的Table对象
+     * @var \Z\Core\Orm\ZTable
+     */
+    protected $table;
 
     /** @access protected must be public because it is called from zTable */
-    public function __construct(array $row, ZTable $zTable, $idNew = false) {
-        foreach ($row as $key => $value) {
-            $this->$key = $value;
-        }
+    public function __construct() {
+        $this->setIsNew(true);
+        $tableClass = $this->tableClass;
+        $this->table = $tableClass::getInstance(true);
+        //$this->_attributes = array_flip($this->table->getTableSchema()->getColumns());
 
-        $this->row = $row;
-        $this->zTable = $zTable;
+        $this->init();
+        $this->attachBehaviors($this->behaviors()); //添加一个行为列表
+
+        $this->afterConstruct();
     }
     
-    /** Get primary key value
-    * @return string
-    */
-    public function __toString() {
-        return (string) $this[$this->zTable->getTableSchema()->getPrimaryKey()]; // (string) - PostgreSQL returns int
-
-    }
-    
-    /** Get referenced row
-    * @param string
-    * @return NotORM_Row or null if the row does not exist
-    */
-    public function __get($name) {
-        $tableName = $this->zTable->getTableSchema()->rawName;
-
-        if (!($referencedColumn = $this->zTable->getReferencedColumn($name))) {
-            throw new ZDbException('表 ' . $tableName . ' 没有与表 ' . Z::app()->getDb()->getTableRawName($name). ' 建立关系');
-        }
-        $column = $referencedColumn->name;
-
-        $referenced = &$this->zTable->referencedTable[$name];
-
-        if (!isset($referenced[$this[$column]])) { // referenced row may not exist
-            return null;
-        }
-
-        return $referenced[$this[$column]];
-    }
-    
-    /** Test if referenced row exists
-    * @param string
-    * @return bool
-    */
-    public function __isset($name) {
-        return ($this->__get($name) !== null);
-    }
-    
-    /** Store referenced value
-    * @param string
-    * @param NotORM_Row or null
-    * @return null
-    */
-    public function __set($name, ZModel $value = null) {
-
-        $column = $this->zTable->connection->structure->getReferencedColumn($name, $this->zTable->table);
-
-        $this[$column] = $value;
-    }
-    
-    /** Remove referenced column from data
-    * @param string
-    * @return null
-    */
-    public function __unset($name) {
-
-        $column = $this->zTable->connection->structure->getReferencedColumn($name, $this->zTable->table);
-
-        unset($this[$column]);
-    }
-    
-    /** 
-     * Update row
-     * @return int number of affected rows or false in case of an error
-    */
-    public function save() {
-        $zTable = $this->zTable;
-        if ($this->isNew) {
-            return $zTable->insert($this);
-        } else {
-            if (empty($this->_modified)) {
-                return true;
-            }
-
-            return $zTable->where($zTable->primaryKey, $this[$zTable->primaryKey])->update($this);
-        }
-    }
-    
-    public function setProperty($property, $value)
+    public function __get($name)
     {
-        if (!property_exists($this, $property)) {
-           throw new ZDbException("xx");
+        if (isset($this->_attributes[$name])) {
+            return $this->_attributes[$name];
+        } elseif (isset($this->table->getTableSchema()->getColumns()[$name])) {
+            var_dump((string)$this->table);
+            return null;
+        } else {
+            echo '外键关系';
         }
+    }
 
-        $oldValue = $this->$property;
-        if ($oldValue === $this->$property) {
-            return $this;
+    public function __call($func, $params = array())
+    {
+        if (method_exists($this->table, $func)) {
+            call_user_func_array(array($this->table, $func), $params);
         }
-        $this->_modified[$property] = array($oldValue, $value);
-
-        $this->$property = $value;
-        $this->row[$property] = $value;
+        //var_dump($this->table);
         return $this;
     }
 
-    /** 
-     * Delete row
-     * @return int number of affected rows or false in case of an error
-    */
-    public function delete()
+    public function findByPk($pk)
     {
-        if ($this->isNew) {
-            
-        } else {
-            $primaryKey = $this->zTable->primaryKey;
-            return $zTable->where($primaryKey, $this->$primaryKey)->delete();
-        }
+        $this->table->where( 'id  = '. $pk);
+        $this->setAttributes($this->table->execute());
+        return $this;
     }
-    
-    protected function access($key, $delete = false) {
-        if ($this->zTable->connection->cache && !isset($this->_modified[$key]) && $this->zTable->access($key, $delete)) {
-            $id = (isset($this->row[$this->zTable->primaryKey]) ? $this->row[$this->zTable->primaryKey] : $this->row);
-            $this->row = $this->zTable[$id]->row;
-        }
-    }
-    
-    // IteratorAggregate implementation
-    
-    public function getIterator() {
-        $this->access(null);
-        return new \ArrayIterator($this->row);
-    }
-    
 
-    // Countable implementation
-    
-    public function count() {
-        return count($this->row);
-    }
-    
-    // ArrayAccess implementation
-    
-    /** Test if column exists
-    * @param string column name
-    * @return bool
-    */
-    public function offsetExists($key) {
-        $this->access($key);
-        $return = array_key_exists($key, $this->row);
-        if (!$return) {
-            $this->access($key, true);
+    public function setAttributes($data, $saveNotAttributes = true)
+    {
+        if (!is_array($data)) {
+            return ;
         }
-        return $return;
-    }
-    
-    /** Get value of column
-    * @param string column name
-    * @return string
-    */
-    public function offsetGet($key) {
-        $this->access($key);
-        if (!array_key_exists($key, $this->row)) {
-            $this->access($key, true);
+        $attributes = $this->getAttributeNames();
+        foreach ($data as $name => $value) {
+            if (isset($attributes[$name])) {
+                $this->_attributes[$name] = $value;
+            } elseif ($saveNotAttributes) {
+                $this->notAttributes[$name] = $value;
+            }
         }
-        return $this->row[$key];
+    }
+
+    public function setAttribute($name, $value)
+    {
+        if(property_exists($this,$name)) {
+            $this->$name=$value;
+        } elseif (isset($this->getAttributeNames()[$name])) {
+            $this->_attributes[$name] = $value;
+        } else {
+            return false;
+        }
+
+        return true;
+    }
+
+
+    public function getAttributeNames()
+    {
+        return $this->table->getTableSchema()->getColumns();
+    }
+
+    /**
+     * after construct model class
+     * @return void
+     */
+    public function afterConstruct()
+    {
+
+    }
+    /**
+     * 初始化方法
+     * @return void
+     */
+    public function init()
+    {
+
+    }
+
+    /**
+     * Model的行为类
+     * @return array
+     */
+    public function behaviors()
+    {
+        return array();
+    }
+
+    /**
+     * 该Model是新建立的还是从数据库中取出的已经存在的
+     * 
+     * @param boolean $status model status
+     */
+    public function setIsNew($status = true)
+    {
+        $this->isNew = $status;
     }
     
-    /** Store value in column
-    * @param string column name
-    * @return null
-    */
-    public function offsetSet($key, $value) {
-        $this->row[$key] = $value;
-        $this->_modified[$key] = $value;
+    /**
+     * 获得本Model的Singleton
+     * @return \Z\Core\Orm\ZModel
+     */
+    public static function model()
+    {
+        $className = get_called_class();
+
+        if(isset(self::$_models[$className])) {
+            return self::$_models[$className];
+        } else {
+            $model = self::$_models[$className] = new $className();
+            $model->attachBehaviors($model->behaviors());
+            return $model;
+        }
     }
-    
-    /** Remove column from data
-    * @param string column name
-    * @return null
-    */
-    public function offsetUnset($key) {
-        unset($this->row[$key]);
-        unset($this->_modified[$key]);
-    }
-    
 }

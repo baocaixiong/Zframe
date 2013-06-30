@@ -6,6 +6,8 @@ use Z\Z;
 use Z\Executors\ZResource;
 use Project\Mappers\BookMapper;
 use Project\Tables\BookTable;
+use Project\Tables\AuthorTable;
+use Project\Models\Author;
 
 
 /**
@@ -56,11 +58,14 @@ class TestResource extends ZResource
         $bookTable->where('author_id')->limit(2, 1);
 
         //$bookTable->insert(array('title' => '你好啊', 'author_id' => 1));
-        var_dump($bookTable->__toString());
+        //var_dump($bookTable->fetch());
         //var_dump($bookTable->fetch()->setProperty('title', '123123')->save());exit;
-        foreach ($bookTable as $key => $value) {
-            var_dump($value->title . '==' . $value->author->name . '.id = ' . $value->id);
-        }
+        // foreach ($bookTable as $key => $value) {
+        //     var_dump($value->title . '==' . $value->author->name . '.id = ' . $value->id);
+        // }
+
+        $author = Author::model()->findByPk(1);
+        var_dump($author->name);
         // $userMapper = new BookMapper(Z::app()->getDb());
 
         // $userMapper->getAll();
