@@ -23,7 +23,7 @@ abstract class ZOrmAbstract extends ZCore
      * 数据库连接
      * @var \Z\Core\Orm\ZDbConnection
      */
-    protected $connection;
+    public $connection;
 
     /**
      * 数据库驱动名称

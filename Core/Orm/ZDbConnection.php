@@ -90,6 +90,8 @@ class ZDbConnection extends ZAppComponent
      */
     public $emulatePrepare;
 
+    public $freeze;
+
     /**
      * 数据库驱动名称
      * @var string
@@ -253,6 +255,15 @@ class ZDbConnection extends ZAppComponent
         }
 
         return $this->_driveName;
+    }
+
+    public function getTableRawName($name)
+    {
+        if (strpos($name, $this->tablePrefix) === false) {
+            return '`'. $this->tablePrefix . $name . '`';
+        } else {
+            return '`' . $name . '`';
+        }
     }
 }
 

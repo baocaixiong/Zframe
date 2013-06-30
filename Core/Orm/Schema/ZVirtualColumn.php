@@ -33,10 +33,10 @@ class ZVirtualColumn extends ZObject
 
     /**
      * CONSTRUCT METHOD
-     * @param \Z\Core\Orm\Schema\ZForeignKey $forignKey foreign key instance 
-     * @param string                         $fieldName fieldName
+     * @param \Z\Core\Orm\Schema\ZForeignKey $foreignKey foreign key instance 
+     * @param string                         $fieldName  fieldName
      */
-    public function __construct(ZForeignKey $forignKey, $fieldName)
+    public function __construct(ZForeignKey $foreignKey, $fieldName)
     {
         $this->foreignKey = $foreignKey;
         $this->fieldName = $fieldName;

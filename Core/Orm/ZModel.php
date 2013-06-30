@@ -18,19 +18,53 @@ use IteratorAggregate;
 use ArrayAccess;
 use Countable;
 use Z\Core\ZCore;
+use Z\Core\Orm\Exceptions\ZDbException;
+use Z\Z;
 
 class ZModel implements IteratorAggregate, ArrayAccess, Countable
 {
+    /*****EVENT INIT START*****/
+    const EVENT_BEFORE_SAVE = 'onBeforeSave';
+
+    const EVENT_AFTER_SAVE = 'onAfterSave';
+
+    const EVENT_BEFORE_DELETE = 'onBeforeDelete';
+
+    const EVENT_AFTER_DELETE = 'onAfterDelete';
+
+    const EVENT_BEFORE_FIND = 'onBeforeFind';
+
+    const EVENT_AFTER_FIND = 'onAfterFind';
+    /*****EVENT INIT END*****/
+
     /**
-     * 
+     * 是否是一个新的model
+     * 如果是TRUE，表示插入数据，否则表示更新
+     * @var boolean
+     */
+    public $isNew = false;
+
+    /**
+     * 默认主键，约定俗成
+     * @var int
+     */
+    protected $id;
+
+    /**
+     * 受到更改的数据
      * @var array
      */
     private $_modified = array();
 
+
     protected $row, $zTable;
-    
+
     /** @access protected must be public because it is called from zTable */
-    public function __construct(array $row, ZTable $zTable) {
+    public function __construct(array $row, ZTable $zTable, $idNew = false) {
+        foreach ($row as $key => $value) {
+            $this->$key = $value;
+        }
+
         $this->row = $row;
         $this->zTable = $zTable;
     }
@@ -39,8 +73,7 @@ class ZModel implements IteratorAggregate, ArrayAccess, Countable
     * @return string
     */
     public function __toString() {
-
-        return (string) $this[$this->zTable->primary]; // (string) - PostgreSQL returns int
+        return (string) $this[$this->zTable->getTableSchema()->getPrimaryKey()]; // (string) - PostgreSQL returns int
 
     }
     
@@ -49,30 +82,19 @@ class ZModel implements IteratorAggregate, ArrayAccess, Countable
     * @return NotORM_Row or null if the row does not exist
     */
     public function __get($name) {
+        $tableName = $this->zTable->getTableSchema()->rawName;
 
-        $column = $this->zTable->connection->structure->getReferencedColumn($name, $this->zTable->tableName);
-        $referenced = &$this->zTable->referenced[$name];
-        if (!isset($referenced)) {
-            $keys = array();
-            foreach ($this->zTable->rows as $row) {
-
-                if ($row[$column] !== null) {
-                    $keys[$row[$column]] = null;
-                }
-            }
-            if ($keys) {
-
-                $table = $this->zTable->connection->structure->getReferencedTable($name, $this->zTable->tableName);
-                $referenced = new ZTable($table, $this->zTable->connection, $this);
-                $referenced->where("$table." . $this->zTable->connection->structure->getPrimary($table), array_keys($keys));
-
-            } else {
-                $referenced = array();
-            }
+        if (!($referencedColumn = $this->zTable->getReferencedColumn($name))) {
+            throw new ZDbException('表 ' . $tableName . ' 没有与表 ' . Z::app()->getDb()->getTableRawName($name). ' 建立关系');
         }
+        $column = $referencedColumn->name;
+
+        $referenced = &$this->zTable->referencedTable[$name];
+
         if (!isset($referenced[$this[$column]])) { // referenced row may not exist
             return null;
         }
+
         return $referenced[$this[$column]];
     }
     
@@ -89,7 +111,7 @@ class ZModel implements IteratorAggregate, ArrayAccess, Countable
     * @param NotORM_Row or null
     * @return null
     */
-    public function __set($name, NotORM_Row $value = null) {
+    public function __set($name, ZModel $value = null) {
 
         $column = $this->zTable->connection->structure->getReferencedColumn($name, $this->zTable->table);
 
@@ -107,47 +129,55 @@ class ZModel implements IteratorAggregate, ArrayAccess, Countable
         unset($this[$column]);
     }
     
-    /** Get referencing rows
-    * @param string table name
-    * @param array (["condition"[, array("value")]])
-    * @return NotORM_MultiResult
+    /** 
+     * Update row
+     * @return int number of affected rows or false in case of an error
     */
-    public function __call($name, array $args) {
-        $table = $this->zTable->connection->structure->getReferencingTable($name, $this->zTable->table);
-        $column = $this->zTable->connection->structure->getReferencingColumn($table, $this->zTable->table);
-        $return = new NotORM_MultiResult($table, $this->zTable, $column, $this[$this->zTable->primary]);
-        $return->where("$table.$column", array_keys((array) $this->zTable->rows)); // (array) - is null after insert
+    public function save() {
+        $zTable = $this->zTable;
+        if ($this->isNew) {
+            return $zTable->insert($this);
+        } else {
+            if (empty($this->_modified)) {
+                return true;
+            }
 
-        if ($args) {
-            call_user_func_array(array($return, 'where'), $args);
+            return $zTable->where($zTable->primaryKey, $this[$zTable->primaryKey])->update($this);
         }
-        return $return;
     }
     
-    /** Update row
-    * @param array or null for all _modified values
-    * @return int number of affected rows or false in case of an error
-    */
-    public function update($data = null) {
-        // update is an SQL keyword
-        if (!isset($data)) {
-            $data = $this->_modified;
+    public function setProperty($property, $value)
+    {
+        if (!property_exists($this, $property)) {
+           throw new ZDbException("xx");
         }
-        $zTable = new ZTable($this->zTable->tableName, $this->zTable->connection);
-        return $zTable->where($this->zTable->primaryKey, $this[$this->zTable->primaryKey])->update($data);
+
+        $oldValue = $this->$property;
+        if ($oldValue === $this->$property) {
+            return $this;
+        }
+        $this->_modified[$property] = array($oldValue, $value);
+
+        $this->$property = $value;
+        $this->row[$property] = $value;
+        return $this;
     }
-    
-    /** Delete row
-    * @return int number of affected rows or false in case of an error
+
+    /** 
+     * Delete row
+     * @return int number of affected rows or false in case of an error
     */
-    public function delete() {
-        // delete is an SQL keyword
-        $zTable = new ZTable($this->zTable->tableName, $this->zTable->connection);
-        return $zTable->where($this->zTable->primaryKey, $this[$this->zTable->primaryKey])->delete();
+    public function delete()
+    {
+        if ($this->isNew) {
+            
+        } else {
+            $primaryKey = $this->zTable->primaryKey;
+            return $zTable->where($primaryKey, $this->$primaryKey)->delete();
+        }
     }
     
     protected function access($key, $delete = false) {
-        
         if ($this->zTable->connection->cache && !isset($this->_modified[$key]) && $this->zTable->access($key, $delete)) {
             $id = (isset($this->row[$this->zTable->primaryKey]) ? $this->row[$this->zTable->primaryKey] : $this->row);
             $this->row = $this->zTable[$id]->row;
@@ -161,6 +191,7 @@ class ZModel implements IteratorAggregate, ArrayAccess, Countable
         return new \ArrayIterator($this->row);
     }
     
+
     // Countable implementation
     
     public function count() {

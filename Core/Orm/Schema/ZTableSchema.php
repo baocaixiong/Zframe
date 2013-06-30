@@ -106,4 +106,18 @@ class ZTableSchema extends ZObject
 
         return $this->_primarykey;
     }
+
+    /**
+     * 获得一个外键表 
+     * @param  string $name foreign key name
+     * @return \Z\Core\Orm\Schema\ZForeignKey|null
+     */
+    public function getForeignKey($name)
+    {
+        if (isset($this->foreignKeys[$name])) {
+            return $this->foreignKeys[$name];
+        }
+
+        return null;
+    }
 }
