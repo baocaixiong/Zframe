@@ -99,9 +99,9 @@ class AnnotationManager extends ZObject implements AnnotationInterface
             foreach ($classes as $class) {
                 $rfClass = new \ReflectionClass($class);
                 $classAnnotation = $this->createClassAnnotation($rfClass->getName());
-               
                 foreach ($paramComment->parse($rfClass->getdoccomment()) as $key => $meta) {
-                    $classAnnotation->{$key} = $meta;
+                    $classAnnotation->add($key, $meta);
+                    //$classAnnotation->{$key} = $meta;
                 }
 
                 foreach ($this->getOwnMethods($rfClass, \ReflectionMethod::IS_PUBLIC) as $rfMethod) {
@@ -128,7 +128,7 @@ class AnnotationManager extends ZObject implements AnnotationInterface
     {
         if (is_null($this->_collection)) {
             $cacheObject = Z::app()->getCache();
-            $this->_collection = $cacheObject->get($this->cacheName);
+            $this->_collection = $cacheObject->get($this->cacheName, $this->expire);
             if (!$this->_collection) {
                 $this->_collect();
                 $cacheObject->set($this->cacheName, $this->_collection, $this->expire);

@@ -8,14 +8,17 @@ use Project\Mappers\BookMapper;
 use Project\Tables\BookTable;
 use Project\Tables\AuthorTable;
 use Project\Models\Author;
+use Modules\Test\Mappers\AuthorMapper;
 
 
 /**
  * TestResource
  *
  * !root=true! !layout=index.html    sadf!
- * !asdfasd=as\df!
  * !etag=false!
+ * !authorMapper=Modules\Test\AuthorMapper!
+ * !customerId=int!
+ * !layout=xxx!
  */
 class TestResource extends ZResource
 {
@@ -56,13 +59,16 @@ class TestResource extends ZResource
         $bookTable = BookTable::getInstance();
 
         $bookTable->where('author_id')->limit(2, 1);
-
+//var_dump(Z::app()->getAnnotation()->getAnnotations());
         //$bookTable->insert(array('title' => '你好啊', 'author_id' => 1));
         //var_dump($bookTable->fetch());
         //var_dump($bookTable->fetch()->setProperty('title', '123123')->save());exit;
         // foreach ($bookTable as $key => $value) {
         //     var_dump($value->title . '==' . $value->author->name . '.id = ' . $value->id);
         // }
+
+        //$authorMapper = AuthorMapper::getTableInstance();
+        ///var_dump($authorMapper);
 
         $author = Author::model()->findByPk(1);
         var_dump($author->name);

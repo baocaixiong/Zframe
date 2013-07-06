@@ -46,13 +46,14 @@ abstract class ZCacheAbstract extends ZObject implements ZCachingInterface, \Arr
     /**
      * get cache value
      * @param string $key     cache key
+     * @param int    $expire  cache time
      * @param mixed  $default if $key is not exist return $default
      * @return mixed cache value
      */
-    public function get($key, $default = null)
+    public function get($key, $expire = 0, $default = null)
     {
         $key = $this->buildKey($key);
-        $value = $this->getValue($key);
+        $value = $this->getValue($key, $expire, $default);
 
         if (empty($value) && is_null($default)) {
             return $value;
@@ -186,7 +187,7 @@ abstract class ZCacheAbstract extends ZObject implements ZCachingInterface, \Arr
     
     abstract function addValue($key, $value, $expire = 0);
 
-    abstract function getValue($key, $default = null);
+    abstract function getValue($key, $expire, $default = null);
 
     abstract function flushValues();
 

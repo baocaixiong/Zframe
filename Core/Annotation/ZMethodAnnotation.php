@@ -14,6 +14,7 @@
  */
 namespace Z\Core\Annotation;
 
+use Z\Collections\ZMap;
 
 class ZMethodAnnotation
 {

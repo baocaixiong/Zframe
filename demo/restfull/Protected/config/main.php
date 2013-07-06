@@ -6,12 +6,12 @@ return array(
         'router' => array(
                 'class'     => 'Z\Router\ZRouter',
                 'urlFormat' => 'path',
-                'expire' => 3600,
+                'expire' => 0,
             ),
         'annotation' => array(
                 'class' => 'Z\Core\Annotation\AnnotationManager',
                 'separator' => '/',
-                'expire' => 3600,
+                'expire' => 0,
             ),
         'db' => array(
             'class' => 'Z\Core\Orm\ZDbConnection',

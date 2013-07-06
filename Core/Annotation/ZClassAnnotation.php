@@ -14,8 +14,9 @@
  */
 namespace Z\Core\Annotation;
 
+use Z\Collections\ZMap;
 
-class ZClassAnnotation
+class ZClassAnnotation extends ZMap
 {
     /**
      * class name
@@ -27,7 +28,8 @@ class ZClassAnnotation
      * the class methods
      * @var array [\Z\Core\Annotations\ZMethodAnnotation, ...]
      */
-    protected $methods;
+    protected $methods = array();
+
     /**
      * comments of __construct
      * 

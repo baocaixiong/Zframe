@@ -18,9 +18,16 @@ use Z\Z;
 use Z\Exceptions\ZUnknownMethodException;
 use Z\Exceptions\ZUnknowPropertyException;
 use Z\Exceptions\ZInvalidCallException;
+use Z\Core\Annotation\ZClassAnnotation;
 
 class ZObject
 {
+    /**
+     * annotation properties
+     * @var \Z\Core\ZProperty
+     */
+    private $_properties;
+
     /**
      * 初始化方法
      * @return void
@@ -59,6 +66,8 @@ class ZObject
         $getter = 'get' . $name;
         if (method_exists($this, $getter)) {
             return $this->$getter($name);
+        } elseif (!is_null($this->_properties) && ($return = $this->_properties->get($name))) {
+            return $return;
         }
 
         throw new ZUnknowPropertyException(
@@ -211,5 +220,14 @@ class ZObject
         }
 
         return $result;
+    }
+
+    /**
+     * 设置一个类的AnnotationProperty
+     * @param \Z\Core\Annotation\ZClassAnnotation $classAnnotation this class annotation
+     */
+    public function setAnnProperties(ZClassAnnotation $classAnnotation)
+    {
+        $this->_properties = new ZPropertyCreate($classAnnotation);
     }
 }

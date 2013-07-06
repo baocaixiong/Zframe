@@ -50,6 +50,9 @@ class ZRestfulApplication extends ZApplication
             $context = $this->getDispatch()
                 ->assignment($this->getRequest(), $executor, $routeResult);
 
+            $annotations = Z::app()->getAnnotation()->getAnnotations();
+
+            $executor->setAnnProperties($annotations[get_class($executor)]);
             $executor->init($context);
             $executor->executor();
         } catch (ZHttpException $e) {
@@ -150,6 +153,17 @@ class ZRestfulApplication extends ZApplication
     public function init()
     {
         $this->getRequest();
+    }
+
+    /**
+     * 清楚所有的缓存
+     * @return void
+     */
+    public function clearCahce()
+    {
+        $cacheObject = $this->getCache();
+
+        $cacheObject->flushValues();
     }
 
     /**

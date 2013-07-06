@@ -88,14 +88,15 @@ class ZFileCache extends ZCacheAbstract
     /**
      * get Value from cache file
      * @param  string $key     cache key
+     * @param  int    $expire  cache time
      * @param  mixed  $default if cache is not exist, return default
      * @return mixed
      */
-    public function getValue($key, $default = null)
+    public function getValue($key, $expire, $default = null)
     {
         $cacheFileName = $this->getCacheFile($key);
 
-        if (is_file($cacheFileName) && @filemtime($cacheFileName) > time()) {
+        if (is_file($cacheFileName) && (@filemtime($cacheFileName) - time()) > $expire) {
             return @file_get_contents($cacheFileName);
         } elseif (!is_null($default)) {
             return $default;

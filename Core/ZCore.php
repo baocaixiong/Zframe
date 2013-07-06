@@ -56,9 +56,8 @@ class ZCore extends ZObject implements \ZCoreInterface
                 }
             }
         }
-        throw new ZUnknowPropertyException(
-            Z::t('属性不存在: {class}::{property}', array('{class}' => get_class($this), '{property}' => $name))
-        );
+
+        return parent::__get($name);
     }
     /**
      * __set
@@ -77,15 +76,8 @@ class ZCore extends ZObject implements \ZCoreInterface
                     return $behavior->$name = $value;
             }
         }
-        if (method_exists($this, 'get' . $name)) {
-            throw new ZInvalidCallException(
-                Z::t('属性不可写: {class}::{property}', array('{class}' => get_class($this), '{property}' => $name))
-            );
-        }
-
-        throw new ZUnknowPropertyException(
-            Z::t('属性不存在: {class}::{property}', array('{class}' => get_class($this), '{property}' => $name))
-        );
+        
+        parent::__set();
     }
 
     /**
