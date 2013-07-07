@@ -72,12 +72,12 @@ class ZCore extends ZObject implements \ZCoreInterface
         } elseif (is_array($this->_behaviors)) {
             foreach ($this->_behaviors as $behavior) {
                 if($behavior->getEnabled() &&
-                (property_exists($behavior, $name) || $behavior->isReadProperty($name)))
+                (property_exists($behavior, $name) || $behavior->canGetProperty($name)))
                     return $behavior->$name = $value;
             }
         }
         
-        parent::__set();
+        parent::__set($name, $value);
     }
 
     /**

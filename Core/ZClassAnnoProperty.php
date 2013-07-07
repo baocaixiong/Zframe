@@ -1,6 +1,6 @@
 <?php
 /**
- * ZProperty class
+ * ZPropertyCreate class
  *
  * PHP Version 5.4
  *
@@ -16,8 +16,10 @@ namespace Z\Core;
 
 use Z\Z;
 use Z\Core\Annotation\ZClassAnnotation;
+use Z\Exceptions\ZUnknowPropertyException;
+use Z\Exceptions\ZInvalidCallException;
 
-class ZPropertyCreate
+class ZClassAnnoProperty
 {
     /**
      * 单个类的所有定义在Annotation里面的属性
@@ -66,6 +68,20 @@ class ZPropertyCreate
         }
         if (isset($this->_properties[$name])) {
             return $this->_parseProperty($name);
+        }
+    }
+
+    public function set($name, $value)
+    {
+        if (isset($this->_properties[$name])) {
+            $this->_parseProperty($name);
+            if ($this->_readOnlies[$name]) {
+                throw new ZInvalidCallException("该属性是只读的.". $name);
+            } else {
+                $this->_values[$name] = $value;
+            }
+        } else {
+            throw new ZUnknowPropertyException("该属性不存在.". $name);
         }
     }
 
@@ -126,6 +142,7 @@ class ZPropertyCreate
                     $return = null;
                 }
             default:
+                throw new \RuntimeException('不支持的Annotation类型: '. $name . ':' . $arrayProperty[1]);
                 break;
         }
 

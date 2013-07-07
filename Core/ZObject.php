@@ -24,9 +24,9 @@ class ZObject
 {
     /**
      * annotation properties
-     * @var \Z\Core\ZProperty
+     * @var \Z\Core\ZClassAnnoProperty
      */
-    private $_properties;
+    private $_property;
 
     /**
      * 初始化方法
@@ -66,8 +66,8 @@ class ZObject
         $getter = 'get' . $name;
         if (method_exists($this, $getter)) {
             return $this->$getter($name);
-        } elseif (!is_null($this->_properties)) {
-            return $this->_properties->get($name);
+        } elseif (!is_null($this->_property)) {
+            return $this->_property->get($name);
         }
 
         throw new ZUnknowPropertyException(
@@ -89,14 +89,16 @@ class ZObject
         $setter = 'set' . $name;
         if (method_exists($this, $setter)) {
             $this->$setter($value);
-        } elseif (method_exists($this, 'get' . $name)) {
-            throw new ZInvalidCallException(
-                Z::t('属性不可写 {class}::{property}', array('{class}' => get_class($this), '{property}' => $name))
-            );
-        } else {
-            throw new ZUnknowPropertyException(
-                Z::t('不存在属性 {class}::{property}', array('{class}' => get_class($this), '{property}' => $name))
-            );
+        } elseif(!is_null($this->_property) && $this->_property->get($name)) {
+            try {
+                $this->_property->set($name, $value);
+            } catch (ZInvalidCallException $e) {
+                $e->setMessage(Z::t('属性不可写 {class}::{property}', array('{class}' => get_class($this), '{property}' => $name)));
+                throw $e;
+            } catch (ZUnknowPropertyException $e) {
+                $e->setMessage(Z::t('不存在属性 {class}::{property}', array('{class}' => get_class($this), '{property}' => $name)));
+                throw $e;
+            }
         }
     }
 
@@ -228,6 +230,6 @@ class ZObject
      */
     public function setAnnProperties(ZClassAnnotation $classAnnotation)
     {
-        $this->_properties = new ZPropertyCreate($classAnnotation);
+        $this->_property = new ZClassAnnoProperty($classAnnotation);
     }
 }
