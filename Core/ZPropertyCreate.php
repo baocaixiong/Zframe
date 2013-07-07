@@ -17,7 +17,7 @@ namespace Z\Core;
 use Z\Z;
 use Z\Core\Annotation\ZClassAnnotation;
 
-class ZPropertyCreate extends ZObject
+class ZPropertyCreate
 {
     /**
      * 单个类的所有定义在Annotation里面的属性
@@ -30,6 +30,12 @@ class ZPropertyCreate extends ZObject
      * @var array
      */
     private $_values = array();
+
+    /**
+     * 只读的属性 
+     * @var array
+     */
+    private $_readOnlies = array();
 
     /**
      * 本类的Annotation
@@ -45,7 +51,7 @@ class ZPropertyCreate extends ZObject
     public function __construct(ZClassAnnotation $classAnnotation)
     {
         $this->_annotations = $classAnnotation;
-        $this->_parseProperties();
+        $this->_setProperties();
     }
 
     /**
@@ -55,19 +61,75 @@ class ZPropertyCreate extends ZObject
      */
     public function get($name)
     {
-        
+        if (isset($this->_values[$name])) {
+            return $this->_values[$name];
+        }
+        if (isset($this->_properties[$name])) {
+            return $this->_parseProperty($name);
+        }
     }
 
     /**
      * 解析Properties
      * @return void
      */
-    private function _parseProperties()
+    private function _setProperties()
     {
         $annotations = $this->_annotations;
-//var_dump($annotations);
+
         foreach ($annotations as $key => $value) {
-            var_dump($key, $value);
+            $this->_properties[$key] = $value;
         }
+    }
+
+    private function _parseProperty($name)
+    {
+        if (!isset($this->_properties[$name])) {
+            return null;
+        } else {
+            if (is_array($this->_properties[$name])) {
+                return $this->_parseArrayProperty($name, $this->_properties[$name]);
+            } else {
+                return $this->_values[$name] = $this->_properties[$name];
+            }
+        }
+    }
+
+    private function _parseArrayProperty($name, $arrayProperty)
+    {
+        if (isset($arrayProperty[2])) {
+            $readOnly = $arrayProperty[2] === 'readOnly' ? true : false;
+        } else {
+            $readOnly = false;
+        }
+
+        $value = $arrayProperty[0];
+        switch ($arrayProperty[1]) {
+            case 'integer':
+            case 'int':
+                $return = (int) $value;
+                break;
+            case 'string':
+                $return = (string) $value;
+                break;
+            case 'bool':
+            case 'boolean': 
+                $return = (bool) $value;
+            case 'instance':
+                $func = $value . '::getInstance';
+                $return = (is_callable($func)) ? call_user_func($func) : null;
+                break;
+            case 'newInstance':
+                if (class_exists($value)) {
+                    $return = new $value();
+                } else {
+                    $return = null;
+                }
+            default:
+                break;
+        }
+
+        $this->_readOnlies[$name] = $readOnly;
+        return $this->_values[$name] = $return;
     }
 }

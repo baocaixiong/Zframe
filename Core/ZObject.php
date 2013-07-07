@@ -66,8 +66,8 @@ class ZObject
         $getter = 'get' . $name;
         if (method_exists($this, $getter)) {
             return $this->$getter($name);
-        } elseif (!is_null($this->_properties) && ($return = $this->_properties->get($name))) {
-            return $return;
+        } elseif (!is_null($this->_properties)) {
+            return $this->_properties->get($name);
         }
 
         throw new ZUnknowPropertyException(

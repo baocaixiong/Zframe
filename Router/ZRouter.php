@@ -49,7 +49,7 @@ class ZRouter extends ZAppComponent implements \ZRouterInterface
 
         $routeNode = Z::app()->getRouteNode();
         foreach ($anntations as $anntation) {
-            if (isset($anntation->root) && $anntation->root) {
+            if ($anntation->get('root')) {
                 foreach ($anntation->getMethods() as $action) {
                     $routeNode->addRoute($action, $this->routingPrefix);
                 }
@@ -68,7 +68,7 @@ class ZRouter extends ZAppComponent implements \ZRouterInterface
         $cacheObject = Z::app()->getCache();
 
         if (is_null($this->rootRouteNode)) {
-            $this->rootRouteNode = $cacheObject->get(self::ROUTES_CACHE_KEY);
+            $this->rootRouteNode = $cacheObject->get(self::ROUTES_CACHE_KEY, $this->expire);
             if (!$this->rootRouteNode) {
                 $this->addRoutesToRouteNode();
                 $cacheObject->set(self::ROUTES_CACHE_KEY, $this->rootRouteNode, $this->expire);

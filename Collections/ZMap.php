@@ -99,7 +99,7 @@ class ZMap extends ZObject implements \IteratorAggregate, \ArrayAccess, \Countab
      * @throws CException 如果这个集合是只读的
      */
     public function add($key, $value)
-    {var_dump($key, $value);
+    {
         if (!$this->_readOnly) {
             if (null === $key) {
                 $this->_data[] = $value;
