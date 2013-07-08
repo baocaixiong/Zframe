@@ -5,7 +5,7 @@
  * PHP Version 5.4
  *
  * @category  System
- * @package   Core\Orm\Queries
+ * @package   Core\Orm\Queries\Mysql
  * @author    baocaixiong <baocaixiong@gmail.com>
  * @copyright 2013 baocaixiong.com
  * @license   Copyright (c) 2013 
@@ -14,11 +14,8 @@
  */
 namespace Z\Core\Orm\Queries;
 
-use Z\Z;
-use Z\Core\Orm\ZOrmAbstract;
-use Z\Core\Orm\ZTable;
 
-class ZQuery extends ZOrmAbstract
+class ZSelect extends ZQuery
 {
     
 }

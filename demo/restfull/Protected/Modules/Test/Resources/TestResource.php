@@ -57,11 +57,9 @@ class TestResource extends ZResource
      */
     public function get11($xxx=345, $yyy=123)
     {   
-        $bookTable = BookTable::getInstance();
-
-        $bookTable->where('author_id')->limit(2, 1);
+     
         //$this->nihao = 123;
-var_dump($this->customerId);
+        
 //var_dump(Z::app()->getAnnotation()->getAnnotations());
         //$bookTable->insert(array('title' => '你好啊', 'author_id' => 1));
         //var_dump($bookTable->fetch());
@@ -73,8 +71,7 @@ var_dump($this->customerId);
         //$authorMapper = AuthorMapper::getTableInstance();
         ///var_dump($authorMapper);
 
-        $author = $this->authorModel->findByPk(1);
-        var_dump($author->name);
+        $this->authorModel->getAll();
         // $userMapper = new BookMapper(Z::app()->getDb());
 
         // $userMapper->getAll();

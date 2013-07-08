@@ -14,10 +14,6 @@ class Author extends ZModel
 
     public function getAll()
     {
-        $ret = [];
-        foreach ($this->zTable as $key => $value) {
-            $ret[] = $value;
-        }
-        return $ret;
+       var_dump($this->table->select());
     }
 }
