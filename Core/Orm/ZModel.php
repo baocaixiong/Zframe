@@ -91,7 +91,6 @@ class ZModel extends ZCore
         if (isset($this->_attributes[$name])) {
             return $this->_attributes[$name];
         } elseif (isset($this->table->getTableSchema()->getColumns()[$name])) {
-            var_dump((string)$this->table);
             return null;
         } else {
             echo '外键关系';
@@ -107,13 +106,6 @@ class ZModel extends ZCore
         return $this;
     }
 
-    public function findByPk($pk)
-    {
-        $this->table->where( 'id  = '. $pk);
-        $this->setAttributes($this->table->execute());
-        return $this;
-    }
-
     public function setAttributes($data, $saveNotAttributes = true)
     {
         if (!is_array($data)) {
@@ -124,7 +116,7 @@ class ZModel extends ZCore
             if (isset($attributes[$name])) {
                 $this->_attributes[$name] = $value;
             } elseif ($saveNotAttributes) {
-                $this->notAttributes[$name] = $value;
+                $this->_notAttributes[$name] = $value;
             }
         }
     }
@@ -140,6 +132,14 @@ class ZModel extends ZCore
         }
 
         return true;
+    }
+
+    public function findByPk($pk)
+    {
+        $this->table->where('id  = ' . $pk);
+        $this->setAttributes($this->table->execute());
+        $this->isNew = false;
+        return $this;
     }
 
 
@@ -175,29 +175,37 @@ class ZModel extends ZCore
     }
 
     /**
-     * 该Model是新建立的还是从数据库中取出的已经存在的
-     * 
-     * @param boolean $status model status
-     */
-    public function setIsNew($status = true)
-    {
-        $this->isNew = $status;
-    }
-    
-    /**
      * 获得本Model的Singleton
+     *
+     * @param boolean $force   是否强制获得一个新的Instance
+     * @param boolean $replace 是否替换掉已有的Instance，如果没有会直接赋值
      * @return \Z\Core\Orm\ZModel
      */
-    public static function model()
+    public static function getInstance($force = false, $replace = false)
     {
         $className = get_called_class();
 
-        if(isset(self::$_models[$className])) {
+        if(isset(self::$_models[$className]) && !$force) {
             return self::$_models[$className];
         } else {
-            $model = self::$_models[$className] = new $className();
+            $model = new $className();
+
+            if (is_null(self::$_models[$className]) || $replace) {
+                self::$_models[$className] = $model;
+            }
+
             $model->attachBehaviors($model->behaviors());
             return $model;
         }
+    }
+
+    /**
+     * 获得一个新的ModelInstance
+     * @param  boolean $replace 是否替换,默认为替换
+     * @return \Z\Core\Orm\ZModel
+     */
+    public function getNewInstance($replace = true)
+    {
+        return self::getInstance(true, $replace);
     }
 }

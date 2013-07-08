@@ -16,9 +16,9 @@ use Modules\Test\Mappers\AuthorMapper;
  *
  * !root=true! !layout=index.html    sadf!
  * !etag=false!
- * !authorMapper=Modules\Test\Mappers\AuthorMapper|instance|readOnly!
+ * !authorModel=Project\Models\Author|instance|readOnly!
  * !nihao=xxx|string|readOnly!
- * !customerId=int!
+ * !customerId=123|int!
  * !layout=xxx!
  */
 class TestResource extends ZResource
@@ -60,8 +60,8 @@ class TestResource extends ZResource
         $bookTable = BookTable::getInstance();
 
         $bookTable->where('author_id')->limit(2, 1);
-        $this->nihao = 123;
-var_dump($this->nihao);
+        //$this->nihao = 123;
+var_dump($this->customerId);
 //var_dump(Z::app()->getAnnotation()->getAnnotations());
         //$bookTable->insert(array('title' => '你好啊', 'author_id' => 1));
         //var_dump($bookTable->fetch());
@@ -73,7 +73,7 @@ var_dump($this->nihao);
         //$authorMapper = AuthorMapper::getTableInstance();
         ///var_dump($authorMapper);
 
-        $author = Author::model()->findByPk(1);
+        $author = $this->authorModel->findByPk(1);
         var_dump($author->name);
         // $userMapper = new BookMapper(Z::app()->getDb());
 

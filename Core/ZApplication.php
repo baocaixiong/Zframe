@@ -364,10 +364,7 @@ abstract class ZApplication extends ZModule
             ),
             'fileCache' => array(
                 'class' => 'Z\Caching\ZFileCache',
-            ),
-            'structure' => array(
-                'class' => 'Z\Core\Orm\Structures\ZStructureConvention',
-            ),
+            )
         );
     }
     /**

@@ -157,7 +157,7 @@ class ZCriteria extends ZOrmAbstract
         $paramEnd = self::PARAM_PREFIX . self::$paramCount++;
 
         $this->parameters[$paramStart] = $valueStart;
-        $this->parameters[$paramEnd]=$valueEnd;
+        $this->parameters[$paramEnd] = $valueEnd;
         $condition = "$column BETWEEN $paramStart AND $paramEnd";
 
         return $this->addCondition($condition,$operator);
@@ -209,7 +209,7 @@ class ZCriteria extends ZOrmAbstract
             if ($op === '<>') {
                 return $this->addSearchCondition($column, $value, $escape, $operator, 'NOT LIKE');
             }
-                
+            
         } elseif( $op === '') {
             $op = '=';
         }
