@@ -20,5 +20,15 @@ use Z\Core\Orm\ZTable;
 
 class ZQuery extends ZOrmAbstract
 {
-    
+    /**
+     * ZTable的实例
+     * @var \Z\Core\Orm\ZTable
+     */
+    protected $table;
+
+    /**
+     * 本Table的Schema,为了方便
+     * @var Z\Core\Orm\Schema\ZTableSchema
+     */
+    protected $tableSchema;
 }

@@ -92,13 +92,20 @@ class ZColumnSchema extends ZObject
     public $options = array();
 
     /**
+     * 列的别名
+     * @var string
+     */
+    public $alias;
+
+    /**
      * CONSTRUCT METHOD
      * @param string $column  column name
      * @param string $type    php type
      * @param mixed  $default default value
      * @param array  $options options 
+     * @param string $alias   column alias name
      */
-    public function __construct($column, $type, $default = null, $options = array())
+    public function __construct($column, $type, $default = null, $options = array(), $alias = '')
     {
         $this->name = $column;
         $this->rawName = '`' . $column . '`';
@@ -115,10 +122,9 @@ class ZColumnSchema extends ZObject
         }
 
         $this->options = $options;
+
+        $this->alias = $alias ?: $column;
     }
 
-    public function createFieldValidator($phpType)
-    {
-        
-    }
+
 }

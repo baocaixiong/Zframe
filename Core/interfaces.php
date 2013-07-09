@@ -150,3 +150,8 @@ interface ZCachingInterface
      */
     public function remvoe($key);
 }
+
+interface TableInterface
+{
+    
+}

@@ -259,7 +259,7 @@ class ZDbConnection extends ZAppComponent
 
     public function getTableRawName($name)
     {
-        if (strpos($name, $this->tablePrefix) === false) {
+        if (!empty($this->tablePrefix) && strpos($name, $this->tablePrefix) === false) {
             return '`'. $this->tablePrefix . $name . '`';
         } else {
             return '`' . $name . '`';

@@ -14,6 +14,6 @@ class Author extends ZModel
 
     public function getAll()
     {
-       var_dump($this->table->select());
+       var_dump($this->table->select()->fields(array('id' => 'newId', 'name'))->__toString());
     }
 }

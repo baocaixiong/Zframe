@@ -20,8 +20,9 @@ use Z\Core\Orm\Schema\ZColumnSchema;
 use Z\Core\Orm\Schema\ZForeignKey;
 use Z\Core\Orm\Schema\ZVirtualColumn;
 use Z\Core\Orm\Schema\ZTableSchema;
+use TableInterface;
 
-abstract class ZTable extends ZOrmAbstract
+abstract class ZTable extends ZOrmAbstract implements TableInterface
 {
     const PRIMARY_KEY = 'id';
     /**
@@ -138,13 +139,14 @@ abstract class ZTable extends ZOrmAbstract
      * @param string $type       PHP type
      * @param mixed  $default    default value
      * @param array  $options    column options
+     * @param string $alias      column alias name
      */
-    protected function setColumn($columnName, $type, $default = null, $options = array())
+    protected function setColumn($columnName, $type, $default = null, $options = array(), $alias = '')
     {
         $hasDefault = func_num_args() >= 3;
 
         $this->getTableSchema()->columns[$columnName] = new ZColumnSchema(
-            $columnName, $type, $default, $options
+            $columnName, $type, $default, $options, $alias
         );
 
         return $this;

@@ -20,7 +20,7 @@ return array(
             'password' => '123123',
             'charset' => 'utf8',
             'cache' => '',
-            'tablePrefix' => 'tbl_'
+            'tablePrefix' => ''
         ),
         'cache' => array(
             'class' => 'Z\Caching\ZFileCache'
