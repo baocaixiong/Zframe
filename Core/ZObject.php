@@ -90,15 +90,15 @@ class ZObject
         if (method_exists($this, $setter)) {
             $this->$setter($value);
         } elseif(!is_null($this->_property) && $this->_property->get($name)) {
-            try {
-                $this->_property->set($name, $value);
-            } catch (ZInvalidCallException $e) {
-                $e->setMessage(Z::t('属性不可写 {class}::{property}', array('{class}' => get_class($this), '{property}' => $name)));
-                throw $e;
-            } catch (ZUnknowPropertyException $e) {
-                $e->setMessage(Z::t('不存在属性 {class}::{property}', array('{class}' => get_class($this), '{property}' => $name)));
-                throw $e;
-            }
+            $this->_property->set($name, $value);
+        } elseif (method_exists($this, 'get' . $name)) {
+            throw new ZInvalidCallException(
+                Z::t('属性不可写 {class}::{property}', array('{class}' => get_class($this), '{property}' => $name))
+            );
+        } else {
+            throw new ZUnknowPropertyException(
+                Z::t('不存在属性 {class}::{property}', array('{class}' => get_class($this), '{property}' => $name))
+            );
         }
     }
 

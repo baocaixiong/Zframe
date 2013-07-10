@@ -16,15 +16,15 @@ namespace Z\Core\Orm\Queries;
 
 use Z\Core\Orm\Exceptions\ZAliasConflictException;
 use Z\Core\Orm\Exceptions\ZUndefinedColumnException;
-use TableInterface;
+use ZTableInterface;
 
 class ZSelect extends ZQuery
 {
     /**
      * WHERE过滤条件准则
-     * @var \Z\Core\Orm\Queries\ZCriteria
+     * @var \Z\Core\Orm\Queries\ZCondition
      */
-    protected $criteria;
+    protected $condition;
 
     /**
      * 要查询的字段
@@ -55,17 +55,28 @@ class ZSelect extends ZQuery
      * CONSTRUCT METHOD
      * 创建一个SelectQuery的实例
      * @param \Z\Core\Orm\ZTable $table  [description]
-     * @param string             $fields [description]
-     * @param string             $option [description]
+     * @param mixed              $fields [description]
      */
-    public function __construct(TableInterface $table, $fields = '*', $option = '')
+    public function __construct(ZTableInterface $table, $fields = array())
     {
         $this->table = $table;
         $this->tableSchema = $table->getTableSchema();
+        $this->fields($fields);
 
+        $this->condition = new ZCondition($this->tableSchema);
     }
 
-    public function fields($fields = '*', $option = '')
+    /**
+     * 选择要Select的字段
+     * 1.不调用此方法或者此方法传递的参数为空，则表示要查询所有的字段
+     * 2.fields('id', 'name', ..) 表示要查询的字段为id和name
+     * 3.fields(array('id', 'name', ...)) 同上
+     * 4.fields(array('id' => 'aliasId', 'name')),表示id AS aliasId, name AS name
+     * 
+     * @param  mixed  $fields 要查询的字段 
+     * @return \Z\Core\Orm\Queries\ZSelect
+     */
+    public function fields($fields = array())
     {
         $n = func_num_args();
 
@@ -73,33 +84,41 @@ class ZSelect extends ZQuery
             $fields = func_get_args();
         }
 
-        is_string($fields) && $fields= array($fields) ;
+        is_string($fields) && $fields= array($fields);
+
         foreach ($fields as $key => $value) {
             $columnName = is_numeric($key) ? $value : $key;
-            $aliasName = $value;
-            $this->_addField($columnName, $aliasName);
+
+            if (!array_key_exists($columnName, $this->tableSchema->columns)) {
+                throw new ZUndefinedColumnException('未知的列名 ' . $this->tableSchema->rawName . ':' . $columnName);
+            }
+            $column = $this->tableSchema->getColumn($columnName);
+            $aliasName = !is_numeric($key) ? $value : $column->alias;
+            $this->_addField($column, $aliasName);
         }
 
         return $this;
     }
 
 
+    public function where($conditions, $operator, $paramters)
+    {
+        $this->condition->where($column, $operator, $value);
+    }
+
+
     /**
      * 添加Select字段和别名
-     * @param string $columnName column name
-     * @param string $aliasName  alias name
+     * @param \Z\Core\Orm\Schema\ZColumnSchema $columnName column name
+     * @param string                           $aliasName  alias name
      */
-    public function _addField($columnName, $aliasName)
+    public function _addField($column, $aliasName)
     {
         if (isset($this->fields[$aliasName])) {
             throw new ZAliasConflictException('重复的Column别名:' . $aliasName);
         }
 
-        if (!array_key_exists($columnName, $this->tableSchema->columns)) {
-            throw new ZUndefinedColumnException('未知的列名 ' . $this->tableSchema->rawName . ':' . $columnName);
-        }
-
-        $this->fields[$aliasName] = $this->tableSchema->getColumn($columnName);
+        $this->fields[$aliasName] = $column;
     }
 
 
@@ -123,7 +142,6 @@ class ZSelect extends ZQuery
         $queryString .= "\n$tableName";
 
         $queryString .= "\nWHERE";
-
 
         return $queryString;
     }

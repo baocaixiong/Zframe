@@ -20,11 +20,38 @@ use Z\Core\Orm\Schema\ZColumnSchema;
 use Z\Core\Orm\Schema\ZForeignKey;
 use Z\Core\Orm\Schema\ZVirtualColumn;
 use Z\Core\Orm\Schema\ZTableSchema;
-use TableInterface;
+use ZTableInterface;
+use Z\Core\ZCore;
 
-abstract class ZTable extends ZOrmAbstract implements TableInterface
+abstract class ZTable extends ZCore implements ZTableInterface
 {
     const PRIMARY_KEY = 'id';
+
+    /**
+     * 数据库连接
+     * @var \Z\Core\Orm\ZDbConnection
+     */
+    public $connection;
+
+    /**
+     * 数据库驱动名称
+     * @var string
+     */
+    protected $driverName;
+
+    /**
+     * 缓存
+     * @var \Z\Caching\ZCacheAbstract
+     */
+    protected $cache;
+
+    /**
+     * table name
+     * 如果有tablePrefix的话，此name为不含tablePrefix的table名
+     * @var string
+     */
+    protected $tableName;
+
     /**
      * 本表的实例对象
      * @var \Z\Core\Orm\ZTable
@@ -230,14 +257,15 @@ abstract class ZTable extends ZOrmAbstract implements TableInterface
         return self::$_tableInstances[$class];
     }
 
-    public function select($fields = '', $option = '')
+    
+    public function select($fields = array())
     {
         $queryClassName = $this->_createQueryClassName('select');
         /**
          * query instance
          * @var \Z\Core\Orm\Queries\ZSelect
          */
-        return new $queryClassName($this, $fields, $option);
+        return new $queryClassName($this, $fields);
     }
 
     /**

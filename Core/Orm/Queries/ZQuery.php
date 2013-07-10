@@ -15,10 +15,10 @@
 namespace Z\Core\Orm\Queries;
 
 use Z\Z;
-use Z\Core\Orm\ZOrmAbstract;
+use Z\Core\ZObject;
 use Z\Core\Orm\ZTable;
 
-class ZQuery extends ZOrmAbstract
+class ZQuery extends ZObject
 {
     /**
      * ZTable的实例
@@ -31,4 +31,43 @@ class ZQuery extends ZOrmAbstract
      * @var Z\Core\Orm\Schema\ZTableSchema
      */
     protected $tableSchema;
+
+    protected function processConditions($conditions)
+    {
+        if (is_string($conditions)) {
+            if (preg_match('~(\w+)\s*(!=|>=|<=|=|<>|<|>)\s*(\S+)~i', $conditions, $matches)) {
+                $column = $this->buildColumnName($matches[1]);
+                $operator = $matches[2];
+                $paramter = $matches[3];
+            }
+
+            return $conditions;
+        } elseif (empty($conditions)) {
+            return '';
+        }
+
+        $operator = strtoupper(array_shift($conditions));
+        $count = count($conditions);
+
+        if ($operator === 'AND' || $operator === 'OR') {
+            $parts = array();
+            for ($i = 0; $i < $count; $i++) {
+                $condition = $this->processConditions($conditions[$i]);
+                if ($condition !== '') {
+                    $parts[] = '(' . $condition . ')';
+                }
+            }
+            return empty($parts) ? '' : implode(' ' . $operator . ' ', $parts);
+        }
+
+        if ($count < 2) {
+            return '';
+        }
+    }
+
+    public function buildColumnName($columnName)
+    {
+
+        return $columnName;
+    }
 }

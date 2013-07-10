@@ -15,11 +15,10 @@
 namespace Z\Core\Orm\Queries;
 
 use Z\Z;
-use Z\Core\Orm\ZOrmAbstract;
 use Z\Core\Orm\ZTable;
 
 
-class ZQueryBuilder extends ZOrmAbstract
+class ZQueryBuilder
 {
 
     public $criteria;

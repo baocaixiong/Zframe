@@ -19,30 +19,7 @@ use Z\Core\ZCore;
 
 abstract class ZOrmAbstract extends ZCore
 {
-    /**
-     * 数据库连接
-     * @var \Z\Core\Orm\ZDbConnection
-     */
-    public $connection;
-
-    /**
-     * 数据库驱动名称
-     * @var string
-     */
-    protected $driverName;
-
-    /**
-     * 缓存
-     * @var \Z\Caching\ZCacheAbstract
-     */
-    protected $cache;
-
-    /**
-     * table name
-     * 如果有tablePrefix的话，此name为不含tablePrefix的table名
-     * @var string
-     */
-    protected $tableName;
+    
 
     /**
      * 加上引号

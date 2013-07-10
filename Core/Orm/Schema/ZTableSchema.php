@@ -15,8 +15,9 @@
 namespace Z\Core\Orm\Schema;
 
 use Z\Core\ZObject;
+use ZTableSchemaInterface;
 
-class ZTableSchema extends ZObject
+class ZTableSchema extends ZObject implements ZTableSchemaInterface
 {
     /**
      * table name

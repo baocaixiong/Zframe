@@ -1,6 +1,6 @@
 <?php
 /**
- * ZCriteria class
+ * ZCondition class
  *
  * PHP Version 5.4
  *
@@ -16,9 +16,9 @@ namespace Z\Core\Orm\Queries;
 
 use Z\Z;
 use Z\Core\ZObject;
-use Z\Core\Orm\ZOrmAbstract;
+use ZTableSchemaInterface;
 
-class ZCriteria extends ZOrmAbstract
+class ZCondition extends ZObject
 {
 
     const PARAM_PREFIX = ':zcp';
@@ -50,10 +50,19 @@ class ZCriteria extends ZOrmAbstract
 
     protected $offset;
 
-    public function __construct()
+    protected $driverName;
+
+    protected $tableSchema;
+
+    public function __construct(ZTableSchemaInterface $tableSchema)
     {
-        $this->connection = Z::app()->getDb();
-        $this->driverName = $this->connection->getDriverName();
+        $this->tableSchema = $tableSchema;
+        $this->driverName = Z::app()->getDb()->getDriverName();
+    }
+
+    public function where($column, $operator, $value, $relation = 'AND')
+    {
+        
     }
 
     /**
@@ -63,7 +72,7 @@ class ZCriteria extends ZOrmAbstract
      * @param string $operator 
      * @return \Z\Core\Orm\Queries\ZCriteria
      */
-    public function addCondition($condition, $operator = 'AND')
+    protected function addCondition($condition, $operator = 'AND')
     {
         if (is_array($condition)) {
             if (empty($condition)) {
@@ -81,7 +90,15 @@ class ZCriteria extends ZOrmAbstract
         return $this;
     }
 
-    public function addSearchCondition($column, $keyword, $escape = true, $operator = 'AND', $like = 'LIKE')
+    /**
+     * 添加一个Search的Codition
+     * @param string  $column   [description]
+     * @param string  $keyword  [description]
+     * @param boolean $escape   [description]
+     * @param string  $operator [description]
+     * @param string  $like     [description]
+     */
+    protected function addSearchCondition($column, $keyword, $escape = true, $operator = 'AND', $like = 'LIKE')
     {
         if (empty($keyword)) {
             return $this;
@@ -93,12 +110,18 @@ class ZCriteria extends ZOrmAbstract
         $condition = $column . " $like ". self::PARAM_PREFIX . self::$paramCount;
         $this->parameters[self::PARAM_PREFIX . self::$paramCount++] = $keyword;
 
-        return $this->addWhere($condition, $operator);
+        return $this->addCondition($condition, $operator);
     }
 
-    public function addInCondition($column, $value, $operator = 'AND')
+    /**
+     * 添加一个In Where的Codition
+     * @param string $column   [description]
+     * @param string $value    [description]
+     * @param string $operator [description]
+     */
+    protected function addInCondition($column, $value, $operator = 'AND')
     {
-        if (($n=count($values)) < 1)) {
+        if (($n = count($values)) < 1) {
             $condition = '0=1'; //from YII
         } elseif ($n === 1) {
             $value = reset($value);
@@ -118,12 +141,18 @@ class ZCriteria extends ZOrmAbstract
             $condition = $column . ' IN ('. implode(', ', $params) . ')';
         }
 
-        return $this->addWhere($condition, $operator);
+        return $this->addCondition($condition, $operator);
     }
 
-    public function addNotInCondition($column, $value, $operator = 'AND')
+    /**
+     * 添加一个Not Where的Condition
+     * @param string $column   [description]
+     * @param string $value    [description]
+     * @param string $operator [description]
+     */
+    protected function addNotInCondition($column, $value, $operator = 'AND')
     {
-        if (($n=count($values)) < 1)) {
+        if (($n=count($values)) < 1) {
             $condition = '0=1'; //from YII
         } elseif ($n === 1) {
             $value = reset($value);
@@ -143,11 +172,17 @@ class ZCriteria extends ZOrmAbstract
             $condition = $column . ' NOT IN ('. implode(', ', $params) . ')';
         }
 
-        return $this->addWhere($condition, $operator);
+        return $this->addCondition($condition, $operator);
     }
 
-
-    public function addBetweenCondition($column, $valueStart, $valueEnd, $operator = 'AND')
+    /**
+     * 添加一个Between Where的Codition
+     * @param string $column     [description]
+     * @param string $valueStart [description]
+     * @param string $valueEnd   [description]
+     * @param string $operator   [description]
+     */
+    protected function addBetweenCondition($column, $valueStart, $valueEnd, $operator = 'AND')
     {
         if (empty($valueStart) || empty($valueEnd)) {
             return $this;
@@ -163,7 +198,7 @@ class ZCriteria extends ZOrmAbstract
         return $this->addCondition($condition,$operator);
     }
 
-    public function addColumnCondition(array $columns, $columnOperator = 'AND', $operator = 'AND')
+    protected function addColumnCondition(array $columns, $columnOperator = 'AND', $operator = 'AND')
     {
         $parameters = array();
 
@@ -176,47 +211,6 @@ class ZCriteria extends ZOrmAbstract
             }
         }
 
-        $this->addWhere(implode(" $columnOperator ", $params), $operator);
-    }
-
-    public function compare($column, $value, $partialMatch, $operator = 'AND', $escape = true)
-    {
-        if (is_array($value)) {
-            if ($value===array()) {
-                return $this;
-            }
-                
-            return $this->addInCondition($column,$value,$operator);
-        } else {
-            $value = (string) $value;
-        }
-
-        if (preg_match('/^(?:\s*(<>|<=|>=|<|>|=))?(.*)$/',$value,$matches)) {
-            $value = $matches[2];
-            $op = $matches[1];
-        } else {
-            $op = '';
-        }
-
-        if (empty($value)) {
-            return $this;
-        }
-
-        if ($partialMatch) {
-            if ($op === '') {
-                return $this->addSearchCondition($column, $value, $escape, $operator);
-            }
-            if ($op === '<>') {
-                return $this->addSearchCondition($column, $value, $escape, $operator, 'NOT LIKE');
-            }
-            
-        } elseif( $op === '') {
-            $op = '=';
-        }
-        
-        $this->addCondition($column . $op . self::PARAM_PREFIX . self::$paramCount, $operator);
-        $this->params[self::PARAM_PREFIX . self::$paramCount++] = $value;
-
-        return $this;
+        $this->addCondition(implode(" $columnOperator ", $params), $operator);
     }
 }

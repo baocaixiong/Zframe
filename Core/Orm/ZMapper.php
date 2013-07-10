@@ -20,7 +20,7 @@ use Z\Core\Orm\Structures\ZStructureInterface;
 use ZCachingInterface;
 use Z\Core\Orm\Structures\ZStructureConvention;
 
-class ZMapper extends ZOrmAbstract
+class ZMapper
 {
     /**
      * table instances

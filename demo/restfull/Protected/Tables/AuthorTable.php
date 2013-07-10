@@ -14,7 +14,7 @@ class AuthorTable extends ZTable
 
     public function setColumns()
     {
-        $this->setColumn('name', 'string', '', array('max' => 100));
+        $this->setColumn('name', 'string', '', array('max' => 100), 'newName');
 
     }
 }
