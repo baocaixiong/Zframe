@@ -14,22 +14,15 @@
  */
 namespace Z\Core\Orm\Schema;
 
-use Z\Core\ZObject;
 use ZTableSchemaInterface;
 
-class ZTableSchema extends ZObject implements ZTableSchemaInterface
+class ZTableSchema extends ZSchema implements ZTableSchemaInterface
 {
     /**
      * table name
      * @var string
      */
     public $name;
-
-    /**
-     * 能够用来组装SQL 加了反引号
-     * @var string
-     */
-    public $rawName;
 
     /**
      * 外键列表

@@ -14,22 +14,15 @@
  */
 namespace Z\Core\Orm\Schema;
 
-use Z\Core\ZObject;
 use Z\Core\Orm\ZDbConnection;
 
-class ZColumnSchema extends ZObject
+class ZColumnSchema extends ZSchema
 {
     /**
      * 列名称,不包括引号
      * @var string
      */
     public $name;
-
-    /**
-     * 列的名字，包括引号。可以来组建SQL
-     * @var string
-     */
-    public $rawName;
 
     /**
      * 是否允许为空
@@ -108,7 +101,7 @@ class ZColumnSchema extends ZObject
     public function __construct($column, $type, $default = null, $options = array(), $alias = '')
     {
         $this->name = $column;
-        $this->rawName = '`' . $column . '`';
+        $this->setRawName('`' . $column . '`');
 
         $this->phpType = $type;
 

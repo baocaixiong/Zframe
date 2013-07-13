@@ -37,7 +37,7 @@ abstract class ZTable extends ZCore implements ZTableInterface
      * 数据库驱动名称
      * @var string
      */
-    protected $driverName;
+    public $driverName;
 
     /**
      * 缓存
@@ -95,6 +95,15 @@ abstract class ZTable extends ZCore implements ZTableInterface
      */
     public $referencedColumn = array();
 
+    private $_queryNamespace = 'Z\Core\Orm\Queries';
+
+    private $_queryClassMap = array(
+        'mysql' => array(
+            'select' => 'Mysql\ZSelect',
+            //'join' => '\Mysql\ZJoin'
+        )
+    );
+
     /**
      * CONSTRUCT METHOD
      * @access private
@@ -116,6 +125,10 @@ abstract class ZTable extends ZCore implements ZTableInterface
         $this->driverName = $this->connection->getDriverName();
 
         //$this->cache = $this->connection->getCache();
+    }
+
+    public function createNewInstance()
+    {
         $this->setTableSchema();
         $this->setPrimaryKey();
         $this->setColumns();
@@ -198,7 +211,7 @@ abstract class ZTable extends ZCore implements ZTableInterface
 
         $this->referencedColumn[$relatedTable->getTableSchema()->name] = $this->getTableSchema()->getColumn($selfField);
 
-        $this->getTableSchema()->foreignKeys[$name] = new ZForeignKey($selfField, $relatedTable, $relatedField);
+        $this->getTableSchema()->foreignKeys[$name] = new ZForeignKey($selfField, $relatedTable, $name, $relatedField);
 
         return $this;
     }
@@ -207,20 +220,21 @@ abstract class ZTable extends ZCore implements ZTableInterface
      * 创建一个虚拟字段
      * @param  string $virtualFieldName virtual field name
      * @param  string $foreignKeyName   foreign key instance name
-     * @param  string $relateeField     relation field
+     * @param  string $relatedField     relation field
      * @return \Z\Core\Orm\ZTable
      */
-    protected function virtualColumns($virtualFieldName, $foreignKeyName, $relateeField = '')
+    protected function virtualColumn($virtualFieldName, $foreignKeyName, $relatedField = '')
     {
         if (!array_key_exists($foreignKeyName, $this->getTableSchema()->foreignKeys)) {
             throw new ZDbException("ForeignKey '{$foreignKeyName}' is not exists.");
         }
 
-        empty($relateeField) && $relateeField = $virtualFieldName;
+        empty($relatedField) && $relatedField = $virtualFieldName;
 
         $this->getTableSchema()->virtualColumns[$virtualFieldName] = new ZVirtualColumn(
             $this->getTableSchema()->foreignKeys[$foreignKeyName],
-            $relateeField
+            $this->getTableSchema()->foreignKeys[$foreignKeyName]->getTable()->getTableSchema(),
+            $relatedField
         );
 
         return $this;
@@ -251,6 +265,7 @@ abstract class ZTable extends ZCore implements ZTableInterface
 
         if (!array_key_exists($class, self::$_tableInstances) || $force) {
             self::$_tableInstances[$class] = new $class();
+            self::$_tableInstances[$class]->createNewInstance();
             self::$_tableInstances[$class]->_className = $class;
         }
 
@@ -260,7 +275,7 @@ abstract class ZTable extends ZCore implements ZTableInterface
     
     public function select($fields = array())
     {
-        $queryClassName = $this->_createQueryClassName('select');
+        $queryClassName = $this->createQueryClassName('select');
         /**
          * query instance
          * @var \Z\Core\Orm\Queries\ZSelect
@@ -268,13 +283,19 @@ abstract class ZTable extends ZCore implements ZTableInterface
         return new $queryClassName($this, $fields);
     }
 
+    public function getRawTableName()
+    {
+        return $this->_schema->rawName;
+    }
+
+
     /**
      * 创建一个queryInstance
      * @param string $model 当前数据库操作模式
      * like: select update insert delete等等
      * @return 
      */
-    private function _createQueryClassName($model)
+    protected function createQueryClassName($model)
     {
         $driverName = $this->connection->getDriverName();
 
@@ -287,11 +308,8 @@ abstract class ZTable extends ZCore implements ZTableInterface
         return $queryClassName;
     }
 
-    private $_queryNamespace = 'Z\Core\Orm\Queries';
-
-    private $_queryClassMap = array(
-        'mysql' => array(
-            'select' => 'Mysql\ZSelect',
-        )
-    );
+    public function getQueryNamespace()
+    {
+        return $this->_queryNamespace;
+    }
 }

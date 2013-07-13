@@ -20,14 +20,17 @@ use Z\Core\Orm\ZTable;
 
 class ZForeignKey extends ZObject
 {
+    protected $foreignName;
+
     protected $leftField;
 
     protected $currTable;
 
     protected $rightField;
 
-    public function __construct($leftField, $currTable, $rightField = ZTable::PRIMARY_KEY)
+    public function __construct($leftField, $currTable, $foreignName, $rightField = ZTable::PRIMARY_KEY)
     {
+        $this->foreignName = $foreignName;
         $this->leftField = $leftField;
         $this->currTable = $currTable;
         $this->rightField = $rightField;
@@ -67,5 +70,10 @@ class ZForeignKey extends ZObject
     public function getRightField()
     {
         return $this->rightField;
+    }
+
+    public function getforeignName()
+    {
+        return $this->foreignName;
     }
 }

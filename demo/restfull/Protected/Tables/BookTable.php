@@ -18,6 +18,6 @@ class BookTable extends ZTable
         $this->setColumn('author_id', 'int');
 
         $this->foreignKey('author', 'author_id', AuthorTable::getInstance(), 'id');
-        $this->virtualField('authorName', 'author', 'name');
+//        $this->virtualField('authorName', 'author', 'name');
     }
 }

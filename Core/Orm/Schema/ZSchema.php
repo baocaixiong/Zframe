@@ -19,69 +19,20 @@ use Z\Core\Orm\ZDbConnection;
 
 abstract class ZSchema extends ZObject
 {
-    /**
-     * 
-     * @var array
-     */
-    public $columnTypes = array();
+    private $_rawName;
 
-
-    /**
-     * tables name
-     * @var array like array('tableName1', ...)
-     */
-    private $_tableNames;
-
-    /**
-     * table instances
-     * every one is instance of ZTableSchema
-     * @var array like array('tableName1' => ZDbTableScheme Instance, ...)
-     */
-    private $_tables;
-
-    /**
-     * database connection
-     * contain PDO instance, driveName,tablePrefix
-     * database account and so on
-     * @var Z\Core\Orm\ZDbConnection
-     */
-    private $_connection;
-
-    /**
-     * 获得链接
-     * @param  \Z\Core\Orm\ZDbConnection $con db connection
-     * @return \Z\Core\Orm\Schema\ZSchema
-     */
-    public function __construct(ZDbConnection $con)
+    public function getRawName()
     {
-        $this->_connection = $con;
+        return $this->_rawName;
     }
 
-    /**
-     * 获得链接
-     * @return \Z\Core\Orm\ZDbConnection
-     */
-    public function getConnection()
+    public function setRawName($value)
     {
-        return $this->_connection;
+        $this->_rawName = $value;
     }
 
-    abstract function loadTable();
-
-
-    public function getTable($name, $refresh = false)
+    public function __toString()
     {
-        if ($refresh === false && $this->_tableInstances[$name]) {
-            return $this->_tables[$name];
-        } else {
-            $prefx = $this->_connection->getTablePrefix();
-            if (strpos($name, $prefx) === false) {
-                $rawName = $prefx . $name;
-            } else {
-                $rawName = $name;
-            }
-
-            
-        }
+        return $this->_rawName();
     }
 }

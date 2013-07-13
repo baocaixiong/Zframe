@@ -29,17 +29,22 @@ class ZVirtualColumn extends ZObject
      * 字段名称
      * @var string
      */
-    protected $fieldName;
+    protected $columnName;
+
+    protected $selfTableSchema;
+
+    protected $rawName;
 
     /**
      * CONSTRUCT METHOD
      * @param \Z\Core\Orm\Schema\ZForeignKey $foreignKey foreign key instance 
      * @param string                         $fieldName  fieldName
      */
-    public function __construct(ZForeignKey $foreignKey, $fieldName)
+    public function __construct(ZForeignKey $foreignKey, $tableSchema, $fieldName)
     {
         $this->foreignKey = $foreignKey;
-        $this->fieldName = $fieldName;
+        $this->selfTableSchema = $tableSchema;
+        $this->columnName = $fieldName;
     }
 
     /**
@@ -57,6 +62,19 @@ class ZVirtualColumn extends ZObject
      */
     public function getColumnName()
     {
-        return $this->fieldName;
+        return $this->columnName;
+    }
+
+    public function getRawName() {
+        if ($this->rawName === null) {
+            $this->rawName = $this->selfTableSchema->getColumn($this->columnName)->getRawName();
+        }
+
+        return $this->rawName;
+    }
+
+    public function __toString()
+    {
+        return $this->getRawName;
     }
 }

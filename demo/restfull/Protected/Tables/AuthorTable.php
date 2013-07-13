@@ -16,5 +16,7 @@ class AuthorTable extends ZTable
     {
         $this->setColumn('name', 'string', '', array('max' => 100), 'newName');
 
+        $this->foreignKey('book', 'id', BookTable::getInstance(), 'author_id');
+        $this->virtualColumn('title1', 'book', 'title');
     }
 }

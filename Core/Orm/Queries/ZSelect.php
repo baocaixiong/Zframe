@@ -16,6 +16,7 @@ namespace Z\Core\Orm\Queries;
 
 use Z\Core\Orm\Exceptions\ZAliasConflictException;
 use Z\Core\Orm\Exceptions\ZUndefinedColumnException;
+use Z\Core\Orm\Exceptions\ZJoinFieledException;
 use ZTableInterface;
 
 class ZSelect extends ZQuery
@@ -52,6 +53,13 @@ class ZSelect extends ZQuery
     protected $having;
 
     /**
+     * join table
+     * @var \Z\Core\Orm\Queries\ZJoin
+     */
+    protected $join;
+
+
+    /**
      * CONSTRUCT METHOD
      * 创建一个SelectQuery的实例
      * @param \Z\Core\Orm\ZTable $table  [description]
@@ -63,7 +71,7 @@ class ZSelect extends ZQuery
         $this->tableSchema = $table->getTableSchema();
         $this->fields($fields);
 
-        $this->condition = new ZCondition($this->tableSchema);
+        $this->condition = new ZCondition($this->tableSchema, $this);
     }
 
     /**
@@ -78,6 +86,7 @@ class ZSelect extends ZQuery
      */
     public function fields($fields = array())
     {
+        // var_dump($this->tableSchema->getForeignKey('book')->getTable()->getTableSchema()->getForeignKey('author')->getTable()->getTableSchema() === $this->tableSchema); //true
         $n = func_num_args();
 
         if ($n > 1) {
@@ -101,11 +110,50 @@ class ZSelect extends ZQuery
     }
 
 
-    public function where($conditions, $operator, $paramters)
+    public function where($conditions, $paramters = array(), $operator = 'AND')
     {
-        $this->condition->where($column, $operator, $value);
+        $operator = strtoupper($operator);
+        $this->condition->where($conditions, $operator, $paramters);
+
+        return $this;
     }
 
+    public function andWhere($conditions, $paramters = array())
+    {
+        $this->condition->where($conditions, 'AND', $paramters);
+
+        return $this;
+    }
+
+    public function orWhere($conditions, $paramters = array())
+    {
+        $this->condition->where($conditions, 'OR', $paramters);
+
+        return $this;
+    }
+
+    public function createJoin($foreignName, $relation = 'LEFT')
+    {
+        if (!array_key_exists($foreignName, $this->tableSchema->foreignKeys)) {
+            throw new ZJoinFieledException('Join了一个未设置foreigKey的数据表: '. $foreignName);
+        }
+
+        $this->createJoinQuery();
+
+        $this->join->createJoinString($foreignName, $relation);
+
+        return $this;
+    }
+
+    public function createJoinQuery()
+    {
+        $driverName = $this->table->driverName;
+
+        if ($this->join === null) {
+            $className = $this->table->getQueryNamespace() . '\\' . ucfirst($driverName) . '\\ZJoin';
+            $this->join = new $className($this->tableSchema);
+        }
+    }
 
     /**
      * 添加Select字段和别名
@@ -141,8 +189,11 @@ class ZSelect extends ZQuery
 
         $queryString .= "\n$tableName";
 
-        $queryString .= "\nWHERE";
+        $queryString .= "\n" . $this->join;
+
+        $queryString .= "\nWHERE" . $this->condition;
 
         return $queryString;
     }
+    
 }

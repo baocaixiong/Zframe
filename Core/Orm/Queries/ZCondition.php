@@ -31,16 +31,12 @@ class ZCondition extends ZObject
     protected static $paramCount = 0;
 
     /**
-     * 已经处理好的条件
-     * @var array
-     */
-    protected $condition = array();
-
-    /**
      * where 条件 
-     * @var array
+     * @var  string
      */
-    protected $where = array();
+    protected $whereString = '';
+
+    static protected $isFirstWhere = true;
 
     protected $group;
 
@@ -54,15 +50,34 @@ class ZCondition extends ZObject
 
     protected $tableSchema;
 
-    public function __construct(ZTableSchemaInterface $tableSchema)
+    protected $query;
+
+    public function __construct(ZTableSchemaInterface $tableSchema,ZQuery $query)
     {
         $this->tableSchema = $tableSchema;
         $this->driverName = Z::app()->getDb()->getDriverName();
+        $this->query = $query;
     }
 
-    public function where($column, $operator, $value, $relation = 'AND')
+    public function where($conditions, $operator = 'AND', $paramters = array())
     {
+        $conditionString = $this->query->processConditions($conditions);
+        if (self::$isFirstWhere) {
+            self::$isFirstWhere = false;
+            $operator = '';
+        }
+
+        if ($this->whereString === '') {
+            $this->whereString = ' ' . $operator . ' (' . $conditionString . ') ';
+        } else {
+            $this->whereString = $this->whereString . ' ' . $operator . ' (' . $conditionString . ') ';
+        }
         
+    }
+
+    public function __toString()
+    {
+        return $this->whereString;
     }
 
     /**
