@@ -365,7 +365,8 @@ abstract class ZTable extends ZCore implements ZTableInterface
                 $this->statement->closeCursor();
             }
             return $result;
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
+            throw new ZDbException('执行SQL语句错误,SQL: '. $this->lastQuery);
             
         }
     }

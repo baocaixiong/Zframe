@@ -15,7 +15,7 @@ return array(
             ),
         'db' => array(
             'class' => 'Z\Core\Orm\ZDbConnection',
-            'dsn' => 'mysql:dbname=not_orm;host=127.0.0.1',
+            'dsn' => 'mysql:dbname=not_orm;host=127.0.0.1;port=3306',
             'userName' => 'root',
             'password' => '123123',
             'charset' => 'utf8',

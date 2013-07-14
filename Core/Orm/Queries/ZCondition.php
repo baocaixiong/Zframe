@@ -28,13 +28,15 @@ class ZCondition extends ZObject
 
     static protected $isFirstWhere = true;
 
-    protected $group;
+    protected $group = '';
 
-    protected $order;
+    protected $order = '';
 
     protected $having;
 
     protected $offset;
+
+    protected $limit = '';
 
     protected $tableSchema;
 
@@ -64,6 +66,58 @@ class ZCondition extends ZObject
 
     public function __toString()
     {
-        return empty($this->whereString) ? '' : "\nWHERE" . $this->whereString;
+        return empty($this->whereString) ? '' : "\nWHERE" . $this->whereString . "\n" . $this->group
+            . "\n" . $this->order;
+    }
+
+
+    public function orderBy($column, $direction = 'ASC')
+    {
+        $string = $this->query->buildColumnName($column) . ' ' . (strtoupper($direction) == 'ASC' ? 'ASC' : 'DESC');
+
+        if (empty($this->order)) {
+            $this->order = 'ORDER BY ' . $string;
+        } else {
+            $this->order =  $this->order . ',' . $string;
+        }
+        return $this;
+    }
+
+    /**
+     * 添加分组条件
+     * @param string
+     * @return \Z\Core\Orm\Queries\ZCondition
+     */
+    public function groupBy($field)
+    {
+        $groups = [];
+        if (strpos($field, ',') !== false) {
+            $temp = explode(',', $field);
+            foreach ($temp as $value) {
+                $groups[] = $this->query->buildColumnName(trim($value));
+            }
+        } else {
+            $groups[] = $this->query->buildColumnName(trim($field));
+        }
+
+        if (empty($this->group)) {
+            $this->group = 'GROUP BY '. implode(',', $groups);
+        } else {
+            $this->group = $this->group . implode(',', $groups);
+        }
+
+        return $this;
+    }
+
+    /**
+     * 设置查询范围
+     * @param int $length
+     * @param int $start
+     * @return \Z\Core\Orm\Queries\ZCondition
+     */
+    public function limit ($length = NULL, $start = NULL)
+    {
+        $this->limit = func_num_args() ? array('start' =>(int)$start, 'length' =>(int)$length) : array();
+        return $this;
     }
 }

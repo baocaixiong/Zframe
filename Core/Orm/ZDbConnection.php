@@ -86,7 +86,7 @@ class ZDbConnection extends ZAppComponent
      * 是否开启预处理语句。true开启。false不开启
      * @var string
      */
-    public $emulatePrepare = true;
+    public $emulatePrepare = false;
 
     /**
      * 数据库驱动名称

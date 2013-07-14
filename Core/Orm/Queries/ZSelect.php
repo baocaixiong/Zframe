@@ -102,6 +102,9 @@ class ZSelect extends ZQuery
                 throw new ZUndefinedColumnException('未知的列名 ' . $this->tableSchema->rawName . ':' . $columnName);
             }
             $column = $this->tableSchema->getColumn($columnName);
+            if (!is_numeric($key)) {
+                $column->alias = $value;
+            }
             $aliasName = !is_numeric($key) ? $value : $column->alias;
             $this->_addField($column, $aliasName);
         }
@@ -202,6 +205,19 @@ class ZSelect extends ZQuery
         return $queryString;
     }
     
+    public function orderBy($column, $direction = 'ASC')
+    {
+        $this->condition->orderBy($column, $direction);
+
+        return $this;
+    }
+
+    public function groupBy($field)
+    {
+        $this->condition->groupBy($field);
+
+        return $this;
+    }
 
     public function fetch()
     {

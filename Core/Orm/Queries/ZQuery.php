@@ -133,8 +133,11 @@ class ZQuery extends ZObject
     public function buildColumnName($columnName, $isVirtualColumn = false)
     {
         $isInSelfTable = !$isVirtualColumn && array_key_exists($columnName, $this->tableSchema->columns);
+        
         if ($isInSelfTable) {
-            return $this->tableSchema->rawName . '.' . $this->tableSchema->columns[$columnName]->getRawName();
+            $column = $this->tableSchema->columns[$columnName];
+
+            return $this->tableSchema->rawName . '.' . $column->getRawName();
         } elseif (array_key_exists($columnName, $this->tableSchema->virtualColumns)) {
             $virtualColumn = $this->tableSchema->virtualColumns[$columnName];
             $rawTableName = $virtualColumn->getForeignKey()->getTableRawName();
