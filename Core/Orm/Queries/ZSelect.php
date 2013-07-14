@@ -110,29 +110,30 @@ class ZSelect extends ZQuery
     }
 
 
-    public function where($conditions, $paramters = array(), $operator = 'AND')
+    public function where($conditions, $operator = 'AND')
     {
         $operator = strtoupper($operator);
-        $this->condition->where($conditions, $operator, $paramters);
+        
+        $this->condition->where($conditions, $operator);
 
         return $this;
     }
 
-    public function andWhere($conditions, $paramters = array())
+    public function andWhere($conditions)
     {
-        $this->condition->where($conditions, 'AND', $paramters);
+        $this->condition->where($conditions, 'AND');
 
         return $this;
     }
 
-    public function orWhere($conditions, $paramters = array())
+    public function orWhere($conditions)
     {
-        $this->condition->where($conditions, 'OR', $paramters);
+        $this->condition->where($conditions, 'OR');
 
         return $this;
     }
 
-    public function createJoin($foreignName, $relation = 'LEFT')
+    public function join($foreignName, $relation = 'LEFT')
     {
         if (!array_key_exists($foreignName, $this->tableSchema->foreignKeys)) {
             throw new ZJoinFieledException('Join了一个未设置foreigKey的数据表: '. $foreignName);
@@ -145,7 +146,12 @@ class ZSelect extends ZQuery
         return $this;
     }
 
-    public function createJoinQuery()
+    public function rightJoin($foreignName)
+    {
+        return $this->join($foreignName, 'RIGHT');
+    }
+
+    protected function createJoinQuery()
     {
         $driverName = $this->table->driverName;
 
@@ -189,11 +195,18 @@ class ZSelect extends ZQuery
 
         $queryString .= "\n$tableName";
 
-        $queryString .= "\n" . $this->join;
+        $queryString .= $this->join;
 
-        $queryString .= "\nWHERE" . $this->condition;
+        $queryString .= "" . $this->condition;
 
         return $queryString;
     }
     
+
+    public function fetch()
+    {
+        $reader = $this->table->queryAll(2, $this->parameters);
+        // var_dump($this->table->lastQuery);
+        var_dump($reader);
+    }
 }

@@ -20,6 +20,7 @@ use Z\Core\Orm\ZTable;
 use Z\Core\Orm\ZDbExpression;
 use Z\Core\Orm\Exceptions\ZInvalidOperatorException;
 use Z\Core\Orm\Exceptions\ZInaccurateColumnException;
+use Z\Core\Orm\Exceptions\ZUnKnowMethodException;
 
 class ZQuery extends ZObject
 {
@@ -35,13 +36,28 @@ class ZQuery extends ZObject
      */
     protected $tableSchema;
 
+
+    const PARAM_PREFIX = ':ZPV';
+    /**
+     * 用来bandValue,实现预处理的参数
+     * @var array
+     */
+    protected $parameters = array();
+
+    protected static $paramCount = 0;
+
+    protected $paramters = array();
+
     public function processConditions($conditions)
     {
-        if (is_string($conditions)) {
-            if (preg_match('~(\w+)\s*(!=|>=|<=|=|<>|<|>)\s*(\S+)~i', $conditions, $matches)) {
+        if (is_string($conditions)
+            || (count($conditions) === 1 && strpos(($conditions = $conditions[0]), '=') !== false)
+        ) {
+            if (preg_match('~(\w+)\s*(!=|>=|<=|=|<>|<|>)\s*(\S*)~i', $conditions, $matches)) {
+
                 $column = $this->buildColumnName($matches[1]);
                 $operatorMin = $matches[2];
-                $paramter = $matches[3];
+                $paramter = $this->createPrepareOrValue($matches[3]);
                 return implode('', array($column, $operatorMin, $paramter));
             }
 
@@ -51,9 +67,11 @@ class ZQuery extends ZObject
         }
 
         $operator = trim(strtoupper(array_shift($conditions)));
+
         $count = count($conditions);
 
         if ($operator === 'AND' || $operator === 'OR') {
+            
             $parts = array();
             for ($i = 0; $i < $count; $i++) {
                 $condition = $this->processConditions($conditions[$i]);
@@ -61,6 +79,7 @@ class ZQuery extends ZObject
                     $parts[] = '(' . $condition . ')';
                 }
             }
+
             return empty($parts) ? '' : implode(' ' . $operator . ' ', $parts);
         }
 
@@ -81,7 +100,7 @@ class ZQuery extends ZObject
                 
             foreach ($values as $i => $value) {
                 if (is_string($value)) {
-                    $values[$i] = $this->quoteValue($value);
+                    $values[$i] = $this->createPrepareOrValue($value);
                 } else {
                     $values[$i] = (string)$value;
                 }
@@ -102,7 +121,7 @@ class ZQuery extends ZObject
 
             $expressions = array();
             foreach ($values as $value) {
-                $expressions[] = $this->buildColumnName($column) . ' ' . $operator. ' ' . $this->quoteValue($value);
+                $expressions[] = $this->buildColumnName($column) . ' ' . $operator. ' ' . $this->createPrepareOrValue($value);
             }
                 
             return implode($andor, $expressions);
@@ -120,62 +139,36 @@ class ZQuery extends ZObject
             $virtualColumn = $this->tableSchema->virtualColumns[$columnName];
             $rawTableName = $virtualColumn->getForeignKey()->getTableRawName();
 
-            $this->createJoin($virtualColumn->getForeignKey()->foreignName);
+            $this->join($virtualColumn->getForeignKey()->foreignName);
             return $rawTableName . '.' .  $virtualColumn->getRawName();
         }
 
         throw new ZInaccurateColumnException('错误的字段名称:' . $columnName);
     }
 
-
-    public function createJoin($foreignName, $relation = 'LEFT')
+    public function createPrepareOrValue($value)
     {
-
-    }
-
-    public function quote($val)
-    {
-        if (!isset($val)) {
-            return "NULL";
-        }
-        if (is_array($val)) { // (a, b) IN ((1, 2), (3, 4))
-            return "(" . implode(", ", array_map(array($this, 'quote'), $val)) . ")";
-        }
-        $val = $this->formatValue($val);
-        if (is_float($val)) {
-            return sprintf("%F", $val); // otherwise depends on setlocale()
-        }
-        if ($val === false) {
-            return "0";
-        }
-        if (is_int($val) || $val instanceof ZDbExpression) { // number or SQL code - for example "NOW()"
-            return (string) $val;
-        }
-
-        return $this->table->connection->pdo->quote($val);
-    }
-
-    protected function removeExtraDots($expression) {
-        return preg_replace('@(?:\\b[a-z_][a-z0-9_.:]*[.:])?([a-z_][a-z0-9_]*)[.:]([a-z_*])@i', '\\1.\\2', $expression); // rewrite tab1.tab2.col
-    }
-
-    protected function formatValue($val) {
-        if ($val instanceof \DateTime) {
-            return $val->format("Y-m-d H:i:s"); //! may be driver specific
-        }
-        return $val;
-    }
-
-    public function quoteValue($str)
-    {
-        if (is_int($str) || is_float($str)) {
-            return $str;
-        }
-
-        if (($value=$this->table->connection->pdo->quote($str)) !== false) {
-            return $value;
+        if (Z::app()->getDb()->emulatePrepare) {
+            $return = self::PARAM_PREFIX . self::$paramCount;
+            $this->parameters[self::PARAM_PREFIX . self::$paramCount++] = $value;
+            return $return;
         } else {
-            return "'" . addcslashes(str_replace("'", "''", $str), "\000\n\r\\\032") . "'";
+            return $this->table->connection->quote($value);
         }
+    }
+
+    public function __call($func, $paramters)
+    {
+        $class = get_called_class();
+        if (!method_exists($this->table, $func)) {
+            throw new ZUnKnowMethodException('调用未知的方法 ' . $class . ':' . $func);
+        }
+
+        call_user_func_array(array($this->table, $func), $paramters);
+    }
+
+    public function getParamters()
+    {
+        return $this->paramters;
     }
 }

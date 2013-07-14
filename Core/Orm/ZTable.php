@@ -22,6 +22,7 @@ use Z\Core\Orm\Schema\ZVirtualColumn;
 use Z\Core\Orm\Schema\ZTableSchema;
 use ZTableInterface;
 use Z\Core\ZCore;
+use Z\Core\Orm\Exceptions\ZDbPrepareFailedException;
 
 abstract class ZTable extends ZCore implements ZTableInterface
 {
@@ -95,6 +96,16 @@ abstract class ZTable extends ZCore implements ZTableInterface
      */
     public $referencedColumn = array();
 
+    /**
+     * PDOStatement
+     * @var \PDOStatement
+     */
+    protected $statement;
+
+    protected $query;
+
+    protected $lastQuery;
+
     private $_queryNamespace = 'Z\Core\Orm\Queries';
 
     private $_queryClassMap = array(
@@ -103,6 +114,10 @@ abstract class ZTable extends ZCore implements ZTableInterface
             //'join' => '\Mysql\ZJoin'
         )
     );
+
+    private $_fetchMode = array();
+
+
 
     /**
      * CONSTRUCT METHOD
@@ -143,7 +158,7 @@ abstract class ZTable extends ZCore implements ZTableInterface
     {
         $this->_schema = new ZTableSchema();
         $this->_schema->name = $this->tableName;
-        $this->_schema->rawName = $this->connection->getTableRawName($this->tableName);
+        $this->_schema->rawName = $this->_schema->getTableRawName($this->tableName);
 
         return $this;
     }
@@ -183,7 +198,7 @@ abstract class ZTable extends ZCore implements ZTableInterface
      */
     protected function setColumn($columnName, $type, $default = null, $options = array(), $alias = '')
     {
-        $hasDefault = func_num_args() >= 3;
+        //$hasDefault = func_num_args() >= 3;
 
         $this->getTableSchema()->columns[$columnName] = new ZColumnSchema(
             $columnName, $type, $default, $options, $alias
@@ -280,7 +295,7 @@ abstract class ZTable extends ZCore implements ZTableInterface
          * query instance
          * @var \Z\Core\Orm\Queries\ZSelect
          */
-        return new $queryClassName($this, $fields);
+        return $this->query = new $queryClassName($this, $fields);
     }
 
     public function getRawTableName()
@@ -308,8 +323,84 @@ abstract class ZTable extends ZCore implements ZTableInterface
         return $queryClassName;
     }
 
+    /**
+     * 获得queries的名字空间全名
+     * @return string
+     */
     public function getQueryNamespace()
     {
         return $this->_queryNamespace;
+    }
+
+    /**
+     * 执行一条sql语句
+     * @return \PDOStatement
+     */
+    public function queryAll($fetchAssociative=0,$params=array())
+    {
+        return $this->_query('fetchAll', $fetchAssociative, $params);
+    }
+
+    public function query($params = array())
+    {
+        return $this->_query('', 0, $params);
+    }
+
+    private function _query($method, $mode, $params = array())
+    {
+        try {
+            $this->prepare();
+            if ($params === array()) {
+                $this->statement->execute();
+            } else {
+                $this->statement->execute($params);
+            }
+
+            if (empty($method)) {
+                $result = new ZDataReader($this);
+            } else {
+                $mode = (array)$mode;
+                call_user_func_array(array($this->statement, 'setFetchMode'), $mode);
+                $result = $this->statement->$method();
+                $this->statement->closeCursor();
+            }
+            return $result;
+        } catch (Exception $e) {
+            
+        }
+    }
+
+    public function prepare()
+    {
+        if ($this->statement === null) {
+            try {
+                $this->lastQuery = (string)$this->query;
+                var_dump($this->lastQuery);
+                $this->statement = $this->connection->pdo->prepare($this->lastQuery);
+            } catch (\Exception $e) {
+                throw new ZDbPrepareFailedException('预准备语句处理失败,SQL: ' . $this->query);
+            }
+        }
+    }
+
+    public function setFetchMode($mode)
+    {
+        $params=func_get_args();
+        $this->_fetchMode = $params;
+        return $this;
+    }
+
+    /**
+     * 获得PDOStatement对象，
+     * @return \PDOStatement
+     */
+    public function getPdoStatement()
+    {
+        return $this->statement;
+    }
+
+    public function getLastQuery()
+    {
+        return $this->lastQuery;
     }
 }

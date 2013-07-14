@@ -114,4 +114,13 @@ class ZTableSchema extends ZSchema implements ZTableSchemaInterface
 
         return null;
     }
+
+    public function getTableRawName($name)
+    {
+        if (!empty($this->tablePrefix) && strpos($name, $this->tablePrefix) === false) {
+            return '`'. $this->tablePrefix . $name . '`';
+        } else {
+            return '`' . $name . '`';
+        }
+    }
 }

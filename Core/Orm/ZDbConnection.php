@@ -70,8 +70,6 @@ class ZDbConnection extends ZAppComponent
      */
     public $pdoAttributes = array();
 
-    public $debug;
-
     /**
      * 缓存对象
      * @var string
@@ -88,9 +86,7 @@ class ZDbConnection extends ZAppComponent
      * 是否开启预处理语句。true开启。false不开启
      * @var string
      */
-    public $emulatePrepare;
-
-    public $freeze;
+    public $emulatePrepare = true;
 
     /**
      * 数据库驱动名称
@@ -162,6 +158,39 @@ class ZDbConnection extends ZAppComponent
         $this->fire(self::EVENT_AFTER_OPEN);
     }
     
+    public function quote($val)
+    {
+        if (!isset($val)) {
+            return "NULL";
+        }
+        if (is_array($val)) { // (a, b) IN ((1, 2), (3, 4))
+            return "(" . implode(", ", array_map(array($this, 'quote'), $val)) . ")";
+        }
+        $val = $this->formatValue($val);
+        if (is_float($val)) {
+            return sprintf("%F", $val); // otherwise depends on setlocale()
+        }
+        if ($val === false) {
+            return "0";
+        }
+        if (is_int($val) || $val instanceof ZDbExpression) { // number or SQL code - for example "NOW()"
+            return (string) $val;
+        }
+
+        if (($value=$this->pdo->quote($val)) !== false) {
+            return $value;
+        } else {
+            return "'" . addcslashes(str_replace("'", "''", $val), "\000\n\r\\\032") . "'";
+        }
+    }
+
+    protected function formatValue($val) {
+        if ($val instanceof \DateTime) {
+            return $val->format("Y-m-d H:i:s"); //! may be driver specific
+        }
+        return $val;
+    }
+
     /**
      * 关闭数据库连接
      * @return void
@@ -257,13 +286,22 @@ class ZDbConnection extends ZAppComponent
         return $this->_driveName;
     }
 
-    public function getTableRawName($name)
+    /**
+     * 根据php类型获得PDO的类型
+     * @param  string $type php type
+     * @return string PDO type
+     */
+    public function getPdoType($type)
     {
-        if (!empty($this->tablePrefix) && strpos($name, $this->tablePrefix) === false) {
-            return '`'. $this->tablePrefix . $name . '`';
-        } else {
-            return '`' . $name . '`';
-        }
+        static $map=array
+        (
+            'boolean'=>PDO::PARAM_BOOL,
+            'integer'=>PDO::PARAM_INT,
+            'string'=>PDO::PARAM_STR,
+            'resource'=>PDO::PARAM_LOB,
+            'NULL'=>PDO::PARAM_NULL,
+        );
+        return isset($map[$type]) ? $map[$type] : PDO::PARAM_STR;
     }
 }
 

@@ -30,6 +30,8 @@ class ZJoin extends ZQuery
 
     protected $joined = array();
 
+    protected $joinArray = array();
+
     /**
      * CONSTRUCT METHOD
      *
@@ -44,13 +46,19 @@ class ZJoin extends ZQuery
     public function createJoinString($foreignName, $relation = 'LEFT')
     {
         if (isset($this->joined[$foreignName])) {
-            return;
+            if ($this->joined[$foreignName] === $relation) {
+                return;
+            } else {
+                unset($this->joined[$foreignName]);
+                unset($this->joinArray[$foreignName]);
+            }
         }
+
         $foreignInstance = $this->tableSchema->foreignKeys[$foreignName];
 
-        $this->joinString .= ' ' . $relation . $this->_createJoinString($foreignInstance);
+        $this->joinArray[$foreignName] =  $relation . $this->_createJoinString($foreignInstance) . ' ';
 
-        $this->joined[$foreignName] = true;
+        $this->joined[$foreignName] = $relation;
     }
 
     private function _createJoinString($foreignInstance)
@@ -66,6 +74,10 @@ class ZJoin extends ZQuery
 
     public function __toString()
     {
-        return $this->joinString;
+        if (empty($this->joinString)) {
+            $this->joinString = implode(' ', $this->joinArray);
+        }
+
+        return "\n" . $this->joinString;
     }
 }
