@@ -19,7 +19,7 @@ namespace Z\Exceptions;
  * @author  baocaixiong <baocaixiong@gmail.com>
  * @since   v0.1
  */
-class ZInvalidVariabelException extends ZException
+class ZInvalidVariableException extends ZException
 {
     
 }

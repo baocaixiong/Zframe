@@ -18,7 +18,7 @@ namespace Z\Caching;
 use Z\Z;
 use Z\Core\ZObject;
 use ZCachingInterface;
-use Z\Exceptions\ZInvalidVariabelException;
+use Z\Exceptions\ZInvalidVariableException;
 use Z\Exceptions\ZInvalidConfigException;
 
 abstract class ZCacheAbstract extends ZObject implements ZCachingInterface, \ArrayAccess
@@ -32,6 +32,7 @@ abstract class ZCacheAbstract extends ZObject implements ZCachingInterface, \Arr
     /**
      * 初始化方法
      * 此方法在ZObject的__construct方法中调用
+     * @throws \Z\Exceptions\ZInvalidConfigException
      * @return void
      */
     public function init()
@@ -99,7 +100,7 @@ abstract class ZCacheAbstract extends ZObject implements ZCachingInterface, \Arr
      * remove a cache 
      * @return void
      */
-    public function remvoe($key)
+    public function remove($key)
     {
         $key = $this->buildKey($key);
         return $this->removeValue($key);
@@ -113,16 +114,17 @@ abstract class ZCacheAbstract extends ZObject implements ZCachingInterface, \Arr
     {
         return $this->flushValues();
     }
+
     /**
      * build a cache key
      * @param  string $key cache key
+     * @throws \Z\Exceptions\ZInvalidVariableException
      * @return string
-     * @throws ZInvalidVariabelException if $key is not a string.
      */
     public function buildKey($key)
     {
         if (!is_string($key)) {
-            throw new ZInvalidVariabelException(Z::t("缓存key是无效的"));
+            throw new ZInvalidVariableException(Z::t("缓存key是无效的"));
         } else {
             $key = md5($key);
         }

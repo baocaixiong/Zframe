@@ -58,6 +58,7 @@ class ZSelect extends ZQuery
      */
     protected $join;
 
+    protected $limit;
 
     /**
      * CONSTRUCT METHOD
@@ -166,8 +167,10 @@ class ZSelect extends ZQuery
 
     /**
      * 添加Select字段和别名
-     * @param \Z\Core\Orm\Schema\ZColumnSchema $columnName column name
-     * @param string                           $aliasName  alias name
+     * @param $column
+     * @param string $aliasName  alias name
+     * @throws \Z\Core\Orm\Exceptions\ZAliasConflictException
+     * @internal param \Z\Core\Orm\Schema\ZColumnSchema $columnName column name
      */
     public function _addField($column, $aliasName)
     {
@@ -202,6 +205,7 @@ class ZSelect extends ZQuery
 
         $queryString .= "" . $this->condition;
 
+        !empty($this->limit) and $queryString .= "\nLIMIT " . (int) $this->limit['length'] . ' OFFSET ' . (int) $this->limit['start'];
         return $queryString;
     }
     
@@ -219,10 +223,27 @@ class ZSelect extends ZQuery
         return $this;
     }
 
-    public function fetch()
+    public function limit($length = null, $start = null)
     {
-        $reader = $this->table->queryAll(2, $this->parameters);
+        $this->limit = func_num_args() ? array('start' =>(int)$start, 'length' =>(int)$length) : array();
+        return $this;
+    }
+
+    public function having()
+    {
+        
+    }
+
+    /**
+     * 查询出所有的记录
+     *
+     * @return mixed
+     */
+    public function fetchAll()
+    {
+        $reader = $this->table->fetchAll(2, $this->parameters);
         // var_dump($this->table->lastQuery);
-        var_dump($reader);
+        //var_dump($reader);
+        return $reader;
     }
 }

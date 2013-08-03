@@ -16,7 +16,8 @@ namespace Z\Collections;
 
 use Z\Core\ZObject,
     Z\Exceptions\ZException,
-    Z\Z;
+    Z\Z,
+    Traversable;
 
 class ZMap extends ZObject implements \IteratorAggregate, \ArrayAccess, \Countable
 {

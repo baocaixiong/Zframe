@@ -24,7 +24,8 @@ class Author extends ZModel
         ->orderBy('id', 'C')
         ->orderBy('name', 'C')
         ->groupBy('id, name')
-        ->fetch()
+        ->limit(1)
+        ->fetchAll()
         );
     }
 }

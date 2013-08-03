@@ -54,6 +54,7 @@ class ZFileCache extends ZCacheAbstract
      * @param string  $key    cache key
      * @param mixed   $value  cache value
      * @param integer $expire expire time
+     * @return bool|void
      */
     public function addValue($key, $value, $expire = 0)
     {
@@ -69,6 +70,7 @@ class ZFileCache extends ZCacheAbstract
      * @param string  $key    cache key 
      * @param mixed   $value  cache value
      * @param integer $expire expire time
+     * @return bool|void
      */
     public function setValue($key, $value, $expire = 0)
     {
@@ -110,7 +112,7 @@ class ZFileCache extends ZCacheAbstract
      * @param  string $key cache key
      * @return boolean
      */
-    public function removevalue($key)
+    public function removeValue($key)
     {
         $cacheFile = $this->getCacheFile($key);
         return @unlink($cacheFile);
@@ -160,7 +162,7 @@ class ZFileCache extends ZCacheAbstract
             if ($file->isDir()) {
                 $this->gcRecursive($filePath, $expiredOnly);
                 if (!$expiredOnly) {
-                    @rmdir($fullPath);
+                    @rmdir($filePath);
                 }
             } elseif (!$expiredOnly || $expiredOnly && @filemtime($filePath) < time()) {
                 @unlink($filePath);

@@ -167,7 +167,7 @@ class ZQuery extends ZObject
             throw new ZUnKnowMethodException('调用未知的方法 ' . $class . ':' . $func);
         }
 
-        call_user_func_array(array($this->table, $func), $paramters);
+        return call_user_func_array(array($this->table, $func), $paramters);
     }
 
     public function getParamters()

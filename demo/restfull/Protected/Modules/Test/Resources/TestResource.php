@@ -4,11 +4,9 @@ namespace Modules\Test\Resources;
 
 use Z\Z;
 use Z\Executors\ZResource;
-use Project\Mappers\BookMapper;
 use Project\Tables\BookTable;
 use Project\Tables\AuthorTable;
 use Project\Models\Author;
-use Modules\Test\Mappers\AuthorMapper;
 
 
 /**
@@ -50,12 +48,12 @@ class TestResource extends ZResource
     /**
      * get method 
      *
-     * !method=GET|POST! !path=/123123!
+     * !method=GET|POST! !path=/<$id:string>!
      * !cacheTime=300! !etag!
      * !response=http!
      * @return [type] [description]
      */
-    public function get11($xxx=345, $yyy=123)
+    public function get11($id)
     {   
      
         //$this->nihao = 123;
@@ -71,7 +69,9 @@ class TestResource extends ZResource
         //$authorMapper = AuthorMapper::getTableInstance();
         ///var_dump($authorMapper);
 
-        $this->authorModel->getAll();
+        $ret = $this->authorModel->findByPk($id);
+
+        var_dump($ret->name);
         // $userMapper = new BookMapper(Z::app()->getDb());
 
         // $userMapper->getAll();

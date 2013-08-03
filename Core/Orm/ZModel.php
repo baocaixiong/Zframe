@@ -93,7 +93,11 @@ class ZModel extends ZCore
         } elseif (isset($this->table->getTableSchema()->getColumns()[$name])) {
             return null;
         } else {
-            echo '外键关系';
+            if (isset($this->table->getTableSchema()->virtualColumns[$name])) {
+                return null;
+            } else {
+                throw new \Exception('您没有查询该外键值');
+            }
         }
     }
 
@@ -102,7 +106,7 @@ class ZModel extends ZCore
         if (method_exists($this->table, $func)) {
             call_user_func_array(array($this->table, $func), $params);
         }
-        //var_dump($this->table);
+        
         return $this;
     }
 
@@ -136,8 +140,9 @@ class ZModel extends ZCore
 
     public function findByPk($pk)
     {
-        $this->table->where('id  = ' . $pk);
-        $this->setAttributes($this->table->execute());
+        $a = $this->table->select()->where('id  = ' . $pk)->fetchOne();
+
+        $this->setAttributes($a);
         $this->isNew = false;
         return $this;
     }

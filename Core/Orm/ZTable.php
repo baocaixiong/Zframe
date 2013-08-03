@@ -336,9 +336,14 @@ abstract class ZTable extends ZCore implements ZTableInterface
      * 执行一条sql语句
      * @return \PDOStatement
      */
-    public function queryAll($fetchAssociative=0,$params=array())
+    public function fetchAll($fetchAssociative = 2, $params = array())
     {
         return $this->_query('fetchAll', $fetchAssociative, $params);
+    }
+
+    public function fetchOne($fetchAssociative = 2, $params = array())
+    {
+        return $this->_query('fetch', $fetchAssociative, $params);
     }
 
     public function query($params = array())
@@ -376,7 +381,7 @@ abstract class ZTable extends ZCore implements ZTableInterface
         if ($this->statement === null) {
             try {
                 $this->lastQuery = (string)$this->query;
-                var_dump($this->lastQuery);
+                //var_dump($this->lastQuery);
                 $this->statement = $this->connection->pdo->prepare($this->lastQuery);
             } catch (\Exception $e) {
                 throw new ZDbPrepareFailedException('预准备语句处理失败,SQL: ' . $this->query);
@@ -386,7 +391,7 @@ abstract class ZTable extends ZCore implements ZTableInterface
 
     public function setFetchMode($mode)
     {
-        $params=func_get_args();
+        $params = func_get_args();
         $this->_fetchMode = $params;
         return $this;
     }
